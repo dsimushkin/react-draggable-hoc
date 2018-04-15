@@ -2,7 +2,7 @@ import React from 'react';
 import { findDOMNode } from 'react-dom';
 import PropTypes from 'prop-types';
 
-const droppable = (WrappedComponent) => (
+export const droppable = (WrappedComponent) => (
     class extends React.Component {
         static contextTypes = {
             monitor: PropTypes.object.isRequired
@@ -46,5 +46,3 @@ const droppable = (WrappedComponent) => (
         }
     }
 )
-
-export default droppable;

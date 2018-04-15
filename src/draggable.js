@@ -156,5 +156,3 @@ export const draggableHandle = (WrappedComponent) => (
         }
     }
 )
-
-export default { draggableHandle, draggable }

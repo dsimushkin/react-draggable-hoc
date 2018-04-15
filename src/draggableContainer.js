@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { attachEvents, detachEvents, isDrag, getEvent, getRectDeltas } from './utils';
 import Monitor from './Monitor';
 
-const draggableContainer = (WrappedComponent) => (
+export const draggableContainer = (WrappedComponent) => (
     class extends React.Component {
 
         static defaultProps = {
@@ -130,6 +130,4 @@ const draggableContainer = (WrappedComponent) => (
             return <WrappedComponent {...this.props} monitor={this.monitor}/>
         }
     }
-);
-
-export default draggableContainer;
+)
