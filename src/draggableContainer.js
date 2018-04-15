@@ -28,10 +28,10 @@ export const draggableContainer = (WrappedComponent) => (
         }
         
         events = {
-            'mousemove': this.dragMove,
-            'touchmove': this.dragMove,
-            'mouseup': this.dragEnd,
-            'touchend': this.dragEnd,
+            'mousemove': this.dragMove.bind(this),
+            'touchmove': this.dragMove.bind(this),
+            'mouseup': this.dragEnd.bind(this),
+            'touchend': this.dragEnd.bind(this),
         }    
 
         droppables = []
@@ -100,14 +100,14 @@ export const draggableContainer = (WrappedComponent) => (
             })
         }
         
-        dragMove = (e) => {
+        dragMove(e) {
             if (!isDrag(e)) return;
 
             const { clientX, clientY } = getEvent(e);
             this.drag({ clientX, clientY });
         }
 
-        dragEnd = (e) => {
+        dragEnd(e) {
             const { monitor } = this;
             
             const { dragged } = monitor;
