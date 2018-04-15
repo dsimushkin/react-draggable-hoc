@@ -1,6 +1,7 @@
 {
   "name": "react-draggable-hoc",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "description": "drag components inside container",
   "private": true,
   "main": "./src/index.js",
   "peerDependencies": {
@@ -19,5 +20,23 @@
   },
   "scripts": {
     "build": "babel src -d lib"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fellaslim/react-draggable-hoc.git"
+  },
+  "keywords": [
+    "draggable",
+    "react",
+    "hoc"
+  ],
+  "author": "Simushkin Dmitry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fellaslim/react-draggable-hoc/issues"
+  },
+  "homepage": "https://github.com/fellaslim/react-draggable-hoc#readme"
 }
