@@ -3,15 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.js",
-  "dependencies": {
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "react-scripts": "1.0.12"
+  "peerDependencies": {
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "latest",
+    "babel-plugin-transform-class-properties": "latest",
+    "babel-plugin-transform-decorators-legacy": "latest",
+    "babel-plugin-transform-object-rest-spread": "latest",
+    "babel-preset-env": "latest",
+    "babel-preset-react": "latest",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "build": "babel src -d lib"
   }
 }
