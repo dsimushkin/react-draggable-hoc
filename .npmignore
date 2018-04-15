@@ -5,3 +5,4 @@
 /.babelrc
 /yarn.lock
 /.gitignore
+/docs
