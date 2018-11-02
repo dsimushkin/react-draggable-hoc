@@ -2,7 +2,6 @@
 /test/
 /scripts/
 /src/
-/.babelrc
 /yarn.lock
 /.gitignore
 /docs
