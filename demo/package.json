@@ -2,7 +2,7 @@
   "name": "react-draggable-hoc-v2",
   "version": "0.1.0",
   "private": true,
-  "main": "index.tsx",
+  "main": "src/index.tsx",
   "dependencies": {
     "raf": "^3.4.1",
     "react": "^16.6.0",
