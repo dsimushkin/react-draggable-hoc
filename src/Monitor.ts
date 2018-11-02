@@ -147,6 +147,7 @@ export class DraggableMonitor {
             this.props.container = findDOMNode(this.container) as HTMLElement;
             this.props.dragged = findDOMNode(dragged) as HTMLElement;
             this.props.initialEvent = event;
+            this.props.lastEvent = event;
 
             this.callbacks.notify(CallbackEvent.dragStart);
         }

@@ -10,6 +10,8 @@ export interface IDraggableContext {
 
 export interface IDraggableProps {
     isDragged?: boolean,
+    x?: number,
+    y?: number
 }
 
 export interface IDroppableProps {

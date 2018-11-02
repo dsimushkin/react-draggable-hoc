@@ -1,4 +1,4 @@
 export {
     DraggableContainer, draggable, droppable, draggableContainer, DraggableMonitor,
-    IDraggableProps, IDroppableProps
+    IDraggableProps, IDroppableProps, IDraggableContext
 } from './internals';

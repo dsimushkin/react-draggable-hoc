@@ -43,7 +43,8 @@ const droppableWrapper = <T extends any>(WrappedComponent: React.ComponentType<T
             }
         }
         
-        public onDragStart = () => {
+        public onDragStart = (monitor: DraggableMonitor) => {
+            this.onDrag(monitor);
             this.forceUpdate();
         }
 

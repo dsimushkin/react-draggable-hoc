@@ -1,0 +1,95 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #222;
+  height: 50px;
+  padding: 20px;
+  color: white;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+[class$="container"] {
+  background-color: #eee;
+  margin: auto;
+  width: 70%;
+}
+
+.Ghost-container {
+  height: 76px;
+  overflow-x: scroll;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.Simple-container {
+  border-radius: 8px;
+  padding-bottom: 10px;
+  overflow: hidden;
+}
+
+.Simple-row {
+  display: flex;
+}
+
+.Simple-row > * {
+  flex: 1;
+  min-width: 40px;
+}
+
+.Cell-simple {
+  background-color: rgba(100, 100, 100, 0.1);
+  height: 30px;
+  padding: 10px;
+  display: inline-grid;
+  justify-content: center;
+  align-items: center;
+  cursor: move;
+}
+
+.Cell-simple + .Cell-simple {
+  border-left: 1px dashed #ccc;
+}
+
+.Cell {
+  position: relative;
+  cursor: move;
+  display: inline-block;
+  padding: 10px;
+}
+
+.Cell.hovered:before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 100%;
+  background: blue;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#Droppable {
+  align-items: flex-end;
+  border: 1px dashed #ccc;
+  display: flex;
+  float: right;
+  height: 100px;
+  position: static;
+  white-space: normal;
+  width: 100px;
+
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
