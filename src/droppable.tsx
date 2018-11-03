@@ -88,3 +88,35 @@ const droppableWrapper = <T extends any>(WrappedComponent: React.ComponentType<T
         }
     }
 )
+
+export interface IDroppablePropTypes {
+    onDrag: (props: IDroppableProps) => void,
+    onDrop: (props: IDroppableProps) => void,
+}
+
+export const Droppable = droppable(
+    class Droppable extends React.Component<IDroppableProps & IDroppablePropTypes> {
+        static defaultProps = {
+            onDrag: () => {},
+            onDrop: () => {}
+        }
+
+        public componentDidUpdate(prevProps: IDroppableProps) {
+            const {dragged, isDropped, isHovered} = this.props;
+            if (!prevProps.isDropped &&
+                dragged && isDropped
+            ) {
+                this.props.onDrop({dragged, isDropped, isHovered});
+            }
+
+            if (prevProps.isHovered !== isHovered || prevProps.dragged !== dragged) {
+                this.props.onDrag({dragged, isDropped, isHovered});
+            }
+        }
+
+        public render() {
+            return React.Children.only(this.props.children)
+        }
+    }
+) as React.ComponentType<IDroppablePropTypes & any>
+

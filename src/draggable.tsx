@@ -52,12 +52,14 @@ const draggableWrapper = <T extends any>(WrappedComponent: React.ComponentType<T
                 e.preventDefault();
             });
 
+            // subscribe to monitor
             const { monitor } = this.props;
             monitor.on(CallbackEvent.drag, this.onDrag);
             monitor.on(CallbackEvent.dragEnd, this.onDragEnd);
         }
 
         public componentWillUnmount() {
+            // unsubscribe from monitor
             const { monitor } = this.props;
             monitor.off(CallbackEvent.drag, this.onDrag);
             monitor.off(CallbackEvent.dragEnd, this.onDragEnd);
@@ -70,11 +72,36 @@ const draggableWrapper = <T extends any>(WrappedComponent: React.ComponentType<T
                 <WrappedComponent
                     {...props}
                     {...draggedProps}
-                    x={draggedProps.x}
-                    y={draggedProps.y}
+                    x={draggedProps.x || 0}
+                    y={draggedProps.y || 0}
                     isDragged={this.state.isDragged}
                 />
             )
         }
     }
 )
+
+export interface IDraggablePropTypes {
+    onDrag: (props: IDraggableProps) => void
+}
+
+export const Draggable = draggable(
+    class Draggable extends React.Component<IDraggableProps & IDraggablePropTypes> {
+        static defaultProps = {
+            onDrag: () => {}
+        }
+
+        public componentDidUpdate(prevProps: IDraggableProps) {
+            const {x, y, isDragged} = this.props;
+            if (prevProps.x !== x ||
+                prevProps.y !== y ||
+                prevProps.isDragged !== isDragged
+            ) {
+                this.props.onDrag({x, y, isDragged});
+            }
+        }
+        public render() {
+            return this.props.children;
+        }
+    }
+) as React.ComponentType<IDraggablePropTypes & any>

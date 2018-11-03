@@ -60,7 +60,7 @@ export class DraggableContainer extends React.Component<any> {
         const { monitor } = this;
         return (
             <DraggableContext.Provider value={{monitor}}>
-                { React.Children.only(this.props.children) }
+                { this.props.children }
             </DraggableContext.Provider>
         )
     }

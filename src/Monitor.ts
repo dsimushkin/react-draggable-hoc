@@ -1,6 +1,6 @@
 import { findDOMNode } from 'react-dom';
 
-import { DraggableComponent, DraggableContainerComponent, DraggableContainer } from './DraggableContainer';
+import { DraggableComponent, DraggableContainerComponent } from './DraggableContainer';
 import { DragEvent } from './utils';
 
 export type DragCallback = (monitor: DraggableMonitor) => void;
@@ -12,7 +12,7 @@ export enum CallbackEvent {
     dragStart = 'dragStart',
 }
 
-class DragProperties {
+export class DragProperties {
     public container?: HTMLElement;
     public lastEvent?: DragEvent;
     public maxX?: number;
@@ -81,36 +81,33 @@ class DragProperties {
 class Callbacks {
     private monitor: DraggableMonitor;
     private events: {
-        [key: string]: DragCallback[]
-    } = {}
+        [key in CallbackEvent]: DragCallback[]
+    } = {
+        [CallbackEvent.beforeDragEnd]: [],
+        [CallbackEvent.drag]: [],
+        [CallbackEvent.dragEnd]: [],
+        [CallbackEvent.dragStart]: []
+    }
 
     constructor(monitor: DraggableMonitor) {
         this.monitor = monitor;
     }
 
     public on = (event: CallbackEvent, callback: DragCallback) => {
-        if (this.events[event] === undefined) {
-            this.events[event] = [];
-        }
-
         this.events[event].push(callback);
     }
 
     public off = (event: CallbackEvent, callback: DragCallback) => {
-        if (this.events[event] !== undefined) {
-            const index = this.events[event].indexOf(callback);
-            if (index >= 0) {
-                this.events[event].splice(index, 1);
-            }
+        const index = this.events[event].indexOf(callback);
+        if (index >= 0) {
+            this.events[event].splice(index, 1);
         }
     }
 
     public notify = (event: CallbackEvent) => {
-        if (this.events[event]) {
-            this.events[event].forEach((callback: DragCallback) => {
-                callback(this.monitor);
-            })
-        }
+        this.events[event].forEach((callback: DragCallback) => {
+            callback(this.monitor);
+        })
     }
 }
 

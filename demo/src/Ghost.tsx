@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { findDOMNode } from 'react-dom';
-import { draggable, draggableContainer, DraggableMonitor, droppable, IDraggableProps, IDroppableProps } from 'react-draggable-hoc';
+import {
+  draggable,
+  draggableContainer,
+  DraggableMonitor,
+  droppable,
+  IDraggableProps,
+  IDroppableProps
+} from 'react-draggable-hoc';
 
 const randomColor = () => {
     const randomPart = () => Math.floor(Math.random()*255);
@@ -75,9 +82,18 @@ const Content = droppable(draggable(
 })
 
 export const GhostExample = draggableContainer(() => (
-      <div className="Ghost-container">
-        {Array(20).fill(0).map((_, i) => (
-          <Content backgroundColor={randomColor()} value={`Hello ${i}`} key={i}/>
-        ))}
-      </div>
+    <div className="Ghost-container">
+      {Array(20).fill(0).map((_, i) => (
+        <Content backgroundColor={randomColor()} value={`Hello ${i}`} key={i}/>
+      ))}
+    </div>
 ))
+
+export const GhostExampleTitle = () => (
+  <p>
+    Scrollable container, <br />
+    draggable and droppable elements <br />
+    with a ghost stuck to row bottom <br />
+    and effects on drag over and drag start
+  </p>
+)

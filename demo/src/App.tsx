@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { GhostExample } from './Ghost';
-import { SimpleExample } from './Simple';
+import { GhostExample, GhostExampleTitle } from './Ghost';
+import { SimpleExample, SimpleExampleTitle } from './Simple';
 
 import './App.css';
 
@@ -11,16 +11,9 @@ class App extends React.Component {
         <header className="App-header">
           <h1 className="App-title">react-draggable-hoc demo</h1>
         </header>
-        <p>
-          Scrollable container, <br />
-          draggable and droppable elements <br />
-          with a ghost stuck to row bottom <br />
-          and effects on drag over and drag start
-        </p>
+        <GhostExampleTitle />
         <GhostExample />
-        <p className="App-intro">
-          Simple Draggable
-        </p>
+        <SimpleExampleTitle />
         <SimpleExample />
       </div>
     );

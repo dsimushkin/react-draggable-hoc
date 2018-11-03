@@ -1,13 +1,24 @@
 {
   "compilerOptions": {
-    "declarationDir": "./dist",
-    "outDir": "./dist",
-    "module": "es6",
+    "module": "esnext",
+    "target": "es5",
+    "lib": ["es6", "dom"],
     "sourceMap": false,
+    "allowJs": false,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
     "declaration": true,
     "strict": true,
-    "jsx": "react",
-    "target": "es6"
   },
   "include": [
     "src/**/*"

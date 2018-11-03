@@ -52,6 +52,9 @@
   display: inline-grid;
   justify-content: center;
   align-items: center;
+}
+
+.Cell-simple span {
   cursor: move;
 }
 
