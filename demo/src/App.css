@@ -52,9 +52,6 @@
   display: inline-grid;
   justify-content: center;
   align-items: center;
-}
-
-.Cell-simple span {
   cursor: move;
 }
 
@@ -80,16 +77,12 @@
   left: 0;
 }
 
-#Droppable {
-  align-items: flex-end;
-  border: 1px dashed #ccc;
-  display: flex;
-  float: right;
-  height: 100px;
-  position: static;
-  white-space: normal;
-  width: 100px;
-
+.Simple-bin {
+  align-items: center;
+  border-radius: 4px;
+  display: grid;
+  margin: 10px;
+  min-height: 50px;
 }
 
 @keyframes App-logo-spin {
