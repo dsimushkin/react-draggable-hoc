@@ -41,26 +41,28 @@ const SimpleDraggable = draggable(DraggableElement);
 /**
  * Creates a Droppable container
  */
-class DroppableWithState extends React.Component<IDroppableProps> {
+class DroppableWithState extends React.Component<{removeItem: (v: number) => any}> {
   public state = {
-      dragged: null,
+    dragProps: null,
       dropped: [],
       isHovered: false,
   }
 
-  public onDrop = ({dragged} : IDroppableProps) => {
-      if (dragged) {
-          this.setState({dropped: [...this.state.dropped, dragged.props.value]});
-      }
+  public onDrop = ({dragProps} : IDroppableProps) => {
+    const state = {isHovered: false, dragged: null} as any;
+    if (dragProps != null) {
+      state.dropped = [...this.state.dropped, dragProps];
+      this.props.removeItem(dragProps);
+    }
+    this.setState(state);
   }
 
-  public onDrag = ({dragged, isHovered} : IDroppableProps) => {
-      this.setState({isHovered, dragged});
+  public onDrag = (props : IDroppableProps) => {
+      this.setState(props);
   }
 
   public render() {
-    const {dragged, isHovered} = this.state;
-    const {dropped} = this.state;
+    const {dragProps, dropped, isHovered,} = this.state;
     return (
       <Droppable
         onDrop={this.onDrop}
@@ -70,10 +72,10 @@ class DroppableWithState extends React.Component<IDroppableProps> {
           className="Simple-bin"
           style={{
             backgroundColor: isHovered ? 'rgba(0, 130, 20, 0.2)' : undefined,
-            border: dragged ? '1px dashed #ccc' : undefined,
+            border: dragProps != null ? '1px dashed #ccc' : undefined,
           }}
         >
-          {dragged ? 'Drop it here' : 'Start dragging' } <br />
+          {dragProps != null ? 'Drop it here' : 'Start dragging' } <br />
           {dropped.length > 0 && (
             <p>
               Dropped values: [{dropped.join(', ')}]
@@ -85,25 +87,36 @@ class DroppableWithState extends React.Component<IDroppableProps> {
   }
 }
 
-export const SimpleExample = () => (
-  <DraggableContainer>
-    <div className="Simple-container">
-        <div className="Simple-row">
-          {/* value prop will be used by droppable */}
-          {Array(4).fill(undefined).map((_, i) => (
-            <SimpleDraggable
-              className="Cell-simple"
-              value={`${i}`}
-              key={i}
-            >
-              <span>{i}</span>
-            </SimpleDraggable>
-          ))}
+export class SimpleExample extends React.Component {
+  public state = {
+    values: [1,2,3,4,5]
+  }
+  public removeItem = (v: number) => {
+    this.setState({values: this.state.values.filter((val) => val !== v)});
+  }
+  public render() {
+    return (
+      <DraggableContainer>
+        <div className="Simple-container">
+            <div className="Simple-row">
+              {/* value prop will be used by droppable */}
+              {this.state.values.map((i) => (
+                <SimpleDraggable
+                  className="Cell-simple"
+                  value={`${i}`}
+                  key={i}
+                  dragProps={i}
+                >
+                  <span>{i}</span>
+                </SimpleDraggable>
+              ))}
+            </div>
+            <DroppableWithState removeItem={this.removeItem}/>
         </div>
-        <DroppableWithState />
-    </div>
-  </DraggableContainer>
-)
+      </DraggableContainer>
+    )
+  }
+}
 
 export const SimpleExampleTitle = () => (
   <p>

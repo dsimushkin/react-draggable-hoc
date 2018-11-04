@@ -114,15 +114,16 @@ export class DraggableMonitor {
   public drag = (event: DragEvent) => {
     if (this.dragged) {
       this.props.lastEvent = event;
-
       this.callbacks.notify(DragActions.drag);
     }
   }
 
   public dragEnd = () => {
-    this.callbacks.notify(DragActions.beforeDragEnd);
-    this.clean();
-    this.callbacks.notify(DragActions.dragEnd);
+    if (this.dragged) {
+      this.callbacks.notify(DragActions.beforeDragEnd);
+      this.clean();
+      this.callbacks.notify(DragActions.dragEnd);
+    }
   }
 
   public dragStart = (dragged: DraggableComponent, event: DragEvent) => {
@@ -134,6 +135,7 @@ export class DraggableMonitor {
       this.props.initialEvent = event;
 
       this.callbacks.notify(DragActions.dragStart);
+      this.callbacks.notify(DragActions.drag);
     }
   }
 

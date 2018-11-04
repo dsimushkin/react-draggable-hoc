@@ -1,7 +1,6 @@
 export {
   DraggableContainer,
   draggable,
-  droppable,
   draggableContainer,
   DraggableMonitor,
   IDraggableProps,

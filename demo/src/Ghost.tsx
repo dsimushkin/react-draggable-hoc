@@ -4,9 +4,9 @@ import {
   draggable,
   draggableContainer,
   DraggableMonitor,
-  droppable,
+  Droppable,
   IDraggableProps,
-  IDroppableProps
+  IDroppableProps,
 } from 'react-draggable-hoc';
 
 const randomColor = () => {
@@ -29,63 +29,85 @@ interface IContentProps {
   backgroundColor: string
 }
   
-const Content = droppable(draggable(
-  class extends React.Component<IDraggableProps & IDroppableProps & IContentProps> {
+const Content = draggable(
+  class ContentWrapper extends React.Component<IDraggableProps & IContentProps> {
     public state = {
-      color: undefined
+      color: undefined,
+      isHovered: false
     }
-    
-    public componentDidUpdate(prevProps: IDraggableProps & IDroppableProps) {
-      if (this.props.isDropped &&
-          !prevProps.isDropped &&
-          !this.props.isDragged &&
-          this.props.dragged
-      ) {
-        this.setState({color: this.props.dragged.props.backgroundColor})
+
+    public onDrop = ({dragProps}: IDroppableProps) => {
+      const state = {isHovered: false} as any;
+      if (!this.props.isDragged && this.state.isHovered) {
+        state.color = dragProps;
+      }
+      this.setState(state);
+    }
+
+    public onDrag = ({isHovered} : IDroppableProps) => {
+      if (this.state.isHovered !== isHovered) {
+        this.setState({isHovered});
       }
     }
 
+    public isHovered = (component: React.Component<any>, { props: { x, initialEvent } }: DraggableMonitor) => {
+      const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
+      return initialEvent != null && nodeRect.left <= initialEvent.pageX + x && nodeRect.right >= initialEvent.pageX + x;
+    }
+
     public render() {
-      const { x, isDragged, isHovered, backgroundColor, value} = this.props;
-      const { color } = this.state;
+      const { x, isDragged, backgroundColor, value} = this.props;
+      const { color, isHovered } = this.state;
 
       return (
-        <div style={{display: 'inline-block', textAlign: 'left', position: 'relative'}}>
-          {/* create a ghost and position it on drag */}
-          {isDragged && (
+        <Droppable
+          onDrag={this.onDrag}
+          onDrop={this.onDrop}
+          isHovered={this.isHovered}
+        >
+          <div style={{display: 'inline-block', textAlign: 'left', position: 'relative'}}>
+            {/* create a ghost and position it on drag */}
+            {isDragged && (
+              <ContentElement
+                value={value}
+                style={{
+                  backgroundColor,
+                  color,
+                  position: 'absolute',
+                  transform: `translate3d(${x}px, 100%, -1px)`,
+                  zIndex: 1,
+                }}
+              />
+            )}
+            {/* change text color when element is dragged */}
             <ContentElement
               value={value}
               style={{
-                backgroundColor,
-                color,
-                position: 'absolute',
-                transform: `translate3d(${x}px, 100%, -1px)`,
-                zIndex: 1,
+                backgroundColor, color: isDragged ? 'red' : color
               }}
+              className={isHovered ? 'hovered' : undefined}
             />
-          )}
-          {/* change text color when element is dragged */}
-          <ContentElement
-            value={value}
-            style={{
-              backgroundColor, color: isDragged ? 'red' : color
-            }}
-            className={isHovered ? 'hovered' : undefined}
-          />
-        </div>
+          </div>
+        </Droppable>
       )
     }
   }
-), (component: React.Component<any>, { props: { x, initialEvent } }: DraggableMonitor) => {
-    const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
-    return initialEvent != null && nodeRect.left <= initialEvent.pageX + x && nodeRect.right >= initialEvent.pageX + x;
-})
+)
+
 
 export const GhostExample = draggableContainer(() => (
   <div className="Ghost-container">
-    {Array(20).fill(0).map((_, i) => (
-      <Content backgroundColor={randomColor()} value={`Hello ${i}`} key={i}/>
-    ))}
+    {Array(20).fill(0).map((_, i) => {
+      const color = randomColor();
+      return (
+        <Content
+          backgroundColor={color}
+          value={`Hello ${i}`}
+          key={i}
+          dragProps={color}
+        />
+      )
+    })}
   </div>
 ))
 

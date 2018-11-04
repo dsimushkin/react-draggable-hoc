@@ -1,7 +1,7 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggableContainerContext, withDraggable } from "./DraggableContainer";
-import { DragActions, DraggableMonitor, IDragProps } from "./Monitor";
+import { IDraggable, IDraggableContainerContext, withDraggableContainer } from "./DraggableContainer";
+import { DragActions, IDragProps } from "./Monitor";
 import { DragEvent, isDrag } from "./utils";
 
 export interface IDraggableProps extends IDragProps {
@@ -11,35 +11,83 @@ export interface IDraggableProps extends IDragProps {
 export const draggable = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableProps>,
 ) => (
-  withDraggable(draggableWrapper(WrappedComponent))
-)
-
-const draggableWrapper = <T extends any>(
-  WrappedComponent: React.ComponentType<T & IDraggableProps>,
-) => (
-  class DraggableWrapper extends React.Component<T & IDraggableContainerContext> {
-    public el?: HTMLElement;
-
+  class DraggableWrapper extends React.Component<T & IDraggable> {
     public state = {
       isDragged: false,
+      values: {},
+    }
+
+    public onDragStart = (values: IDraggableProps) => {
+      this.setState({isDragged: true, values});
+    }
+
+    public onDrag = (values: IDraggableProps) => {
+      this.setState({values});
+    }
+
+    public onDragEnd = (values: IDraggableProps) => {
+      this.setState({isDragged: false, values});
+    }
+
+    public render() {
+      const { dragProps, ...props} = this.props as any;
+      return (
+        <Draggable
+          onDrag={this.onDrag}
+          onDragEnd={this.onDragEnd}
+          onDragStart={this.onDragStart}
+          dragProps={dragProps}
+        >
+          <WrappedComponent
+            {...props}
+            {...this.state.values}
+            isDragged={this.state.isDragged}
+          />
+        </Draggable>
+      )
+    }
+  }
+)
+
+export interface IDraggablePropTypes extends IDraggable {
+  onDrag?: (props: IDraggableProps) => void,
+  onDragStart?: (props: IDraggableProps) => void,
+  onDragEnd?: (props: IDraggableProps) => void,
+  children: React.ReactNode,
+}
+
+export const Draggable = withDraggableContainer(
+  class DraggableElement extends React.Component<IDraggablePropTypes & IDraggableContainerContext> {
+    public static defaultProps = {
+      onDrag: () => {},
+      onDragEnd: () => {},
+      onDragStart: () => {},
+    }
+    public el?: HTMLElement;
+    public isDragged = false;
+
+    get draggableProps() {
+      return {...this.props.monitor.props.values, isDragged: this.isDragged};
     }
 
     public onDragStart = (event: Event) => {
       if (isDrag(event as DragEvent) && this.el!.contains(event.target as HTMLElement)) {
+        this.isDragged = true;
         this.props.monitor.dragStart(this, event as DragEvent);
-        this.setState({isDragged: true});
+        this.props.onDragStart!(this.draggableProps)
       }
     }
 
-    public onDrag = (monitor: DraggableMonitor) => {
-      if (monitor.dragged === this) {
-        this.forceUpdate();
+    public onDrag = () => {
+      if (this.isDragged) {
+        this.props.onDrag!(this.draggableProps);
       }
     }
 
-    public onDragEnd = (monitor: DraggableMonitor) => {
-      if (this.state.isDragged) {
-        this.setState({isDragged: false});
+    public onDragEnd = () => {
+      if (this.isDragged) {
+        this.isDragged = false;
+        this.props.onDragEnd!(this.draggableProps);
       }
     }
 
@@ -71,39 +119,6 @@ const draggableWrapper = <T extends any>(
       const { monitor } = this.props;
       monitor.off(DragActions.drag, this.onDrag);
       monitor.off(DragActions.dragEnd, this.onDragEnd);
-    }
-
-    public render() {
-      const { monitor, ...props} = this.props as any;
-      return (
-        <WrappedComponent
-          {...props}
-          {...monitor.props.values}
-          isDragged={this.state.isDragged}
-        />
-      )
-    }
-  }
-)
-
-export interface IDraggablePropTypes {
-  onDrag: (props: IDraggableProps) => void
-}
-
-export const Draggable = draggable(
-  class DraggableElement extends React.Component<IDraggableProps & IDraggablePropTypes> {
-    public static defaultProps = {
-      onDrag: () => {},
-    }
-
-    public componentDidUpdate(prevProps: IDraggableProps) {
-      const {x, y, isDragged} = this.props;
-      if (prevProps.x !== x ||
-        prevProps.y !== y ||
-        prevProps.isDragged !== isDragged
-      ) {
-        this.props.onDrag(this.props);
-      }
     }
 
     public render() {

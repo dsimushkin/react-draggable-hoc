@@ -6,7 +6,11 @@ export interface IDraggableContainerContext {
   monitor: DraggableMonitor,
 }
 
-export type DraggableComponent = React.Component<any>;
+export interface IDraggable {
+  dragProps: any
+}
+
+export type DraggableComponent = React.Component<IDraggable>;
 export type DraggableContainerComponent = React.Component<any>;
 
 export const DraggableContainerContext = React.createContext<IDraggableContainerContext>({
@@ -54,7 +58,7 @@ export class DraggableContainer extends React.Component<any> {
   }
 }
 
-export const withDraggable = <T extends any>(
+export const withDraggableContainer = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableContainerContext>,
 ) => (
   (props: T) => (
