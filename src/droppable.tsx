@@ -1,7 +1,13 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggableContext, IDroppableProps, withDraggable } from "./DraggableContainer";
-import { CallbackEvent, DraggableMonitor } from "./Monitor";
+import { DraggableComponent, IDraggableContainerContext, withDraggable } from "./DraggableContainer";
+import { DragActions, DraggableMonitor } from "./Monitor";
+
+export interface IDroppableProps {
+  dragged?: DraggableComponent,
+  isDropped?: boolean,
+  isHovered?: boolean,
+}
 
 const containsPoint = (
   component: React.Component<any>,
@@ -31,7 +37,7 @@ const droppableWrapper = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDroppableProps>,
   isHovered?: (component: React.Component<any>, monitor: DraggableMonitor) => boolean,
 ) => (
-  class DroppableWrapper extends React.Component<T & IDraggableContext> {
+  class DroppableWrapper extends React.Component<T & IDraggableContainerContext> {
     public el?: HTMLElement;
 
     public state = {
@@ -70,18 +76,18 @@ const droppableWrapper = <T extends any>(
     public componentDidMount() {
       this.el = findDOMNode(this) as HTMLElement;
       const { monitor } = this.props;
-      monitor.on(CallbackEvent.dragStart, this.onDragStart);
-      monitor.on(CallbackEvent.drag, this.onDrag);
-      monitor.on(CallbackEvent.beforeDragEnd, this.onDrop);
-      monitor.on(CallbackEvent.dragEnd, this.onDragEnd);
+      monitor.on(DragActions.dragStart, this.onDragStart);
+      monitor.on(DragActions.drag, this.onDrag);
+      monitor.on(DragActions.beforeDragEnd, this.onDrop);
+      monitor.on(DragActions.dragEnd, this.onDragEnd);
     }
 
     public componentWillUnmount() {
       const { monitor } = this.props;
-      monitor.off(CallbackEvent.dragStart, this.onDragStart);
-      monitor.off(CallbackEvent.drag, this.onDrag);
-      monitor.off(CallbackEvent.beforeDragEnd, this.onDrop);
-      monitor.off(CallbackEvent.dragEnd, this.onDragEnd);
+      monitor.off(DragActions.dragStart, this.onDragStart);
+      monitor.off(DragActions.drag, this.onDrag);
+      monitor.off(DragActions.beforeDragEnd, this.onDrop);
+      monitor.off(DragActions.dragEnd, this.onDragEnd);
     }
 
     public render() {

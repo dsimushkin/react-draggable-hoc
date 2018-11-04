@@ -1,8 +1,12 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggableContext, IDraggableProps, withDraggable } from "./DraggableContainer";
-import { CallbackEvent, DraggableMonitor } from "./Monitor";
+import { IDraggableContainerContext, withDraggable } from "./DraggableContainer";
+import { DragActions, DraggableMonitor, IDragProps } from "./Monitor";
 import { DragEvent, isDrag } from "./utils";
+
+export interface IDraggableProps extends IDragProps {
+  isDragged?: boolean,
+}
 
 export const draggable = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableProps>,
@@ -13,7 +17,7 @@ export const draggable = <T extends any>(
 const draggableWrapper = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableProps>,
 ) => (
-  class DraggableWrapper extends React.Component<T & IDraggableContext> {
+  class DraggableWrapper extends React.Component<T & IDraggableContainerContext> {
     public el?: HTMLElement;
 
     public state = {
@@ -58,15 +62,15 @@ const draggableWrapper = <T extends any>(
 
       // subscribe to monitor
       const { monitor } = this.props;
-      monitor.on(CallbackEvent.drag, this.onDrag);
-      monitor.on(CallbackEvent.dragEnd, this.onDragEnd);
+      monitor.on(DragActions.drag, this.onDrag);
+      monitor.on(DragActions.dragEnd, this.onDragEnd);
     }
 
     public componentWillUnmount() {
       // unsubscribe from monitor
       const { monitor } = this.props;
-      monitor.off(CallbackEvent.drag, this.onDrag);
-      monitor.off(CallbackEvent.dragEnd, this.onDragEnd);
+      monitor.off(DragActions.drag, this.onDrag);
+      monitor.off(DragActions.dragEnd, this.onDragEnd);
     }
 
     public render() {

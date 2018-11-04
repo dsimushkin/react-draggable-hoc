@@ -8,7 +8,7 @@ export {
   IDraggablePropTypes,
   IDroppableProps,
   IDroppablePropTypes,
-  IDraggableContext,
+  IDraggableContainerContext,
   Draggable,
   IDragProps,
   Droppable,

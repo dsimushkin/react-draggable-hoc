@@ -1,31 +1,23 @@
 import * as React from "react";
-import { DraggableMonitor, IDragProps } from "./Monitor";
+import { DraggableMonitor } from "./Monitor";
 import { DragEvent } from "./utils";
 
-export interface IDraggableContext {
+export interface IDraggableContainerContext {
   monitor: DraggableMonitor,
-}
-
-export interface IDraggableProps extends IDragProps {
-  isDragged?: boolean,
-}
-
-export interface IDroppableProps {
-  dragged?: DraggableComponent,
-  isDropped?: boolean,
-  isHovered?: boolean,
 }
 
 export type DraggableComponent = React.Component<any>;
 export type DraggableContainerComponent = React.Component<any>;
 
-export const DraggableContext = React.createContext<IDraggableContext>({
+export const DraggableContainerContext = React.createContext<IDraggableContainerContext>({
   monitor: new DraggableMonitor(undefined),
 })
 
 // TODO provide API for
 // dragStart, dragEnd
-export const draggableContainer = <T extends any>(WrappedComponent: React.ComponentType<T>) => (props: T) => (
+export const draggableContainer = <T extends any>(
+  WrappedComponent: React.ComponentType<T>,
+) => (props: T) => (
   <DraggableContainer>
     <WrappedComponent {...props} />
   </DraggableContainer>
@@ -55,19 +47,19 @@ export class DraggableContainer extends React.Component<any> {
   public render() {
     const { monitor } = this;
     return (
-      <DraggableContext.Provider value={{monitor}}>
+      <DraggableContainerContext.Provider value={{monitor}}>
         { this.props.children }
-      </DraggableContext.Provider>
+      </DraggableContainerContext.Provider>
     )
   }
 }
 
 export const withDraggable = <T extends any>(
-  WrappedComponent: React.ComponentType<T & IDraggableContext>,
+  WrappedComponent: React.ComponentType<T & IDraggableContainerContext>,
 ) => (
   (props: T) => (
-    <DraggableContext.Consumer>
+    <DraggableContainerContext.Consumer>
       {(draggableProps) => <WrappedComponent {...props} {...draggableProps} />}
-    </DraggableContext.Consumer>
+    </DraggableContainerContext.Consumer>
   )
 )

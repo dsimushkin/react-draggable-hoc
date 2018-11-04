@@ -1,11 +1,10 @@
 import { findDOMNode } from "react-dom";
 
+import { Callbacks } from "./Callbacks";
 import { DraggableComponent, DraggableContainerComponent } from "./DraggableContainer";
 import { DragEvent } from "./utils";
 
-export type DragCallback = (monitor: DraggableMonitor) => void;
-
-export enum CallbackEvent {
+export enum DragActions {
   beforeDragEnd = "beforeDragEnd",
   drag = "drag",
   dragEnd = "dragEnd",
@@ -19,7 +18,7 @@ export interface IDragProps {
   deltaY: number,
   initialEvent?: DragEvent,
   lastEvent?: DragEvent,
-  draggedEl?: HTMLElement
+  draggedNode?: HTMLElement
 }
 
 export class DragProperties {
@@ -48,7 +47,7 @@ export class DragProperties {
 
   set initialEvent(event: DragEvent | undefined) {
     this.event = event;
-    this.lastEvent = undefined;
+    this.lastEvent = event;
   }
 
   get deltaX() {
@@ -91,7 +90,7 @@ export class DragProperties {
     return {
       deltaX: this.deltaX,
       deltaY: this.deltaY,
-      draggedEl: this.dragged,
+      draggedNode: this.dragged,
       initialEvent: this.initialEvent,
       lastEvent: this.lastEvent,
       x: this.x,
@@ -100,45 +99,12 @@ export class DragProperties {
   }
 }
 
-class Callbacks {
-  private monitor: DraggableMonitor;
-  private events: {
-    [key in CallbackEvent]: DragCallback[]
-  } = {
-    [CallbackEvent.beforeDragEnd]: [],
-    [CallbackEvent.drag]: [],
-    [CallbackEvent.dragEnd]: [],
-    [CallbackEvent.dragStart]: [],
-  }
-
-  constructor(monitor: DraggableMonitor) {
-    this.monitor = monitor;
-  }
-
-  public on = (event: CallbackEvent, callback: DragCallback) => {
-    this.events[event].push(callback);
-  }
-
-  public off = (event: CallbackEvent, callback: DragCallback) => {
-    const index = this.events[event].indexOf(callback);
-    if (index >= 0) {
-      this.events[event].splice(index, 1);
-    }
-  }
-
-  public notify = (event: CallbackEvent) => {
-    this.events[event].forEach((callback: DragCallback) => {
-      callback(this.monitor);
-    })
-  }
-}
-
 export class DraggableMonitor {
   public container?: DraggableContainerComponent;
   public dragged?: DraggableComponent;
   public props = new DragProperties();
 
-  private callbacks = new Callbacks(this);
+  private callbacks = new Callbacks<this, DragActions>(this);
 
   constructor(container?: DraggableContainerComponent) {
     this.container = container;
@@ -149,14 +115,14 @@ export class DraggableMonitor {
     if (this.dragged) {
       this.props.lastEvent = event;
 
-      this.callbacks.notify(CallbackEvent.drag);
+      this.callbacks.notify(DragActions.drag);
     }
   }
 
   public dragEnd = () => {
-    this.callbacks.notify(CallbackEvent.beforeDragEnd);
+    this.callbacks.notify(DragActions.beforeDragEnd);
     this.clean();
-    this.callbacks.notify(CallbackEvent.dragEnd);
+    this.callbacks.notify(DragActions.dragEnd);
   }
 
   public dragStart = (dragged: DraggableComponent, event: DragEvent) => {
@@ -166,9 +132,8 @@ export class DraggableMonitor {
       this.props.container = findDOMNode(this.container) as HTMLElement;
       this.props.dragged = findDOMNode(dragged) as HTMLElement;
       this.props.initialEvent = event;
-      this.props.lastEvent = event;
 
-      this.callbacks.notify(CallbackEvent.dragStart);
+      this.callbacks.notify(DragActions.dragStart);
     }
   }
 
@@ -177,11 +142,11 @@ export class DraggableMonitor {
     this.dragged = undefined;
   }
 
-  public on = (event: CallbackEvent, callback: DragCallback) => {
+  public on = (event: DragActions, callback: (payload: this) => any) => {
     this.callbacks.on(event, callback);
   }
 
-  public off = (event: CallbackEvent, callback: DragCallback) => {
+  public off = (event: DragActions, callback: (payload: this) => any) => {
     this.callbacks.off(event, callback);
   }
 }
