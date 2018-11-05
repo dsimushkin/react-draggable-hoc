@@ -31,12 +31,13 @@ export const draggable = <T extends any>(
     }
 
     public render() {
-      const { dragProps, draggable: draggableP, disabled, ...props} = this.props as any;
+      const { delay, dragProps, draggable: draggableP, disabled, ...props} = this.props as any;
       return (
         <Draggable
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
           onDragStart={this.onDragStart}
+          delay={delay}
           dragProps={dragProps}
           draggable={draggableP}
           disabled={disabled}
@@ -53,6 +54,7 @@ export const draggable = <T extends any>(
 )
 
 export interface IDraggablePropTypes extends IDraggable {
+  delay?: number,
   disabled?: boolean,
   draggable?: boolean,
   onDrag?: (props: IDraggableProps) => void,
@@ -80,6 +82,7 @@ export const Draggable = withDragDropContainerContext(
     IDraggablePropTypes & {children: React.ReactNode} & IDraggableContainerContext
   > {
     public static defaultProps = {
+      delay: 0,
       disabled: false,
       draggable: true,
       onDrag: () => {},
@@ -93,7 +96,7 @@ export const Draggable = withDragDropContainerContext(
       return {...this.props.monitor.props.values, isDragged: this.isDragged};
     }
 
-    public onDragStart = (event: Event) => {
+    public onDragStart = async (event: Event) => {
       if (this.props.disabled) {
         this.props.monitor.dragEnd();
         return;
@@ -112,9 +115,10 @@ export const Draggable = withDragDropContainerContext(
         const isDrag = area && area.draggable;
 
         if (isDrag) {
-          this.isDragged = true;
-          this.props.monitor.dragStart(this, event as utils.DragEvent);
-          this.props.onDragStart!(this.draggableProps)
+          if (await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay)) {
+            this.isDragged = true;
+            this.props.onDragStart!(this.draggableProps)
+          }
         }
       }
     }

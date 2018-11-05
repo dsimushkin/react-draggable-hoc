@@ -16,6 +16,7 @@ export class DragMonitor {
   public container?: DraggableContainerComponent;
   public dragged?: DraggableComponent;
   public props = new DragProperties();
+  public delay?: ReturnType<typeof setTimeout>;
 
   private callbacks = new Callbacks<this, DragActions>(this);
 
@@ -24,6 +25,9 @@ export class DragMonitor {
   }
 
   public drag = (event: DragEvent) => {
+    if (this.delay) {
+      this.clean();
+    }
     if (this.dragged) {
       this.props.lastEvent = event;
       this.callbacks.notify(DragActions.drag);
@@ -31,6 +35,9 @@ export class DragMonitor {
   }
 
   public dragEnd = () => {
+    if (this.delay) {
+      this.clean();
+    }
     if (this.dragged) {
       this.callbacks.notify(DragActions.beforeDragEnd);
       this.clean();
@@ -38,22 +45,33 @@ export class DragMonitor {
     }
   }
 
-  public dragStart = (dragged: DraggableComponent, event: DragEvent) => {
-    if (this.dragged === undefined && this.container != null) {
-      this.dragged = dragged;
-
-      this.props.container = findDOMNode(this.container) as HTMLElement;
-      this.props.draggedNode = findDOMNode(dragged) as HTMLElement;
-      this.props.initialEvent = event;
-      this.props.lastEvent = event;
-      this.props.fillBounds();
-
-      this.callbacks.notify(DragActions.dragStart);
-      this.callbacks.notify(DragActions.drag);
-    }
+  public dragStart = async (dragged: DraggableComponent, event: DragEvent, delay: number = 0) => {
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+      if (this.dragged === undefined && this.container != null) {
+        this.delay = setTimeout(() => {
+          this.dragged = dragged;
+          this.props.container = findDOMNode(this.container!) as HTMLElement;
+          this.props.draggedNode = findDOMNode(dragged!) as HTMLElement;
+          this.props.initialEvent = event;
+          this.props.lastEvent = event;
+          this.props.fillBounds();
+          this.callbacks.notify(DragActions.dragStart);
+          this.callbacks.notify(DragActions.drag);
+          this.delay = undefined;
+          resolved = true;
+          resolve(true);
+        }, delay);
+      }
+      setTimeout(() => !resolved && resolve(false), delay + 1);
+    });
   }
 
   public clean = () => {
+    if (this.delay) {
+      clearTimeout(this.delay);
+    }
+    this.delay = undefined;
     this.props.clean();
     this.dragged = undefined;
   }
