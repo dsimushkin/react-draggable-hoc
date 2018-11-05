@@ -8,6 +8,7 @@ export {
   IDroppablePropTypes,
   IDraggableContainerContext,
   Draggable,
+  DraggableArea,
   IDragProps,
   Droppable,
 } from "./internals";

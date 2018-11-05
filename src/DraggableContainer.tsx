@@ -48,7 +48,7 @@ export class DragDropContainer extends React.Component<{children: React.ReactNod
   }
 }
 
-export const withDraggableContainer = <T extends any>(
+export const withDragDropContainerContext = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableContainerContext>,
 ) => (
   (props: T) => (

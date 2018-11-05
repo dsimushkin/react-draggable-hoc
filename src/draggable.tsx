@@ -1,9 +1,9 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggable, IDraggableContainerContext, withDraggableContainer } from "./DraggableContainer";
+import { IDraggable, IDraggableContainerContext, withDragDropContainerContext } from "./DraggableContainer";
 import { IDragProps } from "./DraggableProperties";
 import { DragActions } from "./Monitor";
-import { DragEvent, isDrag } from "./utils";
+import * as utils from "./utils";
 
 export interface IDraggableProps extends IDragProps {
   isDragged?: boolean,
@@ -12,7 +12,7 @@ export interface IDraggableProps extends IDragProps {
 export const draggable = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableProps>,
 ) => (
-  class DraggableWrapper extends React.Component<T & IDraggable> {
+  class DraggableWrapper extends React.Component<T & IDraggablePropTypes> {
     public state = {
       isDragged: false,
       values: {},
@@ -31,13 +31,15 @@ export const draggable = <T extends any>(
     }
 
     public render() {
-      const { dragProps, ...props} = this.props as any;
+      const { dragProps, draggable: draggableP, disabled, ...props} = this.props as any;
       return (
         <Draggable
           onDrag={this.onDrag}
           onDragEnd={this.onDragEnd}
           onDragStart={this.onDragStart}
           dragProps={dragProps}
+          draggable={draggableP}
+          disabled={disabled}
         >
           <WrappedComponent
             {...props}
@@ -51,31 +53,69 @@ export const draggable = <T extends any>(
 )
 
 export interface IDraggablePropTypes extends IDraggable {
+  disabled?: boolean,
+  draggable?: boolean,
   onDrag?: (props: IDraggableProps) => void,
   onDragStart?: (props: IDraggableProps) => void,
   onDragEnd?: (props: IDraggableProps) => void,
-  children: React.ReactNode,
 }
 
-export const Draggable = withDraggableContainer(
-  class DraggableElement extends React.Component<IDraggablePropTypes & IDraggableContainerContext> {
+export interface IDraggableContext {
+  subscribe: (component: IDraggableArea) => void,
+  unsubscribe: (component: IDraggableArea) => void,
+}
+
+const DraggableContext = React.createContext<IDraggableContext>({
+  subscribe: () => {},
+  unsubscribe: () => {},
+});
+
+export interface IDraggableArea {
+  el: ReturnType<typeof findDOMNode>,
+  draggable: boolean,
+}
+
+export const Draggable = withDragDropContainerContext(
+  class DraggableElement extends React.Component<
+    IDraggablePropTypes & {children: React.ReactNode} & IDraggableContainerContext
+  > {
     public static defaultProps = {
+      disabled: false,
+      draggable: true,
       onDrag: () => {},
       onDragEnd: () => {},
       onDragStart: () => {},
     }
-    public el?: HTMLElement;
     public isDragged = false;
+    public dragAreas: IDraggableArea[] = [];
 
     get draggableProps() {
       return {...this.props.monitor.props.values, isDragged: this.isDragged};
     }
 
     public onDragStart = (event: Event) => {
-      if (isDrag(event as DragEvent) && this.el!.contains(event.target as HTMLElement)) {
-        this.isDragged = true;
-        this.props.monitor.dragStart(this, event as DragEvent);
-        this.props.onDragStart!(this.draggableProps)
+      if (this.props.disabled) {
+        this.props.monitor.dragEnd();
+        return;
+      }
+
+      const {target} = event;
+      if (target && utils.isDrag(event as utils.DragEvent)) {
+        // define draggable area
+        const area = this.dragAreas
+          .filter(({el}) => el != null && el.contains(target as Node))
+          .reduce(
+            (prev: IDraggableArea | undefined, next) => !prev || prev.el!.contains(next.el) ? next : prev,
+            undefined,
+          );
+
+        const isDrag = area && area.draggable;
+
+        if (isDrag) {
+          this.isDragged = true;
+          this.props.monitor.dragStart(this, event as utils.DragEvent);
+          this.props.onDragStart!(this.draggableProps)
+        }
       }
     }
 
@@ -93,33 +133,79 @@ export const Draggable = withDraggableContainer(
     }
 
     public componentDidMount() {
-      this.el = findDOMNode(this) as HTMLElement;
-      this.el.addEventListener("mousedown", this.onDragStart, true);
+      this.setDraggable(this, this.onDragStart);
 
-      // TODO move to draggable Handle
-      // prevent pointer interactions
-      this.el = findDOMNode(this) as HTMLElement;
-      this.el.setAttribute("draggable", "true");
-      this.el.addEventListener("dragstart", (e) => {
-        e.preventDefault();
-      });
-
-      // IE 9
-      this.el.addEventListener("selectstart", (e) => {
-        e.preventDefault();
-      });
-
-      // subscribe to monitor
       const { monitor } = this.props;
       monitor.on(DragActions.drag, this.onDrag);
       monitor.on(DragActions.dragEnd, this.onDragEnd);
     }
 
+    public setDraggable = (component: React.ReactInstance, listener: (event: Event) => void) => {
+      const el = findDOMNode(component) as HTMLElement;
+      // TODO change this
+      el.addEventListener("mousedown", listener, true);
+
+      // prevent pointer interactions
+      el.setAttribute("draggable", "true");
+      el.addEventListener("dragstart", utils.preventDefault, true);
+      // IE 9
+      el.addEventListener("selectstart", utils.preventDefault, true);
+    }
+
+    public subscribe = (dragArea: IDraggableArea) => {
+      this.dragAreas.push(dragArea);
+    }
+
+    public unsubscribe = (dragArea: IDraggableArea) => {
+      this.dragAreas = this.dragAreas.filter((v) => v !== dragArea);
+    }
+
     public componentWillUnmount() {
-      // unsubscribe from monitor
       const { monitor } = this.props;
       monitor.off(DragActions.drag, this.onDrag);
       monitor.off(DragActions.dragEnd, this.onDragEnd);
+    }
+
+    public render() {
+      const {subscribe, unsubscribe} = this;
+      return (
+        <DraggableContext.Provider value={{subscribe, unsubscribe}}>
+          <DraggableArea draggable={this.props.draggable!}>
+            {this.props.children}
+          </DraggableArea>
+        </DraggableContext.Provider>
+      )
+    }
+  },
+)
+
+export const withDraggable = <T extends any>(
+  WrappedComponent: React.ComponentType<T & IDraggableContext>,
+) => (
+  (props: T) => (
+    <DraggableContext.Consumer>
+      {(draggableContext) => <WrappedComponent {...props} {...draggableContext} />}
+    </DraggableContext.Consumer>
+  )
+)
+
+export interface IDraggableAreaProps {
+  draggable: boolean,
+  children: React.ReactNode,
+}
+
+export const DraggableArea = withDraggable(
+  class DraggableAreaElement extends React.Component<IDraggableAreaProps & IDraggableContext> {
+    get draggableArea() {
+      const self = this;
+      return {get el() { return findDOMNode(self)} , draggable: this.props.draggable};
+    }
+    public componentDidMount() {
+      this.props.subscribe(this.draggableArea);
+    }
+
+    public componentWillUnmount() {
+      this.props.unsubscribe(this.draggableArea);
     }
 
     public render() {

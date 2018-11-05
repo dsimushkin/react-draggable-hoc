@@ -10,7 +10,7 @@ import {
 interface ISimpleDraggableProps {
     className?: any,
     style?: any,
-    value?: any,
+    value: number,
 }
 
 /**
@@ -28,7 +28,9 @@ export const SimpleDraggable = draggable((
         transition: isDragged ? undefined : 'transform 1s'
     }}
   >
-    {value}
+    <span>
+      {value}
+    </span>
   </div>
 ));
 
@@ -96,7 +98,7 @@ export class SimpleExample extends React.Component {
               {this.state.values.map((i) => (
                 <SimpleDraggable
                   className="Cell-simple"
-                  value={`${i}`}
+                  value={i}
                   key={i}
                   dragProps={i}
                 />

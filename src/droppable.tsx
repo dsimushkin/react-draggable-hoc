@@ -1,6 +1,6 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggableContainerContext, withDraggableContainer } from "./DraggableContainer";
+import { IDraggableContainerContext, withDragDropContainerContext } from "./DraggableContainer";
 import { DragActions, DragMonitor } from "./Monitor";
 
 export interface IDroppableProps {
@@ -26,7 +26,7 @@ export interface IDroppablePropTypes {
   children: React.ReactNode
 }
 
-export const Droppable = withDraggableContainer(
+export const Droppable = withDragDropContainerContext(
   class DroppableElement extends React.Component<IDroppablePropTypes & IDraggableContainerContext> {
     public static defaultProps = {
       isHovered: containsPoint,
