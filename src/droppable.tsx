@@ -10,9 +10,9 @@ export interface IDroppableProps {
 
 export const containsPoint = (self: React.Component<any>, monitor: DragMonitor) => {
   const rect = (findDOMNode(self) as HTMLElement).getBoundingClientRect();
-  const { lastEvent } = monitor.props;
-  const x = lastEvent ? lastEvent.pageX : 0;
-  const y = lastEvent ? lastEvent.pageY : 0;
+  const { lastPointer } = monitor.props;
+  const x = lastPointer ? lastPointer.pageX : 0;
+  const y = lastPointer ? lastPointer.pageY : 0;
   return rect.left <= x
     && rect.right >= x
     && rect.top <= y

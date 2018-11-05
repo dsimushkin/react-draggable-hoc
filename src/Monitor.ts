@@ -3,7 +3,7 @@ import { findDOMNode } from "react-dom";
 import { Callbacks } from "./Callbacks";
 import { DraggableComponent, DraggableContainerComponent } from "./DraggableContainer";
 import { DragProperties } from "./DraggableProperties";
-import { DragEvent } from "./utils";
+import { DragEvent, eventsDiff } from "./utils";
 
 export enum DragActions {
   beforeDragEnd = "beforeDragEnd",
@@ -25,12 +25,16 @@ export class DragMonitor {
   }
 
   public drag = (event: DragEvent) => {
-    if (this.delay) {
-      this.clean();
-    }
-    if (this.dragged) {
-      this.props.lastEvent = event;
-      this.callbacks.notify(DragActions.drag);
+    if (this.props.initialEvent) {
+      const {x, y} = eventsDiff(this.props.initialEvent, event);
+      if (this.delay && (x > 0 || y > 0)) {
+        this.clean();
+      }
+      if (this.dragged) {
+        event.preventDefault();
+        this.props.lastEvent = event;
+        this.callbacks.notify(DragActions.drag);
+      }
     }
   }
 
@@ -45,25 +49,22 @@ export class DragMonitor {
     }
   }
 
-  public dragStart = async (dragged: DraggableComponent, event: DragEvent, delay: number = 0) => {
-    return new Promise((resolve, reject) => {
-      let resolved = false;
+  public dragStart = (dragged: DraggableComponent, event: DragEvent, delay: number = 0) => {
+    return new Promise<boolean>((resolve, reject) => {
       if (this.dragged === undefined && this.container != null) {
+        this.props.initialEvent = event;
         this.delay = setTimeout(() => {
           this.dragged = dragged;
           this.props.container = findDOMNode(this.container!) as HTMLElement;
           this.props.draggedNode = findDOMNode(dragged!) as HTMLElement;
-          this.props.initialEvent = event;
           this.props.lastEvent = event;
           this.props.fillBounds();
           this.callbacks.notify(DragActions.dragStart);
           this.callbacks.notify(DragActions.drag);
           this.delay = undefined;
-          resolved = true;
           resolve(true);
         }, delay);
       }
-      setTimeout(() => !resolved && resolve(false), delay + 1);
     });
   }
 

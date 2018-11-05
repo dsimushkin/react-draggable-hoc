@@ -1,4 +1,4 @@
-import { DragEvent } from "./utils";
+import { DragEvent, getPointer, eventsDiff } from "./utils";
 
 export interface IDragProps {
   x: number,
@@ -6,7 +6,9 @@ export interface IDragProps {
   deltaX: number,
   deltaY: number,
   initialEvent?: DragEvent,
+  initialPointer?: ReturnType<typeof getPointer>,
   lastEvent?: DragEvent,
+  lastPointer?: ReturnType<typeof getPointer>,
   draggedNode?: HTMLElement
 }
 
@@ -20,12 +22,22 @@ export class DragProperties {
   private minX: number = -Infinity;
   private minY: number = -Infinity;
 
+  get initialPointer() {
+    return this.initialEvent && getPointer(this.initialEvent);
+  }
+
+  get lastPointer() {
+    return this.lastEvent && getPointer(this.lastEvent);
+  }
+
   get deltaX() {
-    return this.initialEvent && this.lastEvent ? this.lastEvent.pageX - this.initialEvent.pageX : 0;
+    const {initialEvent, lastEvent} = this;
+    return initialEvent && lastEvent ? eventsDiff(initialEvent, lastEvent).x : 0;
   }
 
   get deltaY() {
-    return this.initialEvent && this.lastEvent ? this.lastEvent.pageY - this.initialEvent.pageY : 0;
+    const {initialEvent, lastEvent} = this;
+    return initialEvent && lastEvent ? eventsDiff(initialEvent, lastEvent).y : 0;
   }
 
   get x() {
@@ -63,7 +75,9 @@ export class DragProperties {
       deltaY: this.deltaY,
       draggedNode: this.draggedNode,
       initialEvent: this.initialEvent,
+      initialPointer: this.initialEvent,
       lastEvent: this.lastEvent,
+      lastPointer: this.lastPointer,
       x: this.x,
       y: this.y,
     }

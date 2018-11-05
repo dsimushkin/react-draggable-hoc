@@ -103,7 +103,7 @@ export const Draggable = withDragDropContainerContext(
       }
 
       const {target} = event;
-      if (target && utils.isDrag(event as utils.DragEvent)) {
+      if (target && utils.isDragStart(event as utils.DragEvent)) {
         // define draggable area
         const area = this.dragAreas
           .filter(({el}) => el != null && el.contains(target as Node))
@@ -115,8 +115,9 @@ export const Draggable = withDragDropContainerContext(
         const isDrag = area && area.draggable;
 
         if (isDrag) {
-          if (await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay)) {
-            this.isDragged = true;
+          utils.preventDefault(event);
+          this.isDragged = await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay);
+          if (this.isDragged) {
             this.props.onDragStart!(this.draggableProps)
           }
         }
@@ -148,10 +149,8 @@ export const Draggable = withDragDropContainerContext(
       const el = findDOMNode(component) as HTMLElement;
       // TODO change this
       el.addEventListener("mousedown", listener, true);
+      el.addEventListener("touchstart", listener, true);
 
-      // prevent pointer interactions
-      el.setAttribute("draggable", "true");
-      el.addEventListener("dragstart", utils.preventDefault, true);
       // IE 9
       el.addEventListener("selectstart", utils.preventDefault, true);
     }

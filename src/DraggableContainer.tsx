@@ -20,7 +20,7 @@ const ContainerContext = React.createContext<IDraggableContainerContext>({
 export class DragDropContainer extends React.Component<{children: React.ReactNode}> {
   private monitor = new DragMonitor(this);
 
-  public onDragEnd = () => {
+  public onDragEnd = (event: Event) => {
     this.monitor.dragEnd();
   }
 
@@ -30,12 +30,16 @@ export class DragDropContainer extends React.Component<{children: React.ReactNod
 
   public componentDidMount() {
     window.addEventListener("mousemove", this.onDrag, true);
+    window.addEventListener("touchmove", this.onDrag, true);
     window.addEventListener("mouseup", this.onDragEnd, true);
+    window.addEventListener("touchend", this.onDragEnd, true);
   }
 
   public componentWillUnmount() {
     window.removeEventListener("mousemove", this.onDrag, true);
+    window.removeEventListener("touchmove", this.onDrag, true);
     window.removeEventListener("mouseup", this.onDragEnd, true);
+    window.removeEventListener("touchend", this.onDragEnd, true);
   }
 
   public render() {

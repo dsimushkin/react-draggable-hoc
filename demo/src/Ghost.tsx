@@ -50,9 +50,9 @@ const Content = draggable(
       }
     }
 
-    public isHovered = (component: React.Component<any>, { props: { x, initialEvent } }: DragMonitor) => {
+    public isHovered = (component: React.Component<any>, { props: { x, initialPointer } }: DragMonitor) => {
       const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
-      return initialEvent != null && nodeRect.left <= initialEvent.pageX + x && nodeRect.right >= initialEvent.pageX + x;
+      return initialPointer != null && nodeRect.left <= initialPointer.pageX + x && nodeRect.right >= initialPointer.pageX + x;
     }
 
     public render() {
@@ -106,6 +106,7 @@ export const GhostExample = () => (
             value={`Hello ${i}`}
             key={i}
             dragProps={color}
+            delay={300}
           />
         )
       })}
