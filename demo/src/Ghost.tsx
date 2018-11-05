@@ -106,7 +106,7 @@ export const GhostExample = () => (
             value={`Hello ${i}`}
             key={i}
             dragProps={color}
-            delay={300}
+            delay={200}
           />
         )
       })}
@@ -119,6 +119,7 @@ export const GhostExampleTitle = () => (
     Scrollable container, <br />
     draggable and droppable elements <br />
     with a ghost stuck to row bottom <br />
-    and effects on drag over and drag start
+    effects on drag over and drag start <br />
+    and a delay of 200ms
   </p>
 )
