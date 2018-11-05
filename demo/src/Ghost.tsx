@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import {
+  DragDropContainer,
   draggable,
-  draggableContainer,
-  DraggableMonitor,
+  DragMonitor,
   Droppable,
   IDraggableProps,
   IDroppableProps,
@@ -50,7 +50,7 @@ const Content = draggable(
       }
     }
 
-    public isHovered = (component: React.Component<any>, { props: { x, initialEvent } }: DraggableMonitor) => {
+    public isHovered = (component: React.Component<any>, { props: { x, initialEvent } }: DragMonitor) => {
       const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
       return initialEvent != null && nodeRect.left <= initialEvent.pageX + x && nodeRect.right >= initialEvent.pageX + x;
     }
@@ -95,21 +95,23 @@ const Content = draggable(
 )
 
 
-export const GhostExample = draggableContainer(() => (
-  <div className="Ghost-container">
-    {Array(20).fill(0).map((_, i) => {
-      const color = randomColor();
-      return (
-        <Content
-          backgroundColor={color}
-          value={`Hello ${i}`}
-          key={i}
-          dragProps={color}
-        />
-      )
-    })}
-  </div>
-))
+export const GhostExample = () => (
+  <DragDropContainer>
+    <div className="Ghost-container">
+      {Array(200).fill(0).map((_, i) => {
+        const color = randomColor();
+        return (
+          <Content
+            backgroundColor={color}
+            value={`Hello ${i}`}
+            key={i}
+            dragProps={color}
+          />
+        )
+      })}
+    </div>
+  </DragDropContainer>
+)
 
 export const GhostExampleTitle = () => (
   <p>

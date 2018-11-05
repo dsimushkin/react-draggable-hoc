@@ -1,8 +1,7 @@
 export {
-  DraggableContainer,
+  DragDropContainer,
   draggable,
-  draggableContainer,
-  DraggableMonitor,
+  DragMonitor,
   IDraggableProps,
   IDraggablePropTypes,
   IDroppableProps,

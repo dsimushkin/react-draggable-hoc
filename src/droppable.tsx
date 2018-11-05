@@ -1,14 +1,14 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
 import { IDraggableContainerContext, withDraggableContainer } from "./DraggableContainer";
-import { DragActions, DraggableMonitor } from "./Monitor";
+import { DragActions, DragMonitor } from "./Monitor";
 
 export interface IDroppableProps {
   dragProps?: any,
   isHovered: boolean,
 }
 
-export const containsPoint = (self: React.Component<any>, monitor: DraggableMonitor) => {
+export const containsPoint = (self: React.Component<any>, monitor: DragMonitor) => {
   const rect = (findDOMNode(self) as HTMLElement).getBoundingClientRect();
   const { lastEvent } = monitor.props;
   const x = lastEvent ? lastEvent.pageX : 0;
@@ -20,7 +20,7 @@ export const containsPoint = (self: React.Component<any>, monitor: DraggableMoni
 }
 
 export interface IDroppablePropTypes {
-  isHovered?: (component: React.Component<any>, monitor: DraggableMonitor) => boolean
+  isHovered?: (component: React.Component<any>, monitor: DragMonitor) => boolean
   onDrag?: (props: IDroppableProps) => void,
   onDrop?: (props: IDroppableProps) => void,
   children: React.ReactNode
@@ -42,9 +42,9 @@ export const Droppable = withDraggableContainer(
       return {dragProps: dragged && dragged.props.dragProps, isHovered: this.isHovered};
     }
 
-    public onDrag = (monitor: DraggableMonitor) => {
-      const {props: {dragged, lastEvent}} = monitor;
-      this.isHovered = dragged != null &&
+    public onDrag = (monitor: DragMonitor) => {
+      const {props: {draggedNode, lastEvent}} = monitor;
+      this.isHovered = draggedNode != null &&
                        lastEvent != null &&
                        this.props.isHovered!(this, monitor);
       this.props.onDrag!(this.droppableProps);
@@ -57,7 +57,7 @@ export const Droppable = withDraggableContainer(
       }
     }
 
-    public onDragEnd = (monitor: DraggableMonitor) => {
+    public onDragEnd = (monitor: DragMonitor) => {
       this.onDrag(monitor);
     }
 

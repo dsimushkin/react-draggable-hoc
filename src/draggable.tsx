@@ -1,7 +1,8 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
 import { IDraggable, IDraggableContainerContext, withDraggableContainer } from "./DraggableContainer";
-import { DragActions, IDragProps } from "./Monitor";
+import { IDragProps } from "./DraggableProperties";
+import { DragActions } from "./Monitor";
 import { DragEvent, isDrag } from "./utils";
 
 export interface IDraggableProps extends IDragProps {

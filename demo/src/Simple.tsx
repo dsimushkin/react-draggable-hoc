@@ -1,25 +1,24 @@
 import * as React from 'react';
 import {
+  DragDropContainer,
   draggable,
-  DraggableContainer,
   Droppable,
   IDraggableProps,
   IDroppableProps,
 } from 'react-draggable-hoc';
 
-interface IDraggableElementProps {
-    children?: any,
+interface ISimpleDraggableProps {
     className?: any,
     style?: any,
-    value?: string,
+    value?: any,
 }
 
 /**
  * Simple React Component to render a draggable
  * @param param props
  */
-export const DraggableElement = (
-  {children, x, y, isDragged, style={}, className} : IDraggableElementProps & IDraggableProps
+export const SimpleDraggable = draggable((
+  {value, x, y, isDragged, style={}, className} : ISimpleDraggableProps & IDraggableProps
 ) => (
   <div
     className={className}
@@ -29,19 +28,14 @@ export const DraggableElement = (
         transition: isDragged ? undefined : 'transform 1s'
     }}
   >
-    {children}
+    {value}
   </div>
-);
-
-/**
- * draggable by any point
- */
-const SimpleDraggable = draggable(DraggableElement);
+));
 
 /**
  * Creates a Droppable container
  */
-class DroppableWithState extends React.Component<{removeItem: (v: number) => any}> {
+class DroppableWithState extends React.Component<{removeItem: (v: number) => any, canBeUsed: boolean}> {
   public state = {
     dragProps: null,
       dropped: [],
@@ -49,20 +43,17 @@ class DroppableWithState extends React.Component<{removeItem: (v: number) => any
   }
 
   public onDrop = ({dragProps} : IDroppableProps) => {
-    const state = {isHovered: false, dragged: null} as any;
-    if (dragProps != null) {
-      state.dropped = [...this.state.dropped, dragProps];
-      this.props.removeItem(dragProps);
-    }
-    this.setState(state);
+    this.setState({dropped: [...this.state.dropped, dragProps]});
+    this.props.removeItem(dragProps);
   }
 
   public onDrag = (props : IDroppableProps) => {
-      this.setState(props);
+    this.setState(props);
   }
 
   public render() {
     const {dragProps, dropped, isHovered,} = this.state;
+    const {canBeUsed} = this.props;
     return (
       <Droppable
         onDrop={this.onDrop}
@@ -75,8 +66,8 @@ class DroppableWithState extends React.Component<{removeItem: (v: number) => any
             border: dragProps != null ? '1px dashed #ccc' : undefined,
           }}
         >
-          {dragProps != null ? 'Drop it here' : 'Start dragging' } <br />
-          {dropped.length > 0 && (
+          {dragProps != null ? 'Drop it here' : (canBeUsed ? 'Start dragging' : 'Nothing to drag') } <br />
+          {canBeUsed && dropped.length > 0 && (
             <p>
               Dropped values: [{dropped.join(', ')}]
             </p>
@@ -91,12 +82,14 @@ export class SimpleExample extends React.Component {
   public state = {
     values: [1,2,3,4,5]
   }
+
   public removeItem = (v: number) => {
     this.setState({values: this.state.values.filter((val) => val !== v)});
   }
+  
   public render() {
     return (
-      <DraggableContainer>
+      <DragDropContainer>
         <div className="Simple-container">
             <div className="Simple-row">
               {/* value prop will be used by droppable */}
@@ -106,14 +99,15 @@ export class SimpleExample extends React.Component {
                   value={`${i}`}
                   key={i}
                   dragProps={i}
-                >
-                  <span>{i}</span>
-                </SimpleDraggable>
+                />
               ))}
             </div>
-            <DroppableWithState removeItem={this.removeItem}/>
+            <DroppableWithState
+              canBeUsed={this.state.values.length > 0}
+              removeItem={this.removeItem}
+            />
         </div>
-      </DraggableContainer>
+      </DragDropContainer>
     )
   }
 }

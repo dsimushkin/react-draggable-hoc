@@ -1,9 +1,9 @@
 import * as React from "react";
-import { DraggableMonitor } from "./Monitor";
+import { DragMonitor } from "./Monitor";
 import { DragEvent } from "./utils";
 
 export interface IDraggableContainerContext {
-  monitor: DraggableMonitor,
+  monitor: DragMonitor,
 }
 
 export interface IDraggable {
@@ -13,22 +13,12 @@ export interface IDraggable {
 export type DraggableComponent = React.Component<IDraggable>;
 export type DraggableContainerComponent = React.Component<any>;
 
-export const DraggableContainerContext = React.createContext<IDraggableContainerContext>({
-  monitor: new DraggableMonitor(undefined),
+const ContainerContext = React.createContext<IDraggableContainerContext>({
+  monitor: new DragMonitor(),
 })
 
-// TODO provide API for
-// dragStart, dragEnd
-export const draggableContainer = <T extends any>(
-  WrappedComponent: React.ComponentType<T>,
-) => (props: T) => (
-  <DraggableContainer>
-    <WrappedComponent {...props} />
-  </DraggableContainer>
-)
-
-export class DraggableContainer extends React.Component<any> {
-  private monitor = new DraggableMonitor(this);
+export class DragDropContainer extends React.Component<{children: React.ReactNode}> {
+  private monitor = new DragMonitor(this);
 
   public onDragEnd = () => {
     this.monitor.dragEnd();
@@ -51,9 +41,9 @@ export class DraggableContainer extends React.Component<any> {
   public render() {
     const { monitor } = this;
     return (
-      <DraggableContainerContext.Provider value={{monitor}}>
+      <ContainerContext.Provider value={{monitor}}>
         { this.props.children }
-      </DraggableContainerContext.Provider>
+      </ContainerContext.Provider>
     )
   }
 }
@@ -62,8 +52,8 @@ export const withDraggableContainer = <T extends any>(
   WrappedComponent: React.ComponentType<T & IDraggableContainerContext>,
 ) => (
   (props: T) => (
-    <DraggableContainerContext.Consumer>
+    <ContainerContext.Consumer>
       {(draggableProps) => <WrappedComponent {...props} {...draggableProps} />}
-    </DraggableContainerContext.Consumer>
+    </ContainerContext.Consumer>
   )
 )
