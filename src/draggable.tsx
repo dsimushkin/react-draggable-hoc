@@ -1,6 +1,6 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggable, IDraggableContainerContext, withDragDropContainerContext } from "./DraggableContainer";
+import { IDraggable, IDraggableContainerContext, withDragDropContainerContext } from "./DragDropContainer";
 import { IDragProps } from "./DraggableProperties";
 import { DragActions } from "./Monitor";
 import * as utils from "./utils";
@@ -115,10 +115,14 @@ export const Draggable = withDragDropContainerContext(
         const isDrag = area && area.draggable;
 
         if (isDrag) {
-          utils.preventDefault(event);
-          this.isDragged = await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay);
-          if (this.isDragged) {
+          if (event.type === "mousedown") {
+            utils.preventDefault(event);
+          }
+          try {
+            this.isDragged = await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay);
             this.props.onDragStart!(this.draggableProps)
+          } catch (e) {
+            this.isDragged = false;
           }
         }
       }
@@ -147,7 +151,6 @@ export const Draggable = withDragDropContainerContext(
 
     public setDraggable = (component: React.ReactInstance, listener: (event: Event) => void) => {
       const el = findDOMNode(component) as HTMLElement;
-      // TODO change this
       el.addEventListener("mousedown", listener, true);
       el.addEventListener("touchstart", listener, true);
 

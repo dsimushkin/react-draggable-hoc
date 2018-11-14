@@ -30,7 +30,7 @@ export class DragDropContainer extends React.Component<{children: React.ReactNod
 
   public componentDidMount() {
     window.addEventListener("mousemove", this.onDrag, true);
-    window.addEventListener("touchmove", this.onDrag, true);
+    window.addEventListener("touchmove", this.onDrag, { passive: false });
     window.addEventListener("mouseup", this.onDragEnd, true);
     window.addEventListener("touchend", this.onDragEnd, true);
   }

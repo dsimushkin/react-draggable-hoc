@@ -1,6 +1,6 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggableContainerContext, withDragDropContainerContext } from "./DraggableContainer";
+import { IDraggableContainerContext, withDragDropContainerContext } from "./DragDropContainer";
 import { DragActions, DragMonitor } from "./Monitor";
 
 export interface IDroppableProps {
@@ -9,14 +9,11 @@ export interface IDroppableProps {
 }
 
 export const containsPoint = (self: React.Component<any>, monitor: DragMonitor) => {
-  const rect = (findDOMNode(self) as HTMLElement).getBoundingClientRect();
+  const el = findDOMNode(self) as HTMLElement;
   const { lastPointer } = monitor.props;
   const x = lastPointer ? lastPointer.pageX : 0;
   const y = lastPointer ? lastPointer.pageY : 0;
-  return rect.left <= x
-    && rect.right >= x
-    && rect.top <= y
-    && rect.bottom >= y;
+  return document.elementsFromPoint(x, y).indexOf(el) >= 0;
 }
 
 export interface IDroppablePropTypes {

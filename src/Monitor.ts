@@ -1,9 +1,9 @@
 import { findDOMNode } from "react-dom";
 
 import { Callbacks } from "./Callbacks";
-import { DraggableComponent, DraggableContainerComponent } from "./DraggableContainer";
+import { DraggableComponent, DraggableContainerComponent } from "./DragDropContainer";
 import { DragProperties } from "./DraggableProperties";
-import { DragEvent, eventsDiff } from "./utils";
+import { DragEvent, eventsDiff, preventDefault } from "./utils";
 
 export enum DragActions {
   beforeDragEnd = "beforeDragEnd",
@@ -17,6 +17,7 @@ export class DragMonitor {
   public dragged?: DraggableComponent;
   public props = new DragProperties();
   public delay?: ReturnType<typeof setTimeout>;
+  public cancelDrag?: (reason?: any) => void;
 
   private callbacks = new Callbacks<this, DragActions>(this);
 
@@ -27,11 +28,11 @@ export class DragMonitor {
   public drag = (event: DragEvent) => {
     if (this.props.initialEvent) {
       const {x, y} = eventsDiff(this.props.initialEvent, event);
-      if (this.delay && (x > 0 || y > 0)) {
+      if (this.cancelDrag && (x > 0 || y > 0)) {
         this.clean();
       }
       if (this.dragged) {
-        event.preventDefault();
+        preventDefault(event);
         this.props.lastEvent = event;
         this.callbacks.notify(DragActions.drag);
       }
@@ -39,7 +40,7 @@ export class DragMonitor {
   }
 
   public dragEnd = () => {
-    if (this.delay) {
+    if (this.cancelDrag) {
       this.clean();
     }
     if (this.dragged) {
@@ -53,6 +54,7 @@ export class DragMonitor {
     return new Promise<boolean>((resolve, reject) => {
       if (this.dragged === undefined && this.container != null) {
         this.props.initialEvent = event;
+        this.cancelDrag = reject;
         this.delay = setTimeout(() => {
           this.dragged = dragged;
           this.props.container = findDOMNode(this.container!) as HTMLElement;
@@ -61,6 +63,7 @@ export class DragMonitor {
           this.props.fillBounds();
           this.callbacks.notify(DragActions.dragStart);
           this.callbacks.notify(DragActions.drag);
+          this.cancelDrag = undefined;
           this.delay = undefined;
           resolve(true);
         }, delay);
@@ -71,8 +74,14 @@ export class DragMonitor {
   public clean = () => {
     if (this.delay) {
       clearTimeout(this.delay);
+      this.delay = undefined;
     }
-    this.delay = undefined;
+
+    if (this.cancelDrag) {
+      this.cancelDrag("Drag cancel");
+      this.cancelDrag = undefined;
+    }
+
     this.props.clean();
     this.dragged = undefined;
   }

@@ -39,9 +39,9 @@ export const SimpleDraggable = draggable((
  */
 class DroppableWithState extends React.Component<{removeItem: (v: number) => any, canBeUsed: boolean}> {
   public state = {
-    dragProps: null,
-      dropped: [],
-      isHovered: false,
+    dragProps: undefined,
+    dropped: [],
+    isHovered: false,
   }
 
   public onDrop = ({dragProps} : IDroppableProps) => {

@@ -3,6 +3,7 @@ import { findDOMNode } from 'react-dom';
 import {
   DragDropContainer,
   draggable,
+  DraggableArea,
   DragMonitor,
   Droppable,
   IDraggableProps,
@@ -15,12 +16,12 @@ const randomColor = () => {
 }
   
 // use a separate component to create a ghost
-const ContentElement = ({ className="", value, style } : any) => (
+const ContentElement = ({ className="", children, style } : any) => (
   <span
     style={style}
     className={`Cell ${className}`}
   >
-    {value}
+    {children}
   </span>
 )
   
@@ -77,7 +78,9 @@ const Content = draggable(
                   transform: `translate3d(${x}px, 100%, -1px)`,
                   zIndex: 1,
                 }}
-              />
+              >
+                <span>{value}</span>
+              </ContentElement>
             )}
             {/* change text color when element is dragged */}
             <ContentElement
@@ -86,7 +89,11 @@ const Content = draggable(
                 backgroundColor, color: isDragged ? 'red' : color
               }}
               className={isHovered ? 'hovered' : undefined}
-            />
+            >
+              <DraggableArea draggable={true}>
+                <span>{value}</span>
+              </DraggableArea>
+            </ContentElement>
           </div>
         </Droppable>
       )
@@ -106,7 +113,8 @@ export const GhostExample = () => (
             value={`Hello ${i}`}
             key={i}
             dragProps={color}
-            delay={200}
+            delay={400}
+            draggable={false}
           />
         )
       })}
@@ -119,7 +127,8 @@ export const GhostExampleTitle = () => (
     Scrollable container, <br />
     draggable and droppable elements <br />
     with a ghost stuck to row bottom <br />
-    effects on drag over and drag start <br />
-    and a delay of 200ms
+    custom hover implementation <br />
+    drag handle <br />
+    and a delay of 400ms
   </p>
 )

@@ -1,5 +1,5 @@
 export * from "./draggable";
-export * from "./DraggableContainer";
+export * from "./DragDropContainer";
 export * from "./droppable";
 export * from "./Monitor";
 export * from "./utils";

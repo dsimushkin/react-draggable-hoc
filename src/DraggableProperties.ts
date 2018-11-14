@@ -1,4 +1,4 @@
-import { DragEvent, getPointer, eventsDiff } from "./utils";
+import { DragEvent, eventsDiff, getPointer } from "./utils";
 
 export interface IDragProps {
   x: number,
