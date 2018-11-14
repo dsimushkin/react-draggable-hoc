@@ -1,5 +1,4 @@
-import 'core-js/es6/map';
-import 'core-js/es6/set';
+import 'core-js/es6/';
 import 'raf/polyfill';
 
 import * as React from 'react';

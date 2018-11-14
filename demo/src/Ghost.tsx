@@ -105,7 +105,7 @@ const Content = draggable(
 export const GhostExample = () => (
   <DragDropContainer>
     <div className="Ghost-container">
-      {Array(200).fill(0).map((_, i) => {
+      {Array(20).fill(0).map((_, i) => {
         const color = randomColor();
         return (
           <Content

@@ -153,9 +153,6 @@ export const Draggable = withDragDropContainerContext(
       const el = findDOMNode(component) as HTMLElement;
       el.addEventListener("mousedown", listener, true);
       el.addEventListener("touchstart", listener, true);
-
-      // IE 9
-      el.addEventListener("selectstart", utils.preventDefault, true);
     }
 
     public subscribe = (dragArea: IDraggableArea) => {
