@@ -4,7 +4,7 @@
 
 .App-header {
   background-color: #222;
-  height: 50px;
+  min-height: 50px;
   padding: 20px;
   color: white;
 }
@@ -85,6 +85,20 @@
   display: grid;
   margin: 1em;
   min-height: 50px;
+}
+
+menu {
+  padding: 0;
+}
+
+menu a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+menu a:hover {
+  text-decoration: underline;
 }
 
 @keyframes App-logo-spin {

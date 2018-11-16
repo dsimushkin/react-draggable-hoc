@@ -119,3 +119,10 @@ export const SimpleExampleTitle = () => (
     Simple Draggable and Droppable<br />
   </p>
 )
+
+export default () => (
+  <React.Fragment>
+    <SimpleExampleTitle />
+    <SimpleExample />
+  </React.Fragment>
+)

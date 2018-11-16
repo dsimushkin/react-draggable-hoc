@@ -132,3 +132,10 @@ export const GhostExampleTitle = () => (
     and a delay of 400ms
   </p>
 )
+
+export default () => (
+  <React.Fragment>
+    <GhostExampleTitle />
+    <GhostExample />
+  </React.Fragment>
+)

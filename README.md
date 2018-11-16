@@ -2,9 +2,8 @@
 
 A set of react Higher Order Components used to gain full control on dragging and dropping HTML nodes. Supports touch and mouse events. Prevents from scrolling only on drag.
 
-## [DEMO](https://codesandbox.io/s/github/dsimushkin/react-draggable-hoc/tree/master/demo)
-
----
+## [Demo](http://dsimushkin.github.io/react-draggable-hoc)
+## [Demo with sources](https://codesandbox.io/s/github/dsimushkin/react-draggable-hoc/tree/master/demo)
 
 ## Basic usage
 
@@ -98,7 +97,7 @@ class DroppableWithState extends React.Component {
     }
 }
 ```
----
+
 ## API
 
 Full api description will follow.

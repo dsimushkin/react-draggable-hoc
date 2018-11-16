@@ -34,7 +34,11 @@
   "keywords": [
     "draggable",
     "react",
-    "hoc"
+    "hoc",
+    "dnd",
+    "dragndrop",
+    "drag",
+    "drop"
   ],
   "author": "Simushkin Dmitry",
   "license": "MIT",
