@@ -4,7 +4,7 @@
 
 .App-header {
   background-color: #222;
-  height: 50px;
+  min-height: 50px;
   padding: 20px;
   color: white;
 }
@@ -92,6 +92,20 @@
   min-height: 50px;
 }
 
+menu {
+  padding: 0;
+}
+
+menu a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+menu a:hover {
+  text-decoration: underline;
+}
+
 @-webkit-keyframes App-logo-spin {
   from { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
   to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
@@ -107,4 +121,4 @@ body {
   font-family: sans-serif;
 }
 
-/*# sourceMappingURL=main.2a3f170c.css.map*/
+/*# sourceMappingURL=main.3996725e.css.map*/
