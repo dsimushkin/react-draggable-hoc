@@ -68,10 +68,6 @@
   padding: 10px;
 }
 
-.Cell span {
-  cursor: move;
-}
-
 .Cell.hovered:before {
   content: '';
   display: block;
@@ -106,6 +102,23 @@ menu a:hover {
   text-decoration: underline;
 }
 
+.handle {
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  margin-right: 7px;
+  cursor: ew-resize;
+}
+
+.handle .bar {
+  background-color: #000;
+  height: 12px;
+  width: 1px;
+}
+
+.handle .bar + .bar {
+  margin-left: 3px;
+}
+
 @-webkit-keyframes App-logo-spin {
   from { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
   to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
@@ -121,4 +134,4 @@ body {
   font-family: sans-serif;
 }
 
-/*# sourceMappingURL=main.3996725e.css.map*/
+/*# sourceMappingURL=main.21055de7.css.map*/
