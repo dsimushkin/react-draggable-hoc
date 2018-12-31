@@ -6692,7 +6692,7 @@ react-dom@^16.6.0:
     scheduler "^0.10.0"
 
 react-draggable-hoc@latest:
-  version "0.0.17"
+  version "0.0.18"
   resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-0.0.17.tgz#77cac9ce47d6dcd1d2485212caf5a8ddd2387a42"
   integrity sha512-8xRLpAI5O8XGA7ajjjuf9S0cedwCQQMyApGeFsi+CtKGEiGPj3hNZX7vGCmZ1jWyH/bnD+OrYsJ3PVygAjU7oA==
 
