@@ -2,7 +2,7 @@ import * as React from 'react';
 import { findDOMNode } from 'react-dom';
 import {
   DragDropContainer,
-  draggable,
+  draggable as draggableWrapper,
   DraggableArea,
   DragMonitor,
   Droppable,
@@ -14,13 +14,27 @@ const randomColor = () => {
   const randomPart = () => Math.floor(Math.random()*255);
   return 'rgb('+randomPart()+','+randomPart()+','+randomPart()+')';
 }
+
+const DragHandle = ({color, draggable} : any) => (
+  <DraggableArea draggable={draggable}>
+    <div className="handle">
+      <div className="bar" style={{backgroundColor: color}} />
+      <div className="bar" style={{backgroundColor: color}} />
+      <div className="bar" style={{backgroundColor: color}} />
+    </div>
+  </DraggableArea>
+)
   
 // use a separate component to create a ghost
-const ContentElement = ({ className="", children, style } : any) => (
+const ContentElement = ({ className="", children, draggable = false, style } : any) => (
   <span
-    style={style}
-    className={`Cell ${className}`}
+      style={style}
+      className={`Cell ${className}`}
   >
+    <DragHandle
+      draggable={draggable}
+      color={style.color}
+    />
     {children}
   </span>
 )
@@ -30,7 +44,7 @@ interface IContentProps {
   backgroundColor: string
 }
   
-const Content = draggable(
+const Content = draggableWrapper(
   class ContentWrapper extends React.Component<IDraggableProps & IContentProps> {
     public state = {
       color: undefined,
@@ -89,10 +103,9 @@ const Content = draggable(
                 backgroundColor, color: isDragged ? 'red' : color
               }}
               className={isHovered ? 'hovered' : undefined}
+              draggable={true}
             >
-              <DraggableArea draggable={true}>
-                <span>{value}</span>
-              </DraggableArea>
+              <span>{value}</span>
             </ContentElement>
           </div>
         </Droppable>

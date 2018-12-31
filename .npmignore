@@ -4,5 +4,5 @@
 /src/
 /yarn.lock
 /.gitignore
-/docs
+/docusaurus
 /demo

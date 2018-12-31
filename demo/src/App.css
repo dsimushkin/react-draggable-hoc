@@ -64,10 +64,6 @@
   padding: 10px;
 }
 
-.Cell span {
-  cursor: move;
-}
-
 .Cell.hovered:before {
   content: '';
   display: block;
@@ -99,6 +95,22 @@ menu a {
 
 menu a:hover {
   text-decoration: underline;
+}
+
+.handle {
+  display: inline-flex;
+  margin-right: 7px;
+  cursor: ew-resize;
+}
+
+.handle .bar {
+  background-color: #000;
+  height: 12px;
+  width: 1px;
+}
+
+.handle .bar + .bar {
+  margin-left: 3px;
 }
 
 @keyframes App-logo-spin {

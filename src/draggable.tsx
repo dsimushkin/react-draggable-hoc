@@ -75,6 +75,7 @@ const DraggableContext = React.createContext<IDraggableContext>({
 export interface IDraggableArea {
   el: ReturnType<typeof findDOMNode>,
   draggable: boolean,
+  self: React.Component<any>
 }
 
 export const Draggable = withDragDropContainerContext(
@@ -156,11 +157,13 @@ export const Draggable = withDragDropContainerContext(
     }
 
     public subscribe = (dragArea: IDraggableArea) => {
-      this.dragAreas.push(dragArea);
+      if (!this.dragAreas.some((v) => v.self === dragArea.self)) {
+        this.dragAreas.push(dragArea);
+      }
     }
 
     public unsubscribe = (dragArea: IDraggableArea) => {
-      this.dragAreas = this.dragAreas.filter((v) => v !== dragArea);
+      this.dragAreas = this.dragAreas.filter((v) => v.self !== dragArea.self);
     }
 
     public componentWillUnmount() {
@@ -198,12 +201,25 @@ export interface IDraggableAreaProps {
 }
 
 export const DraggableArea = withDraggable(
-  class DraggableAreaElement extends React.Component<IDraggableAreaProps & IDraggableContext> {
+  class DraggableAreaElement extends React.PureComponent<IDraggableAreaProps & IDraggableContext> {
     get draggableArea() {
       const self = this;
-      return {get el() { return findDOMNode(self)} , draggable: this.props.draggable};
+      return {
+        get el() {
+          return findDOMNode(self)
+        },
+        get self() {
+          return self;
+        },
+        draggable: this.props.draggable,
+      };
     }
+
     public componentDidMount() {
+      this.props.subscribe(this.draggableArea);
+    }
+
+    public componentWillUpdate() {
       this.props.subscribe(this.draggableArea);
     }
 
