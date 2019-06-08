@@ -1,4 +1,3 @@
-import 'core-js/es6/';
 import 'raf/polyfill';
 
 import * as React from 'react';

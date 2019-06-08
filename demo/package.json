@@ -10,13 +10,13 @@
     "react-dom": "^16.6.0",
     "react-draggable-hoc": "latest",
     "react-router-dom": "^4.3.1",
-    "react-scripts-ts": "^3.1.0"
+    "react-scripts": "^3.0.1"
   },
   "scripts": {
-    "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
-    "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build"
   },
@@ -28,10 +28,19 @@
     "gh-pages": "^2.0.1",
     "typescript": "^3.0.3"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
