@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/react-draggable-hoc/static/css/main.1e86d113.chunk.css",
-    "main.js": "/react-draggable-hoc/static/js/main.d5d084d4.chunk.js",
-    "main.js.map": "/react-draggable-hoc/static/js/main.d5d084d4.chunk.js.map",
+    "main.js": "/react-draggable-hoc/static/js/main.ab15a44e.chunk.js",
+    "main.js.map": "/react-draggable-hoc/static/js/main.ab15a44e.chunk.js.map",
     "runtime~main.js": "/react-draggable-hoc/static/js/runtime~main.1e573ae2.js",
     "runtime~main.js.map": "/react-draggable-hoc/static/js/runtime~main.1e573ae2.js.map",
-    "static/js/2.3246a3db.chunk.js": "/react-draggable-hoc/static/js/2.3246a3db.chunk.js",
-    "static/js/2.3246a3db.chunk.js.map": "/react-draggable-hoc/static/js/2.3246a3db.chunk.js.map",
+    "static/js/2.aef96375.chunk.js": "/react-draggable-hoc/static/js/2.aef96375.chunk.js",
+    "static/js/2.aef96375.chunk.js.map": "/react-draggable-hoc/static/js/2.aef96375.chunk.js.map",
     "index.html": "/react-draggable-hoc/index.html",
-    "precache-manifest.5823bbb20ecbaf49554c7509219d9fb3.js": "/react-draggable-hoc/precache-manifest.5823bbb20ecbaf49554c7509219d9fb3.js",
+    "precache-manifest.0b45c9d0767a0d3abe349eccb2a04fbb.js": "/react-draggable-hoc/precache-manifest.0b45c9d0767a0d3abe349eccb2a04fbb.js",
     "service-worker.js": "/react-draggable-hoc/service-worker.js",
     "static/css/main.1e86d113.chunk.css.map": "/react-draggable-hoc/static/css/main.1e86d113.chunk.css.map"
   }
