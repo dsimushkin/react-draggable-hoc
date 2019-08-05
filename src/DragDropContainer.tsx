@@ -1,63 +1,87 @@
 import * as React from "react";
-import { DragMonitor } from "./Monitor";
-import { DragEvent } from "./utils";
+
+import { DragStats, dragStatsFactory } from "./DragHistoryReducer";
+import { emptyFn } from "./utils";
 
 export interface IDraggableContainerContext {
-  monitor: DragMonitor,
+  isDragged: boolean,
+  dragProps?: any,
+  x?: number,
+  y?: number,
+  onDrag: (dragProps: any, stats: DragStats) => any,
 }
 
-export interface IDraggable {
-  dragProps: any
-}
-
-export type DraggableComponent = React.Component<IDraggable>;
-export type DraggableContainerComponent = React.Component<any>;
-
-const ContainerContext = React.createContext<IDraggableContainerContext>({
-  monitor: new DragMonitor(),
+export const DragDropContext = React.createContext<IDraggableContainerContext>({
+  isDragged: false,
+  onDrag: emptyFn,
 })
 
-export class DragDropContainer extends React.Component<{children: React.ReactNode}> {
-  private monitor = new DragMonitor(this);
-
-  public onDragEnd = (event: Event) => {
-    this.monitor.dragEnd();
-  }
-
-  public onDrag = (event: Event) => {
-    this.monitor.drag(event as DragEvent);
-  }
-
-  public componentDidMount() {
-    window.addEventListener("mousemove", this.onDrag, true);
-    window.addEventListener("touchmove", this.onDrag, { passive: false });
-    window.addEventListener("mouseup", this.onDragEnd, true);
-    window.addEventListener("touchend", this.onDragEnd, true);
-  }
-
-  public componentWillUnmount() {
-    window.removeEventListener("mousemove", this.onDrag, true);
-    window.removeEventListener("touchmove", this.onDrag, true);
-    window.removeEventListener("mouseup", this.onDragEnd, true);
-    window.removeEventListener("touchend", this.onDragEnd, true);
-  }
-
-  public render() {
-    const { monitor } = this;
-    return (
-      <ContainerContext.Provider value={{monitor}}>
-        { this.props.children }
-      </ContainerContext.Provider>
-    )
-  }
+export interface IDragDropContainerChild {
+  node: React.RefObject<any>,
+  x?: number,
+  y?: number,
+  isDragged: boolean,
+  dragProps?: any
 }
 
-export const withDragDropContainerContext = <T extends any>(
-  WrappedComponent: React.ComponentType<T & IDraggableContainerContext>,
-) => (
-  (props: T) => (
-    <ContainerContext.Consumer>
-      {(draggableProps) => <WrappedComponent {...props} {...draggableProps} />}
-    </ContainerContext.Consumer>
+export function DragDropContainer({
+  children,
+}: {
+  children: React.FunctionComponent<IDragDropContainerChild>,
+}) {
+  const node = React.useRef<HTMLElement>();
+  const [state, updateStats] = React.useState<DragStats>(dragStatsFactory());
+  const [dragProps, updateDragProps] = React.useState<any>();
+
+  const onDrag = (props: any, stats: DragStats) => {
+    updateDragProps(props);
+    updateStats(stats);
+  }
+
+  const bounds = React.useMemo(
+    () => {
+      if (node.current == null || state.node == null) {
+        return {
+          maxX: +Infinity,
+          maxY: +Infinity,
+          minX: -Infinity,
+          minY: -Infinity,
+        }
+      }
+
+      const containerRect = node.current.getBoundingClientRect();
+      const draggedRect = state.node.getBoundingClientRect();
+
+      return {
+        maxX: containerRect.right - draggedRect.right,
+        maxY: containerRect.bottom - draggedRect.bottom,
+        minX: containerRect.left - draggedRect.left,
+        minY: containerRect.top - draggedRect.top,
+      }
+    },
+    [state.node, node.current],
   )
-)
+
+  const x = state.x ? Math.max(Math.min(state.x, bounds.maxX), bounds.minX) : 0;
+  const y = state.y ? Math.max(Math.min(state.y, bounds.maxY), bounds.minY) : 0;
+
+  return (
+    <DragDropContext.Provider
+      value={{
+        dragProps,
+        isDragged: state.isDragged,
+        onDrag,
+        x,
+        y,
+      }}
+    >
+      {children({
+        dragProps,
+        isDragged: state.isDragged,
+        node,
+        x,
+        y,
+      })}
+    </DragDropContext.Provider>
+  )
+}

@@ -1,70 +1,35 @@
 import * as React from "react";
 import { findDOMNode } from "react-dom";
-import { IDraggable, IDraggableContainerContext, withDragDropContainerContext } from "./DragDropContainer";
-import { IDragProps } from "./DraggableProperties";
-import { DragActions } from "./Monitor";
+
+import DragHistoryReducer, { dragPayloadFactory, dragStatsFactory, IDragEvent } from "./DragHistoryReducer";
+import { DragDropContext } from "./internals";
 import * as utils from "./utils";
 
-export interface IDraggableProps extends IDragProps {
-  isDragged?: boolean,
-}
-
-export const draggable = <T extends any>(
-  WrappedComponent: React.ComponentType<T & IDraggableProps>,
-) => (
-  class DraggableWrapper extends React.Component<T & IDraggablePropTypes> {
-    public state = {
-      isDragged: false,
-      values: {},
-    }
-
-    public onDragStart = (values: IDraggableProps) => {
-      this.setState({isDragged: true, values});
-    }
-
-    public onDrag = (values: IDraggableProps) => {
-      this.setState({values});
-    }
-
-    public onDragEnd = (values: IDraggableProps) => {
-      this.setState({isDragged: false, values});
-    }
-
-    public render() {
-      const { delay, dragProps, draggable: draggableP, disabled, ...props} = this.props as any;
-      return (
-        <Draggable
-          onDrag={this.onDrag}
-          onDragEnd={this.onDragEnd}
-          onDragStart={this.onDragStart}
-          delay={delay}
-          dragProps={dragProps}
-          draggable={draggableP}
-          disabled={disabled}
-        >
-          <WrappedComponent
-            {...props}
-            {...this.state.values}
-            isDragged={this.state.isDragged}
-          />
-        </Draggable>
-      )
-    }
-  }
-)
-
-export interface IDraggablePropTypes extends IDraggable {
+export interface IDraggablePropTypes {
   delay?: number,
   disabled?: boolean,
   draggable?: boolean,
-  onDrag?: (props: IDraggableProps) => void,
-  onDragStart?: (props: IDraggableProps) => void,
-  onDragEnd?: (props: IDraggableProps) => void,
+  onDrag?: (event: IDragEvent) => any,
+  onDragStart?: (event: IDragEvent) => any,
+  onDragEnd?: (event: IDragEvent) => any,
+  dragProps?: any,
 }
 
 export interface IDraggableContext {
-  subscribe: (component: IDraggableArea) => void,
-  unsubscribe: (component: IDraggableArea) => void,
+  subscribe: (component: IDraggableArea) => any,
+  unsubscribe: (component: IDraggableArea) => any,
+}
+
+export interface IDraggableArea {
+  el: ReturnType<typeof findDOMNode>,
+  draggable: boolean,
+}
+
+export interface IDraggableChild {
+  node: React.RefObject<any>,
+  isDragged: boolean,
+  x: number,
+  y: number
 }
 
 const DraggableContext = React.createContext<IDraggableContext>({
@@ -72,163 +37,185 @@ const DraggableContext = React.createContext<IDraggableContext>({
   unsubscribe: () => {},
 });
 
-export interface IDraggableArea {
-  el: ReturnType<typeof findDOMNode>,
-  draggable: boolean,
-  self: React.Component<any>
-}
+export function Draggable({
+  disabled = false,
+  draggable = true,
+  dragProps,
+  onDrag,
+  onDragEnd,
+  onDragStart,
+  children,
+}: IDraggablePropTypes & {children: React.FunctionComponent<IDraggableChild>}) {
+  const [dragHistory, dispatch] = React.useReducer(DragHistoryReducer, []);
 
-export const Draggable = withDragDropContainerContext(
-  class DraggableElement extends React.Component<
-    IDraggablePropTypes & {children: React.ReactNode} & IDraggableContainerContext
-  > {
-    public static defaultProps = {
-      delay: 0,
-      disabled: false,
-      draggable: true,
-      onDrag: () => {},
-      onDragEnd: () => {},
-      onDragStart: () => {},
-    }
-    public isDragged = false;
-    public dragAreas: IDraggableArea[] = [];
+  const dragAreas = React.useRef<IDraggableArea[]>([]);
+  const node = React.useRef<HTMLElement>(null);
 
-    get draggableProps() {
-      return {...this.props.monitor.props.values, isDragged: this.isDragged};
-    }
+  const dragStats = React.useMemo(
+    () => dragStatsFactory(dragHistory),
+    [dragHistory],
+  );
+  const isDragged = React.useMemo(
+    () => dragHistory.length > 0,
+    [dragHistory.length],
+  );
 
-    public onDragStart = async (event: Event) => {
-      if (this.props.disabled) {
-        this.props.monitor.dragEnd();
-        return;
-      }
+  const context = React.useContext(DragDropContext);
+  React.useEffect(
+    () => {
+      context.onDrag(dragProps, dragStats);
+    },
+    [dragStats],
+  )
 
-      const {target} = event;
-      if (target && utils.isDragStart(event as utils.DragEvent)) {
-        // define draggable area
-        const area = this.dragAreas
-          .filter(({el}) => el != null && el.contains(target as Node))
-          .reduce(
-            (prev: IDraggableArea | undefined, next) => !prev || prev.el!.contains(next.el) ? next : prev,
-            undefined,
-          );
-
-        const isDrag = area && area.draggable;
-
-        if (isDrag) {
-          if (event.type === "mousedown") {
-            utils.preventDefault(event);
-          }
-          try {
-            this.isDragged = await this.props.monitor.dragStart(this, event as utils.DragEvent, this.props.delay);
-            this.props.onDragStart!(this.draggableProps)
-          } catch (e) {
-            this.isDragged = false;
-          }
+  React.useEffect(
+    () => {
+      const drag = (event: Event) => {
+        const payload = dragPayloadFactory(event as utils.DragEvent);
+        dispatch({type: "drag", payload});
+        if (typeof onDrag === "function") {
+          onDrag(payload);
         }
       }
-    }
 
-    public onDrag = () => {
-      if (this.isDragged) {
-        this.props.onDrag!(this.draggableProps);
+      const removeEventListeners = () => {
+        window.removeEventListener("mousemove", drag, true);
+        window.removeEventListener("touchmove", drag, true);
+        window.removeEventListener("mouseup", dragEnd, true);
+        window.removeEventListener("touchend", dragEnd, true);
       }
-    }
 
-    public onDragEnd = () => {
-      if (this.isDragged) {
-        this.isDragged = false;
-        this.props.onDragEnd!(this.draggableProps);
+      const dragEnd = (event: Event) => {
+        removeEventListeners();
+        const payload = dragPayloadFactory(event as utils.DragEvent);
+        dispatch({type: "drop"});
+        if (typeof onDragEnd === "function") {
+          onDragEnd(payload);
+        }
       }
-    }
 
-    public componentDidMount() {
-      this.setDraggable(this, this.onDragStart);
-
-      const { monitor } = this.props;
-      monitor.on(DragActions.drag, this.onDrag);
-      monitor.on(DragActions.dragEnd, this.onDragEnd);
-    }
-
-    public setDraggable = (component: React.ReactInstance, listener: (event: Event) => void) => {
-      const el = findDOMNode(component) as HTMLElement;
-      el.addEventListener("mousedown", listener, true);
-      el.addEventListener("touchstart", listener, true);
-    }
-
-    public subscribe = (dragArea: IDraggableArea) => {
-      if (!this.dragAreas.some((v) => v.self === dragArea.self)) {
-        this.dragAreas.push(dragArea);
+      if (isDragged) {
+        window.addEventListener("mouseup", dragEnd, true);
+        window.addEventListener("touchend", dragEnd, true);
+        window.addEventListener("mousemove", drag, true);
+        window.addEventListener("touchmove", drag, { passive: true });
       }
-    }
 
-    public unsubscribe = (dragArea: IDraggableArea) => {
-      this.dragAreas = this.dragAreas.filter((v) => v.self !== dragArea.self);
-    }
-
-    public componentWillUnmount() {
-      const { monitor } = this.props;
-      monitor.off(DragActions.drag, this.onDrag);
-      monitor.off(DragActions.dragEnd, this.onDragEnd);
-    }
-
-    public render() {
-      const {subscribe, unsubscribe} = this;
-      return (
-        <DraggableContext.Provider value={{subscribe, unsubscribe}}>
-          <DraggableArea draggable={this.props.draggable!}>
-            {this.props.children}
-          </DraggableArea>
-        </DraggableContext.Provider>
-      )
-    }
-  },
-)
-
-export const withDraggable = <T extends any>(
-  WrappedComponent: React.ComponentType<T & IDraggableContext>,
-) => (
-  (props: T) => (
-    <DraggableContext.Consumer>
-      {(draggableContext) => <WrappedComponent {...props} {...draggableContext} />}
-    </DraggableContext.Consumer>
+      return removeEventListeners;
+    },
+    [isDragged],
   )
-)
 
-export interface IDraggableAreaProps {
-  draggable: boolean,
-  children: React.ReactNode,
+  React.useEffect(
+    () => {
+      const elem = node ? node.current : undefined;
+
+      if (elem) {
+        const dragStart = (event: Event) => {
+          if (disabled) {
+            return;
+          }
+
+          const {target} = event;
+          if (target && utils.isDragStart(event as utils.DragEvent)) {
+            // define draggable area
+            const area = dragAreas.current
+              .filter(({el}) => el != null && el.contains(target as Node))
+              .reduce(
+                (prev: IDraggableArea | undefined, next) => !prev || prev.el!.contains(next.el) ? next : prev,
+                undefined,
+              );
+
+            const isDrag = area && area.draggable;
+
+            if (isDrag) {
+              if (event.type === "mousedown") {
+                event.preventDefault();
+              }
+
+              try {
+                const payload = dragPayloadFactory(event as utils.DragEvent);
+                dispatch({type: "dragStart", payload});
+                if (typeof onDragStart === "function") {
+                  onDragStart(payload);
+                }
+              } catch (e) {
+                dispatch({type: "drop"});
+              }
+            }
+          }
+        }
+
+        elem.addEventListener("mousedown", dragStart, true);
+        elem.addEventListener("touchstart", dragStart, true);
+
+        return () => {
+          elem.removeEventListener("mousedown", dragStart, true);
+          elem.removeEventListener("touchstart", dragStart, true);
+        }
+      }
+
+      return undefined;
+    },
+  );
+
+  return (
+    <DraggableContext.Provider value={{
+      subscribe: (dragArea: IDraggableArea) => {
+        if (dragAreas.current.every((v) => v.el !== dragArea.el)) {
+          dragAreas.current.push(dragArea);
+        }
+      },
+      unsubscribe: (dragArea: IDraggableArea) => {
+        dragAreas.current = dragAreas.current.filter((v) => v.el !== dragArea.el);
+      },
+    }}>
+      <DraggableArea
+        draggable={draggable}
+        ref={node}
+      >
+        {({node: ref}) => (
+          children({
+            ...dragStats,
+            node: ref,
+          })
+        )}
+      </DraggableArea>
+    </DraggableContext.Provider>
+  )
 }
 
-export const DraggableArea = withDraggable(
-  class DraggableAreaElement extends React.PureComponent<IDraggableAreaProps & IDraggableContext> {
-    get draggableArea() {
-      const self = this;
-      return {
-        get el() {
-          return findDOMNode(self)
-        },
-        get self() {
-          return self;
-        },
-        draggable: this.props.draggable,
-      };
-    }
-
-    public componentDidMount() {
-      this.props.subscribe(this.draggableArea);
-    }
-
-    public componentWillUpdate() {
-      this.props.subscribe(this.draggableArea);
-    }
-
-    public componentWillUnmount() {
-      this.props.unsubscribe(this.draggableArea);
-    }
-
-    public render() {
-      return this.props.children;
-    }
+export const DraggableArea = React.forwardRef((
+  {
+    draggable = true,
+    children,
+  }: {
+    children: React.FunctionComponent<{node: React.RefObject<any>}>,
+    draggable: boolean,
   },
-)
+  ref,
+) => {
+  const {subscribe, unsubscribe} = React.useContext(DraggableContext);
+  const node = React.useRef<HTMLElement>(null);
+
+  React.useEffect(
+    () => {
+      const draggableArea = {
+        el: node.current,
+        get draggable() {
+          return draggable;
+        },
+      }
+
+      subscribe(draggableArea);
+
+      return () => {
+        unsubscribe(draggableArea);
+      }
+    },
+  );
+
+  React.useImperativeHandle(ref, () => node.current);
+
+  return children({node});
+})

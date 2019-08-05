@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { findDOMNode } from 'react-dom';
+
 import {
   DragDropContainer,
-  draggable as draggableWrapper,
+  Draggable,
   DraggableArea,
-  DragMonitor,
   Droppable,
-  IDraggableProps,
   IDroppableProps,
 } from 'react-draggable-hoc';
 
@@ -17,11 +15,13 @@ const randomColor = () => {
 
 const DragHandle = ({color, draggable} : any) => (
   <DraggableArea draggable={draggable}>
-    <div className="handle">
-      <div className="bar" style={{backgroundColor: color}} />
-      <div className="bar" style={{backgroundColor: color}} />
-      <div className="bar" style={{backgroundColor: color}} />
-    </div>
+    {({node}) => (
+      <div className="handle" ref={node}>
+        <div className="bar" style={{backgroundColor: color}} />
+        <div className="bar" style={{backgroundColor: color}} />
+        <div className="bar" style={{backgroundColor: color}} />
+      </div>
+    )}
   </DraggableArea>
 )
   
@@ -44,79 +44,79 @@ interface IContentProps {
   backgroundColor: string
 }
   
-const Content = draggableWrapper(
-  class ContentWrapper extends React.Component<IDraggableProps & IContentProps> {
-    public state = {
-      color: undefined,
-      isHovered: false
-    }
-
-    public onDrop = ({dragProps}: IDroppableProps) => {
-      const state = {isHovered: false} as any;
-      if (!this.props.isDragged && this.state.isHovered) {
-        state.color = dragProps;
-      }
-      this.setState(state);
-    }
-
-    public onDrag = ({isHovered} : IDroppableProps) => {
-      if (this.state.isHovered !== isHovered) {
-        this.setState({isHovered});
-      }
-    }
-
-    public isHovered = (component: React.Component<any>, { props: { x, initialPointer } }: DragMonitor) => {
-      const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
-      return initialPointer != null && nodeRect.left <= initialPointer.pageX + x && nodeRect.right >= initialPointer.pageX + x;
-    }
-
-    public render() {
-      const { x, isDragged, backgroundColor, value} = this.props;
-      const { color, isHovered } = this.state;
-
-      return (
-        <Droppable
-          onDrag={this.onDrag}
-          onDrop={this.onDrop}
-          isHovered={this.isHovered}
-        >
-          <div style={{display: 'inline-block', textAlign: 'left', position: 'relative'}}>
-            {/* create a ghost and position it on drag */}
-            {isDragged && (
-              <ContentElement
-                value={value}
-                style={{
-                  backgroundColor,
-                  color,
-                  position: 'absolute',
-                  transform: `translate3d(${x}px, 100%, -1px)`,
-                  zIndex: 1,
-                }}
-              >
-                <span>{value}</span>
-              </ContentElement>
-            )}
-            {/* change text color when element is dragged */}
-            <ContentElement
-              value={value}
-              style={{
-                backgroundColor, color: isDragged ? 'red' : color
-              }}
-              className={isHovered ? 'hovered' : undefined}
-              draggable={true}
-            >
-              <span>{value}</span>
-            </ContentElement>
-          </div>
-        </Droppable>
-      )
-    }
+class Content extends React.Component<IContentProps> {
+  public state = {
+    color: undefined,
+    isDragged: false
   }
-)
+
+  public onDrop = ({dragProps}: IDroppableProps) => {
+    const state = {isHovered: false} as any;
+    if (!this.state.isDragged && dragProps.isHovered) {
+      state.color = dragProps;
+    }
+    this.setState(state);
+  }
+
+  // public isHoveredFactory = (component: React.Component<any>, { props: { x, initialPointer } }: DragMonitor) => {
+  //   const nodeRect = (findDOMNode(component) as HTMLElement).getBoundingClientRect();
+  //   return initialPointer != null && nodeRect.left <= initialPointer.pageX + x && nodeRect.right >= initialPointer.pageX + x;
+  // }
+
+  public render() {
+    const { backgroundColor, value} = this.props;
+    const { color } = this.state;
+
+    return (
+      <Draggable
+        delay={400}
+        draggable={false}
+      >
+        {({x, isDragged}) => (
+          <Droppable
+            onDrop={this.onDrop}
+            // isHovered={this.isHoveredFactory}
+          >
+            {({isHovered}) => (
+              <div style={{display: 'inline-block', textAlign: 'left', position: 'relative'}}>
+                {/* create a ghost and position it on drag */}
+                {isDragged && (
+                  <ContentElement
+                    value={value}
+                    style={{
+                      backgroundColor,
+                      color,
+                      position: 'absolute',
+                      transform: `translate3d(${x}px, 100%, -1px)`,
+                      zIndex: 1,
+                    }}
+                  >
+                    <span>{value}</span>
+                  </ContentElement>
+                )}
+                {/* change text color when element is dragged */}
+                <ContentElement
+                  value={value}
+                  style={{
+                    backgroundColor, color: isDragged ? 'red' : color
+                  }}
+                  className={isHovered ? 'hovered' : undefined}
+                  draggable={true}
+                >
+                  <span>{value}</span>
+                </ContentElement>
+              </div>
+            )}
+          </Droppable>
+        )}
+      </Draggable>
+    )
+  }
+}
 
 
 export const GhostExample = () => (
-  <DragDropContainer>
+  // <DragDropContainer>
     <div className="Ghost-container">
       {Array(20).fill(0).map((_, i) => {
         const color = randomColor();
@@ -125,14 +125,11 @@ export const GhostExample = () => (
             backgroundColor={color}
             value={`Hello ${i}`}
             key={i}
-            dragProps={color}
-            delay={400}
-            draggable={false}
           />
         )
       })}
     </div>
-  </DragDropContainer>
+  // </DragDropContainer>
 )
 
 export const GhostExampleTitle = () => (

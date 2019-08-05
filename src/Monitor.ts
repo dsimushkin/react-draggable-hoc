@@ -3,7 +3,7 @@ import { findDOMNode } from "react-dom";
 import { Callbacks } from "./Callbacks";
 import { DraggableComponent, DraggableContainerComponent } from "./DragDropContainer";
 import { DragProperties } from "./DraggableProperties";
-import { DragEvent, eventsDiff, preventDefault } from "./utils";
+import { DragEvent, eventsDiff } from "./utils";
 
 export enum DragActions {
   beforeDragEnd = "beforeDragEnd",
@@ -32,7 +32,7 @@ export class DragMonitor {
         this.clean();
       }
       if (this.dragged) {
-        preventDefault(event);
+        event.preventDefault();
         this.props.lastEvent = event;
         this.callbacks.notify(DragActions.drag);
       }

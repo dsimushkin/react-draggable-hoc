@@ -8,10 +8,6 @@ export const isDragStart = (event: DragEvent) => {
     return event.touches ? event.touches.length === 1 : event.which === 1;
 }
 
-export const preventDefault = (e: Event) => {
-    e.preventDefault();
-}
-
 export const eventsDiff = (a: DragEvent, b: DragEvent) => {
     const aPointer = getPointer(a);
     const bPointer = getPointer(b);

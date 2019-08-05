@@ -3,7 +3,6 @@ import {
   DragDropContainer,
   draggable,
   Droppable,
-  IDroppableProps,
 } from 'react-draggable-hoc';
 
 /**
