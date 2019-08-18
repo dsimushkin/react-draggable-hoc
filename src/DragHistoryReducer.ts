@@ -4,12 +4,16 @@ export const DRAG_START_MESSAGE = "dragStart";
 export const DRAG_MESSAGE = "drag";
 export const DROP_MESSAGE = "drop";
 
-export interface IDragEvent {
-  x: number,
-  y: number,
-  node: HTMLElement,
-  rect: ClientRect | DOMRect
+export function dragPayloadFactory(event: DragEvent, node: HTMLElement) {
+  const {pageX, pageY} = getPointer(event);
+  return {
+    node,
+    rect: node.getBoundingClientRect(),
+    x: pageX,
+    y: pageY,
+  };
 }
+export type IDragEvent = ReturnType<typeof dragPayloadFactory>;
 
 const initialState: IDragEvent[] = [];
 
@@ -29,18 +33,7 @@ interface IDrop {
 
 export type DragAction = IDragStart | IDrag | IDrop;
 
-export function dragPayloadFactory(event: DragEvent) {
-  const {pageX, pageY} = getPointer(event);
-  const node = event.target as HTMLElement;
-  return {
-    node,
-    rect: node.getBoundingClientRect(),
-    x: pageX,
-    y: pageY,
-  };
-}
-
-export function dragStatsFactory(history: typeof initialState = []) {
+export function dragStatsFactory(history: IDragEvent[] = []) {
   const initial = history.length > 0 ? history[0] : undefined;
   const current = history.length > 0 ? history[history.length - 1] : undefined;
   return {

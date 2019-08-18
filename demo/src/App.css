@@ -80,6 +80,7 @@
   border-radius: 4px;
   display: grid;
   margin: 1em;
+  padding: 1em;
   min-height: 50px;
 }
 

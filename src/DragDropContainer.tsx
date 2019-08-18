@@ -1,87 +1,130 @@
 import * as React from "react";
 
-import { DragStats, dragStatsFactory } from "./DragHistoryReducer";
+import { DragListener } from "./draggable";
+import { DragStats } from "./DragHistoryReducer";
 import { emptyFn } from "./utils";
 
 export interface IDraggableContainerContext {
-  isDragged: boolean,
-  dragProps?: any,
-  x?: number,
-  y?: number,
-  onDrag: (dragProps: any, stats: DragStats) => any,
+  enhance: (stats: DragStats) => DragStats
+  onDrag: DragListener
+  subscribe: (c: DragListener) => any
+  unsubscribe: (c: DragListener) => any
 }
 
-export const DragDropContext = React.createContext<IDraggableContainerContext>({
-  isDragged: false,
+export const defaultDragDropContext = {
+  enhance: (stats: DragStats) => stats,
   onDrag: emptyFn,
-})
-
-export interface IDragDropContainerChild {
-  node: React.RefObject<any>,
-  x?: number,
-  y?: number,
-  isDragged: boolean,
-  dragProps?: any
+  subscribe: emptyFn,
+  unsubscribe: emptyFn,
 }
 
-export function DragDropContainer({
-  children,
-}: {
-  children: React.FunctionComponent<IDragDropContainerChild>,
-}) {
-  const node = React.useRef<HTMLElement>();
-  const [state, updateStats] = React.useState<DragStats>(dragStatsFactory());
-  const [dragProps, updateDragProps] = React.useState<any>();
+export const DragDropContext = React.createContext<IDraggableContainerContext>(
+  defaultDragDropContext,
+);
 
-  const onDrag = (props: any, stats: DragStats) => {
-    updateDragProps(props);
-    updateStats(stats);
-  }
+export interface IDragDropContainerChild extends IDraggableContainerContext {
+  node: React.RefObject<any>
+}
 
-  const bounds = React.useMemo(
-    () => {
-      if (node.current == null || state.node == null) {
-        return {
-          maxX: +Infinity,
-          maxY: +Infinity,
-          minX: -Infinity,
-          minY: -Infinity,
+export interface IDragDropContainerProps {
+  className?: string
+  children?: React.FunctionComponent<IDragDropContainerChild> | React.ReactNode
+}
+
+export function dragDropContainer(Context: React.Context<IDraggableContainerContext>) {
+  return function DragDropContainerWrapper({
+    children,
+    className,
+  }: IDragDropContainerProps) {
+    const node = React.useRef<HTMLElement>();
+    const state = React.useRef<any>();
+    const subs = React.useRef<DragListener[]>([]);
+
+    const onDrag = React.useCallback<DragListener>(
+      (dragStats, dragProps) => {
+        state.current = {dragStats, dragProps};
+        subs.current.forEach((sub) => {
+          sub(dragStats, dragProps);
+        })
+      },
+      [],
+    )
+
+    const enhance = React.useCallback(
+      (stats: DragStats) => {
+        if (!stats.isDragged) {
+          return stats;
         }
-      }
 
-      const containerRect = node.current.getBoundingClientRect();
-      const draggedRect = state.node.getBoundingClientRect();
+        const getBounds = () => {
+          if (node.current == null || stats.initial == null) {
+            return {
+              maxX: +Infinity,
+              maxY: +Infinity,
+              minX: -Infinity,
+              minY: -Infinity,
+            }
+          }
 
-      return {
-        maxX: containerRect.right - draggedRect.right,
-        maxY: containerRect.bottom - draggedRect.bottom,
-        minX: containerRect.left - draggedRect.left,
-        minY: containerRect.top - draggedRect.top,
-      }
-    },
-    [state.node, node.current],
-  )
+          const containerRect = node.current.getBoundingClientRect();
+          const draggedRect = (stats.history.length > 1 ? stats.history[1] : stats.initial).rect;
 
-  const x = state.x ? Math.max(Math.min(state.x, bounds.maxX), bounds.minX) : 0;
-  const y = state.y ? Math.max(Math.min(state.y, bounds.maxY), bounds.minY) : 0;
+          return {
+            maxX: containerRect.right - draggedRect.right,
+            maxY: containerRect.bottom - draggedRect.bottom,
+            minX: containerRect.left - draggedRect.left,
+            minY: containerRect.top - draggedRect.top,
+          }
+        }
 
-  return (
-    <DragDropContext.Provider
-      value={{
-        dragProps,
-        isDragged: state.isDragged,
-        onDrag,
-        x,
-        y,
-      }}
-    >
-      {children({
-        dragProps,
-        isDragged: state.isDragged,
-        node,
-        x,
-        y,
-      })}
-    </DragDropContext.Provider>
-  )
+        const bounds = getBounds();
+
+        return {
+          ...stats,
+          x: stats.x ? Math.max(Math.min(stats.x, bounds.maxX), bounds.minX) : 0,
+          y: stats.y ? Math.max(Math.min(stats.y, bounds.maxY), bounds.minY) : 0,
+        };
+      },
+      [node],
+    )
+
+    const subscribe = React.useCallback(
+      (fn) => {
+        subs.current.push(fn);
+      },
+      [],
+    );
+
+    const unsubscribe = React.useCallback(
+      (fn) => {
+        subs.current = subs.current.filter((sub) => sub !== fn);
+      },
+      [],
+    );
+
+    const value = {
+      enhance,
+      node,
+      onDrag,
+      subscribe,
+      unsubscribe,
+    }
+
+    return (
+      <Context.Provider
+        value={value}
+      >
+        {typeof children === "function" ? children(value) : (
+          <div
+            className={className}
+            ref={node as React.RefObject<any>}
+          >
+            {children}
+          </div>
+        )}
+      </Context.Provider>
+    )
+  }
 }
+
+export const DragDropContainer = dragDropContainer(DragDropContext);
