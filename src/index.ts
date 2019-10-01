@@ -13,4 +13,5 @@ export {
   Droppable,
   containsPointer,
   intersects,
+  checkTargets,
 } from "./internals";

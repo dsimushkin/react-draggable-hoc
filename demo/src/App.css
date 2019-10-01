@@ -35,6 +35,10 @@
   overflow: hidden;
 }
 
+.scrollable {
+  overflow: auto;
+}
+
 .Simple-row {
   display: flex;
 }
@@ -65,7 +69,7 @@
 }
 
 .Cell.hovered:before {
-  content: '';
+  content: "";
   display: block;
   width: 3px;
   height: 100%;
@@ -115,6 +119,10 @@ menu a:hover {
 }
 
 @keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

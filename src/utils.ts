@@ -30,7 +30,7 @@ export const emptyFn = () => {}
 
 export type HoverMethod = (nodeRef: React.RefObject<any>, dragStats: DragStats) => boolean;
 
-export const containsPointer: HoverMethod = (nodeRef, dragStats) => {
+export const checkTargets: HoverMethod = (nodeRef, dragStats) => {
   if (nodeRef == null
     || nodeRef.current == null
     || dragStats == null
@@ -39,21 +39,25 @@ export const containsPointer: HoverMethod = (nodeRef, dragStats) => {
     return false;
   }
 
-  const {x, y} = dragStats.current;
+  return true;
+}
+
+export const containsPointer: HoverMethod = (nodeRef, dragStats) => {
+  if (!checkTargets(nodeRef, dragStats)) {
+    return false;
+  }
+
+  const {x, y} = dragStats.current!;
   return document.elementsFromPoint(x, y).indexOf(nodeRef.current) >= 0;
 }
 
 export const intersects: HoverMethod = (nodeRef, dragStats) => {
-  if (nodeRef == null
-    || nodeRef.current == null
-    || dragStats == null
-    || dragStats.node == null
-  ) {
+  if (!checkTargets(nodeRef, dragStats)) {
     return false;
   }
 
   const a = nodeRef.current.getBoundingClientRect();
-  const b = dragStats.node.getBoundingClientRect();
+  const b = dragStats.node!.getBoundingClientRect();
 
   return !(b.left > a.right
     || b.right < a.left

@@ -1,10 +1,10 @@
-import * as React from 'react';
-import { NavLink, Redirect, Route, Switch } from 'react-router-dom';
+import * as React from "react";
+import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 
-import Ghost from './Ghost';
-import Simple from './Simple';
+import Ghost from "./Ghost";
+import Simple from "./Simple";
 
-import './App.css';
+import "./App.css";
 
 class App extends React.Component {
   public render() {
