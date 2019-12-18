@@ -1,71 +1,81 @@
 import * as React from "react";
 
-import {
-  DragDropContext,
-  IDraggableContainerContext
-} from "./DragDropContainer";
-import { DragListener } from "./draggable";
-import { containsPointer, HoverMethod } from "./utils";
+import { DragContext } from "./DragDropContainer";
+import { DragMonitor } from "./DragMonitor";
 
-export interface IDroppableChildProps {
-  dragProps: any;
-  isHovered: boolean;
-  nodeRef: React.RefObject<any>;
-}
-
-export interface IDroppablePropTypes {
-  onDrop?: (props: any) => any;
-  method?: HoverMethod;
-  children: React.FunctionComponent<IDroppableChildProps>;
-}
-
-export function droppable(
-  dragDropContext: React.Context<IDraggableContainerContext>
+export function defaultDroppableMethod(
+  monitor: DragMonitor,
+  ref: React.RefObject<any>
 ) {
-  return function DroppableWrapper({
-    onDrop,
+  if (monitor.current && ref.current) {
+    const { x, y } = monitor.current;
+    return document.elementsFromPoint(x, y).indexOf(ref.current) >= 0;
+  }
+
+  return false;
+}
+
+export function dropable(context: typeof DragContext) {
+  return function Droppable({
     children,
-    method = containsPointer
-  }: IDroppablePropTypes) {
-    const [dragStats, changeStats] = React.useState<any>();
-    const [dragProps, changeProps] = React.useState<any>();
-    const { subscribe, unsubscribe } = React.useContext(dragDropContext);
+    method = defaultDroppableMethod,
+    onDrop
+  }: {
+    children: React.FunctionComponent<any>;
+    method?: typeof defaultDroppableMethod;
+    onDrop?: (dragProps: any) => void;
+  }) {
+    const { monitor } = React.useContext(context);
+    const ref = React.useRef<any>();
+    const factory = React.useCallback(
+      monitor => ({
+        isHovered: monitor.dragProps ? method(monitor, ref) : false,
+        dragProps: monitor.dragProps
+      }),
+      [method]
+    );
+    const [props, change] = React.useState(factory(monitor));
 
     React.useEffect(() => {
-      const listener: DragListener = (stats, props) => {
-        changeStats(stats);
-        changeProps(props);
+      const node = ref.current;
+      const listener = (monitor: DragMonitor) => {
+        const nprops = factory(monitor);
+
+        if (
+          props.isHovered !== nprops.isHovered ||
+          props.dragProps !== nprops.dragProps
+        ) {
+          change(nprops);
+        }
+
+        if (
+          typeof onDrop === "function" &&
+          props.isHovered &&
+          nprops.dragProps == null
+        ) {
+          onDrop(props.dragProps);
+        }
+
+        if (node != null && nprops.isHovered !== props.isHovered) {
+          if (nprops.isHovered) {
+            monitor.over(node);
+          } else {
+            monitor.out(node);
+          }
+        }
       };
 
-      subscribe(listener);
+      monitor.on("propsChange", listener);
+      monitor.on("drag", listener);
 
       return () => {
-        unsubscribe(listener);
+        monitor.off("propsChange", listener);
+        monitor.off("drag", listener);
       };
-    }, []);
+    }, [props, factory, onDrop]);
 
-    const [isHovered, changeHovered] = React.useState(false);
-    const nodeRef = React.useRef<HTMLElement>();
-
-    React.useEffect(() => {
-      if (method(nodeRef, dragStats) !== isHovered) {
-        changeHovered(!isHovered);
-        if (
-          isHovered &&
-          dragStats.current == null &&
-          typeof onDrop === "function"
-        ) {
-          onDrop(dragProps);
-        }
-      }
-    }, [nodeRef, dragStats, method]);
-
-    return children({
-      dragProps,
-      isHovered,
-      nodeRef
-    });
+    return children({ ref, ...props });
   };
 }
 
-export const Droppable = droppable(DragDropContext);
+export const Droppable = dropable(DragContext);

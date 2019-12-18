@@ -2,18 +2,18 @@ import * as React from "react";
 
 import { DragDropContainer, Draggable, Droppable } from "react-draggable-hoc";
 
-const initialValues = Array(400)
+const initialValues = Array(40)
   .fill(undefined)
   .map((_, i) => i + 1);
 
 export const SimpleExample = () => {
-  const [dropped, changeDropped] = React.useState<number[]>([]);
+  const [dropped, changeDropped] = React.useState([]);
   const values = React.useMemo(
     () => initialValues.filter(v => dropped.indexOf(v) < 0),
     [dropped]
   );
 
-  const onDrop = (dragProps: number) => {
+  const onDrop = dragProps => {
     changeDropped([...dropped, dragProps]);
   };
 
@@ -30,7 +30,7 @@ export const SimpleExample = () => {
         ))}
       </div>
       <Droppable onDrop={onDrop}>
-        {({ isHovered, ref, dragProps }: any) => (
+        {({ isHovered, ref, dragProps }) => (
           <div
             className="Simple-bin"
             ref={ref}

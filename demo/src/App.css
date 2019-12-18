@@ -17,49 +17,81 @@
   font-size: large;
 }
 
-[class$="container"] {
+[class$="page-container"] {
   background-color: #eee;
   margin: auto;
   width: 70%;
 }
 
 .Ghost-container {
-  height: 100px;
   overflow-x: scroll;
   text-align: center;
   white-space: nowrap;
+  background: #eee;
+  height: 60px;
 }
 
-.Simple-container {
+.Ghost-container > * {
+  display: inline-block;
+}
+
+.Simple-page-container {
   border-radius: 8px;
   overflow: hidden;
 }
 
 .scrollable {
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .Simple-row {
   display: flex;
+  flex: auto;
 }
 
 .Simple-row > * {
-  flex: 1;
-  min-width: 40px;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.Simple-row > * + * {
+  border-left: 1px dashed #ccc;
+}
+
+.Simple-cell {
+  border: 1px solid transparent;
+}
+
+.Simple-cell.dragged {
+  border: 1px dashed #ccc;
+}
+
+.Simple-cell.dragged .Cell-simple {
+  /* visibility: hidden; */
+}
+
+.Simple-cell-ghost {
+  border: 1px dashed #ccc;
 }
 
 .Cell-simple {
   background-color: rgba(100, 100, 100, 0.1);
   height: 30px;
   padding: 10px;
-  display: inline-grid;
+  display: flex;
   justify-content: center;
   align-items: center;
   cursor: move;
 }
 
-.Cell-simple + .Cell-simple {
-  border-left: 1px dashed #ccc;
+.Handle {
+  cursor: move;
+}
+
+.Cell-simple .Handle {
+  margin-right: 5px;
+  padding: 5px;
 }
 
 .Cell {

@@ -1,198 +1,149 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 
-import {
-  DragDropContext,
-  IDraggableContainerContext
-} from "./DragDropContainer";
-import DragHistoryReducer, {
-  dragPayloadFactory,
-  DragStats,
-  dragStatsFactory,
-  IDragEvent
-} from "./DragHistoryReducer";
-import * as utils from "./utils";
+import { useDraggableFactory, useRect } from "./dragHooks";
+import { DragContext } from "./DragDropContainer";
 
-export type DragListener = (stats: DragStats, dragProps: any) => any;
-
-export interface IDraggablePropTypes {
-  delay?: number;
-  onDrag?: DragListener;
-  onDragStart?: DragListener;
-  onDragEnd?: (event: IDragEvent) => any;
-  dragProps?: any;
-  children?: React.FunctionComponent<IDraggableChild> | React.ReactNode;
-  className?: string;
-}
-
-export interface IDraggableChild extends DragStats {
-  delayedDrag?: IDragEvent;
-  nodeRef: React.RefObject<any>;
-  dragHandleRef: React.RefObject<any>;
-  isDragged: boolean;
-  dragStartListener: (e: Event) => any;
-}
-
-export function draggable(
-  dragDropContext: React.Context<IDraggableContainerContext>
+export function defaultPostProcessor(
+  props: any, // FIXME
+  ref: React.RefObject<HTMLDivElement>
 ) {
-  return function DraggableElement({
+  if (ref && ref.current) {
+    return {
+      ...props,
+      ...props.monitor.getDeltas(ref.current.getBoundingClientRect())
+    };
+  }
+
+  return props;
+}
+
+function Detached({
+  children,
+  parent
+}: {
+  children: React.ReactNode;
+  parent: HTMLElement;
+}) {
+  return ReactDOM.createPortal(
+    <React.Fragment>{children}</React.Fragment>,
+    parent
+  );
+}
+
+/**
+ * Generates Draggable div for provided context.
+ *
+ * @param context DragContext
+ */
+export function draggable(context: typeof DragContext) {
+  const useDraggable = useDraggableFactory(context);
+
+  return function Draggable({
     dragProps,
-    delay,
-    onDrag,
-    onDragEnd,
-    onDragStart,
+    className = "draggable",
     children,
-    className
-  }: IDraggablePropTypes) {
-    const nodeRef = React.useRef<HTMLElement>(null);
-    const dragHandleRef = React.useRef<HTMLElement>(null);
-    const [dragHistory, dispatch] = React.useReducer(DragHistoryReducer, []);
-    const [delayedDrag, changeDelayedDrag] = React.useState<IDragEvent>();
-
-    const context = React.useContext(dragDropContext);
-
-    const dragStats = React.useMemo(
-      () => context.enhance(dragStatsFactory(dragHistory)),
-      [dragHistory]
+    postProcess = defaultPostProcessor,
+    detachDelta = 20,
+    delay = 100,
+    detachedParent = document.body
+  }: {
+    dragProps: any; // drag props to be used
+    className?: string;
+    postProcess?: (props: any, ref: React.RefObject<HTMLDivElement>) => any; //FIXME
+    detachDelta?: number;
+    delay?: number;
+    detachedParent?: HTMLElement;
+    key?: any;
+    children?:
+      | React.FunctionComponent<{
+          handleRef?: React.RefObject<any>;
+          isDetached: boolean;
+          cancel?: () => void;
+        }>
+      | React.ReactNode;
+  }) {
+    const ref = React.useRef<HTMLDivElement>(null);
+    const handleRef = React.useRef();
+    const { cancel, ...props } = useDraggable(
+      typeof children === "function" ? handleRef : ref,
+      {
+        dragProps,
+        delay
+      }
     );
 
-    React.useEffect(() => {
-      context.onDrag(dragStats, dragProps);
-    }, [dragStats]);
+    const [, size, position] = useRect(ref, [props.delayed]);
 
-    const isDragged = React.useMemo(() => dragHistory.length > 0, [
-      dragHistory.length
-    ]);
-
-    React.useEffect(() => {
-      let t: number;
-      if (delayedDrag) {
-        t = setTimeout(() => {
-          try {
-            dispatch({ type: "dragStart", payload: delayedDrag });
-            changeDelayedDrag(undefined);
-            if (typeof onDragStart === "function") {
-              onDragStart(dragProps, dragStats);
-            }
-          } catch (e) {
-            dispatch({ type: "drop" });
-          }
-        }, delay);
-      }
-
-      return () => {
-        clearTimeout(t);
-      };
-    }, [delayedDrag]);
-
-    React.useEffect(() => {
-      const removeEventListeners = (
-        dl: EventListener,
-        del: EventListener
-      ) => () => {
-        window.removeEventListener("mousemove", dl, true);
-        window.removeEventListener("mouseup", del, true);
-        window.removeEventListener("touchend", del, true);
-        window.removeEventListener("touchmove", dl, true);
-      };
-
-      const drag = (event: Event) => {
-        if (delayedDrag) {
-          changeDelayedDrag(undefined);
-        } else if (dragStats.current != null) {
-          const payload = dragPayloadFactory(
-            event as utils.DragEvent,
-            dragStats.current.node
-          );
-          dispatch({ type: "drag", payload });
-          if (typeof onDrag === "function") {
-            onDrag(dragStats, dragProps);
-          }
-        }
-      };
-
-      const dragEnd = (event: Event) => {
-        if (delayedDrag) {
-          changeDelayedDrag(undefined);
-        } else if (dragStats.current != null) {
-          removeEventListeners(drag, dragEnd)();
-          const payload = dragPayloadFactory(
-            event as utils.DragEvent,
-            dragStats.current.node
-          );
-          dispatch({ type: "drop" });
-          if (typeof onDragEnd === "function") {
-            onDragEnd(payload);
-          }
-        }
-      };
-
-      if (isDragged || delayedDrag) {
-        window.addEventListener("mouseup", dragEnd, true);
-        window.addEventListener("touchend", dragEnd, true);
-        window.addEventListener("mousemove", drag, true);
-        window.addEventListener("touchmove", drag, true);
-      }
-
-      return removeEventListeners(drag, dragEnd);
-    }, [isDragged, delayedDrag]);
-
-    const dragStart = React.useCallback(
-      (event: Event) => {
-        const { currentTarget: target } = event;
-        if (target && utils.isDragStart(event as utils.DragEvent)) {
-          event.preventDefault();
-
-          const payload = dragPayloadFactory(
-            event as utils.DragEvent,
-            nodeRef.current || (target as HTMLElement)
-          );
-          changeDelayedDrag(payload);
-        }
-      },
-      [dispatch, onDragStart]
+    const { deltaX, deltaY, isDragged } = React.useMemo(
+      () => postProcess(props, ref),
+      [props, postProcess, ref]
     );
 
-    React.useEffect(() => {
-      const node = dragHandleRef.current || nodeRef.current;
-      if (node) {
-        node.addEventListener("touchstart", dragStart, true);
-        node.addEventListener("mousedown", dragStart, true);
-      }
+    const isDetached = React.useMemo(
+      () =>
+        isDragged && Math.max(...[deltaX, deltaY].map(Math.abs)) >= detachDelta,
+      [deltaX, deltaY, detachDelta, isDragged]
+    );
 
-      return () => {
-        if (node) {
-          node.removeEventListener("touchstart", dragStart, true);
-          node.removeEventListener("mousedown", dragStart, true);
-        }
-      };
-    }, []);
-
-    if (typeof children === "function") {
-      return children({
-        delayedDrag,
-        dragHandleRef,
-        dragStartListener: dragStart,
-        nodeRef,
-        ...dragStats
-      });
-    } else {
-      return (
-        <div
-          style={{
-            transform: isDragged
-              ? `translate3d(${dragStats.x}px, ${dragStats.y}px, -1px)`
-              : undefined,
-            transition: isDragged ? undefined : "transform 1s"
-          }}
-          className={className}
-          ref={nodeRef as React.RefObject<any>}
-        >
-          {children}
-        </div>
-      );
-    }
+    return (
+      <div
+        className={className + (isDragged && isDetached ? " dragged" : "")}
+        ref={ref}
+      >
+        {isDragged && isDetached && detachedParent != null && (
+          <Detached parent={detachedParent}>
+            <div
+              style={{
+                transform: `translate3d(${deltaX}px, ${deltaY}px, 1px)`,
+                position: "fixed",
+                ...size,
+                ...position
+              }}
+              id="dragged-node-clone"
+            >
+              {typeof children === "function"
+                ? children({ isDetached })
+                : children}
+            </div>
+          </Detached>
+        )}
+        {typeof children === "function"
+          ? children({
+              handleRef,
+              cancel,
+              isDetached
+            })
+          : children}
+      </div>
+    );
   };
 }
 
-export const Draggable = draggable(DragDropContext);
+/**
+ * Requires DragDropContainer with the same DragContext.
+ *
+ * Generates a div which will be used as draggable reference
+ * when child is not a functional component
+ * and this div will be used to make dragged component
+ * remain inside DragDropContainer.
+ *
+ * Children will be rendered twice:
+ * for base and for dragged elements.
+ * For a functional child component base instance will
+ * be provided by handleRef parameter,
+ * while dragged instance will not.
+ *
+ * This component uses ReactDOM.createPortal to mount
+ * the dragged instance with a position fixed.
+ *
+ * @prop {any} dragProps - drag indicator
+ * @prop {string} className
+ * @prop {React.FunctionComponent<IDraggableChild> | React.ReactNode} children
+ * @prop {(props: any, ref: React.RefObject<HTMLDivElement>) => any} postProcess //FIXME
+ * @prop {number} detachDelta
+ * @prop {number} delay
+ * @prop {HTMLElement} detachedParent
+ * @prop {any} key
+ */
+export const Draggable = draggable(DragContext);
