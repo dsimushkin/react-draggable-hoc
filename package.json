@@ -1,6 +1,6 @@
 {
   "name": "react-draggable-hoc",
-  "version": "0.0.20",
+  "version": "1.0.0",
   "description": "drag components inside container",
   "private": false,
   "main": "dist/index.js",
