@@ -7,20 +7,22 @@ import { DragEvent } from "./DragMonitor";
 const stopPropagation = (e: Event) => e.stopPropagation();
 
 export function useDragStopPropagation(ref: React.RefObject<any>, ...phases: DragPhase[]) {
-  const node = ref && ref.current;
-  if (node) {
-    phases.forEach(phase => {
-      attach(phase, stopPropagation, node);
-    })
-  }
-
-  return () => {
+  React.useEffect(() => {
+    const node = ref && ref.current;
     if (node) {
       phases.forEach(phase => {
-        detach(phase, stopPropagation, node);
+        attach(phase, stopPropagation, node);
       })
     }
-  }
+
+    return () => {
+      if (node) {
+        phases.forEach(phase => {
+          detach(phase, stopPropagation, node);
+        })
+      }
+    }
+  })
 }
 
 export function useForceUpdate(): [() => void, number] {
