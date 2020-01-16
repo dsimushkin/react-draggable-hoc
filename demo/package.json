@@ -8,7 +8,7 @@
     "raf": "^3.4.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
-    "react-draggable-hoc": "^1.0.3",
+    "react-draggable-hoc": "^1.0.4",
     "react-router-dom": "^5.0.1",
     "react-scripts": "^3.1.1"
   },
@@ -17,7 +17,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
+    "rmlink": "yarn unlink react-table-factory && yarn install --force && yarn upgrade",
+    "predeploy": "yarn rmlink && yarn build",
     "deploy": "gh-pages -d build"
   },
   "devDependencies": {
