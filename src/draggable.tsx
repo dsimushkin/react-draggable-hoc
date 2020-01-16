@@ -56,16 +56,16 @@ export function draggable(context: typeof DragContext) {
     detachedParent?: HTMLElement;
     key?: any;
     children?:
-      | React.FunctionComponent<{
-          handleRef?: React.RefObject<any>;
-          isDetached: boolean;
-          cancel?: () => void;
-        }>
-      | React.ReactNode;
+    | React.FunctionComponent<{
+      handleRef?: React.RefObject<any>;
+      isDetached: boolean;
+      cancel?: () => void;
+    }>
+    | React.ReactNode;
   }) {
     const ref = React.useRef<HTMLDivElement>(null);
     const handleRef = React.useRef();
-    const { cancel, ...props } = useDraggable(
+    const props = useDraggable(
       typeof children === "function" ? handleRef : ref,
       {
         dragProps,
@@ -110,10 +110,9 @@ export function draggable(context: typeof DragContext) {
         )}
         {typeof children === "function"
           ? children({
-              handleRef,
-              cancel,
-              isDetached
-            })
+            handleRef,
+            isDetached
+          })
           : children}
       </div>
     );

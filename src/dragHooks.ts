@@ -1,8 +1,27 @@
 import * as React from "react";
 
-import { attach, detach, isDragStart } from "./helpers";
+import { attach, detach, isDragStart, DragPhase } from "./helpers";
 import { DragContext } from "./DragDropContainer";
 import { DragEvent } from "./DragMonitor";
+
+const stopPropagation = (e: Event) => e.stopPropagation();
+
+export function useDragStopPropagation(ref: React.RefObject<any>, ...phases: DragPhase[]) {
+  const node = ref && ref.current;
+  if (node) {
+    phases.forEach(phase => {
+      attach(phase, stopPropagation, node);
+    })
+  }
+
+  return () => {
+    if (node) {
+      phases.forEach(phase => {
+        detach(phase, stopPropagation, node);
+      })
+    }
+  }
+}
 
 export function useForceUpdate(): [() => void, number] {
   const [state, change] = React.useState(0);
@@ -23,12 +42,6 @@ export function useDraggableFactory(context: typeof DragContext) {
     const [isDragged, change] = React.useState(false);
     const [delayed, changeDelayed] = React.useState();
     const [forceUpdate] = useForceUpdate();
-    function cancel() {
-      return {
-        onTouchStart: (e: Event) => e.stopPropagation(),
-        onMouseDown: (e: Event) => e.stopPropagation()
-      };
-    }
 
     React.useEffect(() => {
       const node = ref && ref.current;
@@ -107,8 +120,7 @@ export function useDraggableFactory(context: typeof DragContext) {
       deltaY: isDragged ? monitor.deltaY : 0,
       isDragged,
       delayed,
-      monitor,
-      cancel
+      monitor
     };
 
     return r;

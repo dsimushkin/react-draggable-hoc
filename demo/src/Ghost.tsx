@@ -4,7 +4,8 @@ import {
   DragDropContainer,
   Draggable,
   Droppable,
-  defaultPostProcessor
+  defaultPostProcessor,
+  useDragStopPropagation
 } from "react-draggable-hoc";
 
 const randomColor = () => {
@@ -13,16 +14,20 @@ const randomColor = () => {
 };
 
 // use a separate component to create a ghost
-const ContentElement = ({ className = "", style, handleRef, value }: any) => (
-  <span style={style} className={`Cell ${className}`}>
-    <div className="handle" ref={handleRef}>
-      <div className="bar" style={{ backgroundColor: style.color }} />
-      <div className="bar" style={{ backgroundColor: style.color }} />
-      <div className="bar" style={{ backgroundColor: style.color }} />
-    </div>
-    <span>{value}</span>
-  </span>
-);
+const ContentElement = ({ className = "", style, handleRef, value }: any) => {
+  const ref = React.useRef(null);
+  useDragStopPropagation(ref, "dragStart");
+  return (
+    <span style={style} className={`Cell ${className}`} ref={handleRef}>
+      <div className="handle">
+        <div className="bar" style={{ backgroundColor: style.color }} />
+        <div className="bar" style={{ backgroundColor: style.color }} />
+        <div className="bar" style={{ backgroundColor: style.color }} />
+      </div>
+      <span ref={ref}>{value}</span>
+    </span>
+  )
+};
 
 interface IContentProps {
   value: string;
@@ -83,14 +88,14 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
             )}
           </Droppable>
         ) : (
-          <ContentElement
-            value={value}
-            style={{
-              backgroundColor,
-              color
-            }}
-          />
-        )
+            <ContentElement
+              value={value}
+              style={{
+                backgroundColor,
+                color
+              }}
+            />
+          )
       }
     </Draggable>
   );
