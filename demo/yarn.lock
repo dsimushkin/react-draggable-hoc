@@ -8339,10 +8339,10 @@ react-dom@^16.9.0:
     prop-types "^15.6.2"
     scheduler "^0.18.0"
 
-react-draggable-hoc@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-1.0.2.tgz#54435e97c105abcd400562652e093b6b28faf049"
-  integrity sha512-oXX4hMWa59lAVFvs+KAlHBY1CsckL9Z1/s6qe5805Y/zCo9KlkJ19Rt+lF0bXcLud2XuQU7MJnaPZ8yB7Xg2DA==
+react-draggable-hoc@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-1.0.3.tgz#fa3d47588ec44eab8eb3d74814d8d11faf373d9c"
+  integrity sha512-cjLJ2pv7VOPTrvgLZ6CisB7OBxTGBQ2gNqF47OnLXUjB7EtNldy0At2+8bpTkKxow2oRRKsjYfEaEFVwnAAClg==
   dependencies:
     throttle-debounce "^2.1.0"
 
