@@ -17,7 +17,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "rmlink": "yarn unlink react-table-factory && yarn install --force && yarn upgrade",
+    "rmlink": "yarn unlink react-draggable-hoc && yarn install --force && yarn upgrade",
     "predeploy": "yarn rmlink && yarn build",
     "deploy": "gh-pages -d build"
   },
