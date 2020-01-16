@@ -4,10 +4,10 @@ import { attach, detach, isDragStart, DragPhase } from "./helpers";
 import { DragContext } from "./DragDropContainer";
 import { DragEvent } from "./DragMonitor";
 
-const stopPropagation = (e: Event) => e.stopPropagation();
-
 export function useDragStopPropagation(ref: React.RefObject<any>, ...phases: DragPhase[]) {
   React.useEffect(() => {
+    const stopPropagation = (e: Event) => e.stopPropagation();
+
     const node = ref && ref.current;
     if (node) {
       phases.forEach(phase => {
