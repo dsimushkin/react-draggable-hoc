@@ -47,10 +47,22 @@ export function detach(phase: DragPhase, fn: DragListener, node = window) {
 }
 
 export function isDragStart(e: DragEvent) {
-  return (
-    (e.type === "mousedown" || e.type === "touchstart") &&
-    (e.touches ? e.touches.length === 1 : e.buttons === 1)
-  );
+  return ["touchstart", "mousedown"].indexOf(e.type) >= 0 && isDragEvent(e);
+}
+
+export function isDragEvent(e: DragEvent) {
+  switch (e.type) {
+    case "touchstart":
+    case "touchmove":
+    case "touchend":
+      return e.touches.length === 1;
+    case "mousedown":
+    case "mousemove":
+    case "mouseup":
+      return e.buttons === 0 || e.buttons === 1;
+    default:
+      return false;
+  }
 }
 
 export function remove<T>(arr: Array<T>, e: T) {
@@ -62,3 +74,19 @@ export function remove<T>(arr: Array<T>, e: T) {
 
   return undefined;
 }
+
+const id: string | undefined = undefined;
+export const log = (...messages: any) => {
+  if (id == null) return;
+  let element = document.getElementById(id);
+  if (element == null) {
+    element = document.createElement("div");
+    element.id = id;
+    document.body.appendChild(element);
+  }
+  element.innerHTML = "";
+  messages.forEach((e: any) => {
+    element!.innerHTML += JSON.stringify(e);
+  });
+  console.log(...messages);
+};

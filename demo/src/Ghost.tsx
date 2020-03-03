@@ -26,7 +26,7 @@ const ContentElement = ({ className = "", style, handleRef, value }: any) => {
       </div>
       <span ref={ref}>{value}</span>
     </span>
-  )
+  );
 };
 
 interface IContentProps {
@@ -53,6 +53,12 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
       delay={100}
       dragProps={backgroundColor}
       postProcess={postProcess}
+      onDragStart={() => {
+        document.body.style.cursor = "ew-resize";
+      }}
+      onDragEnd={() => {
+        document.body.style.cursor = "default";
+      }}
     >
       {({ handleRef, isDragged }: any) =>
         handleRef != null ? (
@@ -88,14 +94,14 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
             )}
           </Droppable>
         ) : (
-            <ContentElement
-              value={value}
-              style={{
-                backgroundColor,
-                color
-              }}
-            />
-          )
+          <ContentElement
+            value={value}
+            style={{
+              backgroundColor,
+              color
+            }}
+          />
+        )
       }
     </Draggable>
   );
@@ -125,7 +131,8 @@ export const GhostExampleTitle = () => (
     with a ghost stuck to row bottom <br />
     custom hover implementation <br />
     drag handle <br />
-    and a delay of 100ms
+    and a delay of 100ms <br />
+    ew-resize cursor on drag
   </p>
 );
 

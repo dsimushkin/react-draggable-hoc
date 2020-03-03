@@ -19,11 +19,13 @@ export function dropable(context: typeof DragContext) {
   return function Droppable({
     children,
     method = defaultDroppableMethod,
-    onDrop
+    onDrop,
+    disabled = false
   }: {
     children: React.FunctionComponent<any>;
     method?: typeof defaultDroppableMethod;
     onDrop?: (dragProps: any) => void;
+    disabled?: boolean;
   }) {
     const { monitor } = React.useContext(context);
     const ref = React.useRef<any>();
@@ -38,6 +40,31 @@ export function dropable(context: typeof DragContext) {
 
     React.useEffect(() => {
       const node = ref.current;
+
+      if (node != null) {
+        if (props.isHovered) {
+          monitor.over(node);
+        } else {
+          monitor.out(node);
+        }
+      }
+
+      const listener =
+        typeof onDrop === "function" && props.isHovered
+          ? () => {
+              onDrop(monitor.dragProps);
+              change(factory(monitor));
+            }
+          : undefined;
+
+      if (listener != null) monitor.on("drop", listener);
+
+      return () => {
+        if (listener != null) monitor.off("drop", listener);
+      };
+    }, [props]);
+
+    React.useEffect(() => {
       const listener = (monitor: DragMonitor) => {
         const nprops = factory(monitor);
 
@@ -47,32 +74,19 @@ export function dropable(context: typeof DragContext) {
         ) {
           change(nprops);
         }
-
-        if (
-          typeof onDrop === "function" &&
-          props.isHovered &&
-          nprops.dragProps == null
-        ) {
-          onDrop(props.dragProps);
-        }
-
-        if (node != null && nprops.isHovered !== props.isHovered) {
-          if (nprops.isHovered) {
-            monitor.over(node);
-          } else {
-            monitor.out(node);
-          }
-        }
       };
-
-      monitor.on("propsChange", listener);
-      monitor.on("drag", listener);
+      if (!disabled) {
+        monitor.on("propsChange", listener);
+        monitor.on("drag", listener);
+      }
 
       return () => {
-        monitor.off("propsChange", listener);
-        monitor.off("drag", listener);
+        if (!disabled) {
+          monitor.off("propsChange", listener);
+          monitor.off("drag", listener);
+        }
       };
-    }, [props, factory, onDrop]);
+    }, [disabled, props]);
 
     return children({ ref, ...props });
   };

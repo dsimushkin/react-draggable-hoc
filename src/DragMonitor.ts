@@ -49,25 +49,31 @@ export class DragMonitor {
   props: any = undefined;
   hovered: HTMLElement[] = [];
 
-  dragStart = (e: DragEvent) => {
+  dragStart = async (e: DragEvent) => {
     this.history = [dragPayloadFactory(e)];
     this.notify("dragStart");
   };
 
-  drag = (e: DragEvent) => {
+  drag = async (e: DragEvent) => {
     this.history.push(dragPayloadFactory(e));
     this.notify("drag");
   };
 
-  drop = (e: DragEvent) => {
+  drop = async (e: DragEvent) => {
+    this.notify("drop");
+    await this.cancel();
+  };
+
+  cancel = async () => {
     this.history = [];
     this.dragProps = undefined;
-    this.notify("drop");
   };
 
   set dragProps(value) {
     this.props = value;
-    this.notify("propsChange");
+    (async () => {
+      await this.notify("propsChange");
+    })();
   }
 
   get dragProps() {
@@ -75,8 +81,10 @@ export class DragMonitor {
   }
 
   over = (node: HTMLElement) => {
-    this.hovered.push(node);
-    this.notify("over", node);
+    if (this.hovered.indexOf(node) < 0) {
+      this.hovered.push(node);
+      this.notify("over", node);
+    }
   };
 
   out = (node: HTMLElement) => {
@@ -95,14 +103,16 @@ export class DragMonitor {
     remove(this.subs[e], fn);
   };
 
-  notify = (e: DragMonitorEvents, ...args: any) => {
+  notify = async (e: DragMonitorEvents, ...args: any) => {
     if (this.subs[e] != null) {
-      this.subs[e].forEach(fn => {
-        setTimeout(() => {
+      return Promise.all(
+        this.subs[e].map(async fn => {
           fn(this, ...args);
-        }, 0);
-      });
+        })
+      );
     }
+
+    return undefined;
   };
 
   getBounds = (rect: ClientRect | DOMRect) => {

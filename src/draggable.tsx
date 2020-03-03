@@ -46,7 +46,9 @@ export function draggable(context: typeof DragContext) {
     postProcess = defaultPostProcessor,
     detachDelta = 20,
     delay = 100,
-    detachedParent = document.body
+    detachedParent = document.body,
+    onDragStart,
+    onDragEnd
   }: {
     dragProps: any; // drag props to be used
     className?: string;
@@ -55,13 +57,15 @@ export function draggable(context: typeof DragContext) {
     delay?: number;
     detachedParent?: HTMLElement;
     key?: any;
+    onDragStart?: () => any;
+    onDragEnd?: () => any;
     children?:
-    | React.FunctionComponent<{
-      handleRef?: React.RefObject<any>;
-      isDetached: boolean;
-      cancel?: () => void;
-    }>
-    | React.ReactNode;
+      | React.FunctionComponent<{
+          handleRef?: React.RefObject<any>;
+          isDetached: boolean;
+          cancel?: () => void;
+        }>
+      | React.ReactNode;
   }) {
     const ref = React.useRef<HTMLDivElement>(null);
     const handleRef = React.useRef();
@@ -72,6 +76,7 @@ export function draggable(context: typeof DragContext) {
         delay
       }
     );
+    const prevProps = React.useRef(props);
 
     const [, size, position] = useRect(ref, [props.delayed]);
 
@@ -85,6 +90,20 @@ export function draggable(context: typeof DragContext) {
         isDragged && Math.max(...[deltaX, deltaY].map(Math.abs)) >= detachDelta,
       [deltaX, deltaY, detachDelta, isDragged]
     );
+
+    React.useEffect(() => {
+      if (prevProps.current.isDragged !== props.isDragged) {
+        if (props.isDragged && typeof onDragStart === "function") {
+          onDragStart();
+        }
+
+        if (!props.isDragged && typeof onDragEnd === "function") {
+          onDragEnd();
+        }
+      }
+
+      prevProps.current = props;
+    }, [props, onDragStart, onDragEnd]);
 
     return (
       <div
@@ -110,9 +129,9 @@ export function draggable(context: typeof DragContext) {
         )}
         {typeof children === "function"
           ? children({
-            handleRef,
-            isDetached
-          })
+              handleRef,
+              isDetached
+            })
           : children}
       </div>
     );

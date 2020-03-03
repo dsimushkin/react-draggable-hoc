@@ -1,10 +1,13 @@
 import * as React from "react";
 
-import { attach, detach, isDragStart, DragPhase } from "./helpers";
+import { attach, detach, isDragEvent, isDragStart, DragPhase } from "./helpers";
 import { DragContext } from "./DragDropContainer";
 import { DragEvent } from "./DragMonitor";
 
-export function useDragStopPropagation(ref: React.RefObject<any>, ...phases: DragPhase[]) {
+export function useDragStopPropagation(
+  ref: React.RefObject<any>,
+  ...phases: DragPhase[]
+) {
   React.useEffect(() => {
     const stopPropagation = (e: Event) => e.stopPropagation();
 
@@ -12,17 +15,17 @@ export function useDragStopPropagation(ref: React.RefObject<any>, ...phases: Dra
     if (node) {
       phases.forEach(phase => {
         attach(phase, stopPropagation, node);
-      })
+      });
     }
 
     return () => {
       if (node) {
         phases.forEach(phase => {
           detach(phase, stopPropagation, node);
-        })
+        });
       }
-    }
-  })
+    };
+  });
 }
 
 export function useForceUpdate(): [() => void, number] {
@@ -44,6 +47,17 @@ export function useDraggableFactory(context: typeof DragContext) {
     const [isDragged, change] = React.useState(false);
     const [delayed, changeDelayed] = React.useState();
     const [forceUpdate] = useForceUpdate();
+
+    const cancelDrag = React.useCallback(
+      (e, force = false) => {
+        if (delayed) changeDelayed(undefined);
+        if (isDragged) {
+          change(false);
+          monitor[force ? "cancel" : "drop"](e as DragEvent);
+        }
+      },
+      [isDragged, delayed, change, monitor, changeDelayed]
+    );
 
     React.useEffect(() => {
       const node = ref && ref.current;
@@ -80,22 +94,22 @@ export function useDraggableFactory(context: typeof DragContext) {
 
     React.useEffect(() => {
       if (delayed) {
-        const listener = () => {
-          changeDelayed(undefined);
-        };
-
-        attach("drag", listener);
-        attach("drop", listener);
+        attach("drag", cancelDrag);
+        attach("drop", cancelDrag);
 
         return () => {
-          detach("drag", listener);
-          detach("drop", listener);
+          detach("drag", cancelDrag);
+          detach("drop", cancelDrag);
         };
       } else {
         if (isDragged) {
-          const drag = (e: Event) => {
+          const drag = (e: any) => {
             e.preventDefault();
-            monitor.drag(e as DragEvent);
+            if (!isDragEvent(e as DragEvent)) {
+              cancelDrag(e, true);
+            } else {
+              monitor.drag(e as DragEvent);
+            }
             forceUpdate();
           };
 

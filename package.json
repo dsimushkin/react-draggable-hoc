@@ -1,7 +1,7 @@
 {
   "name": "react-draggable-hoc",
   "version": "1.0.4",
-  "description": "drag components inside container",
+  "description": "drag by ref using hook",
   "private": false,
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -26,7 +26,6 @@
     "@rollup/plugin-node-resolve": "^6.0.0",
     "@types/react": "^16.4.18",
     "@types/react-dom": "^16.0.9",
-    "@types/throttle-debounce": "^1.1.1",
     "rollup": "^1.14.4",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-peer-deps-external": "^2.2.0",
@@ -44,7 +43,7 @@
   "keywords": [
     "draggable",
     "react",
-    "hoc",
+    "hook",
     "dnd",
     "dragndrop",
     "drag",
@@ -55,8 +54,5 @@
   "bugs": {
     "url": "https://github.com/fellaslim/react-draggable-hoc/issues"
   },
-  "homepage": "https://github.com/fellaslim/react-draggable-hoc#readme",
-  "dependencies": {
-    "throttle-debounce": "^2.1.0"
-  }
+  "homepage": "https://github.com/fellaslim/react-draggable-hoc#readme"
 }
