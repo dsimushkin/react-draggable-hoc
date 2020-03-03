@@ -42,7 +42,7 @@ const postProcess = (props: any, ref: any) => {
 };
 
 const Content = ({ backgroundColor, value }: IContentProps) => {
-  const [color, changeColor] = React.useState();
+  const [color, changeColor] = React.useState<string>();
 
   const onDrop = (dragProps: string) => {
     changeColor(dragProps);
