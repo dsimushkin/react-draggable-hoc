@@ -8,8 +8,6 @@ import {
   useDragStopPropagation
 } from "react-draggable-hoc";
 
-import useDragPhaseListener from "react-draggable-hoc/lib/useDragPhaseListener";
-
 const randomColor = () => {
   const randomPart = () => Math.floor(Math.random() * 255);
   return "rgb(" + randomPart() + "," + randomPart() + "," + randomPart() + ")";
