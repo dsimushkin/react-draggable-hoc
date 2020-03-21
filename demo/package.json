@@ -5,12 +5,12 @@
   "main": "src/index.tsx",
   "homepage": "http://dsimushkin.github.io/react-draggable-hoc",
   "dependencies": {
-    "raf": "^3.4.1",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
+    "raf": "latest",
+    "react": "latest",
+    "react-dom": "latest",
     "react-draggable-hoc": "latest",
-    "react-router-dom": "^5.0.1",
-    "react-scripts": "^3.1.1"
+    "react-router-dom": "latest",
+    "react-scripts": "latest"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -22,15 +22,12 @@
     "deploy": "gh-pages -d build"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.2",
-    "@types/react": "^16.4.18",
-    "@types/react-dom": "^16.0.9",
-    "@types/react-router-dom": "^4.3.1",
-    "gh-pages": "^2.0.1",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-react": "^4.0.0",
-    "typescript": "^3.0.3"
+    "@types/jest": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/react-router-dom": "latest",
+    "gh-pages": "latest",
+    "typescript": "latest"
   },
   "eslintConfig": {
     "extends": "react-app"
