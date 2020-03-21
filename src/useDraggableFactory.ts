@@ -27,9 +27,9 @@ function useDraggableFactory(context: typeof DragContext) {
 
       const syncListener: DragListener = e => {
         if (isDragStart(e) && node?.contains(e.target as Node)) {
+          if (!isDragged) change(true);
           monitor.dragProps = dragProps;
           monitor.start(e);
-          if (!isDragged) change(true);
         }
       };
       const cancelListener = () => {
@@ -44,8 +44,8 @@ function useDraggableFactory(context: typeof DragContext) {
 
       if (delayed != null) {
         t = window.setTimeout(() => {
-          changeDelayed(undefined);
           syncListener(delayed);
+          changeDelayed(undefined);
         }, delay);
         dropListener = dragListener = cancelListener;
       } else {
@@ -78,8 +78,12 @@ function useDraggableFactory(context: typeof DragContext) {
         }
       }
 
-      if (dropListener != null) attach("drop", dropListener);
-      if (dragListener != null) attach("drag", dragListener);
+      if (dropListener != null) {
+        attach("drop", dropListener);
+      }
+      if (dragListener != null) {
+        attach("drag", dragListener);
+      }
       if (dragStartListener != null) {
         attach("dragStart", dragStartListener, node);
       }
@@ -87,8 +91,12 @@ function useDraggableFactory(context: typeof DragContext) {
       return () => {
         clearTimeout(t);
 
-        if (dropListener != null) detach("drop", dropListener);
-        if (dragListener != null) detach("drag", dragListener);
+        if (dropListener != null) {
+          detach("drop", dropListener);
+        }
+        if (dragListener != null) {
+          detach("drag", dragListener);
+        }
         if (dragStartListener != null) {
           detach("dragStart", dragStartListener, node);
         }

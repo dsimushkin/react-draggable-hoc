@@ -5,7 +5,7 @@ export function attach(
   phase: DragPhase,
   fn: DragListener,
   node: HTMLElement | Window = window,
-  config = { passive: false }
+  config: Parameters<typeof addEventListener>[2] = { passive: false }
 ) {
   switch (phase) {
     case "dragStart":
@@ -52,13 +52,25 @@ export function isDragStart(e: Event) {
   return isDragEvent(e) && ["touchstart", "mousedown"].indexOf(e.type) >= 0;
 }
 
+function isTouchEvent(e: Event) {
+  return (
+    (e as TouchEvent).touches != null ||
+    (e as TouchEvent).changedTouches != null
+  );
+}
+
+function isMouseEvent(e: Event) {
+  return (e as MouseEvent).buttons != null;
+}
+
 export function isDragEvent(e: Event) {
-  if (e instanceof TouchEvent) {
-    return e.touches.length === 1;
+  if (isTouchEvent(e)) {
+    return (e as TouchEvent).touches.length === 1;
   }
 
-  if (e instanceof MouseEvent) {
-    return e.buttons === 0 || e.buttons === 1;
+  if (isMouseEvent(e)) {
+    const { buttons } = e as MouseEvent;
+    return buttons === 0 || buttons === 1;
   }
 
   return false;
@@ -109,8 +121,9 @@ function getPointer(event: TouchEvent) {
 }
 
 export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
-  const { pageX, pageY, target } =
-    event instanceof TouchEvent ? getPointer(event) : event;
+  const { pageX, pageY, target } = isTouchEvent(event)
+    ? getPointer(event as TouchEvent)
+    : (event as MouseEvent);
   return {
     x: pageX,
     y: pageY,

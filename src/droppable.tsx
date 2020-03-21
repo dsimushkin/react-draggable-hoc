@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { DragContext } from "./dragDropContainer";
 import { DragMonitor } from "./DragMonitor";
-import { useMonitorListener } from "./dragHooks";
+import useMonitorListenerFactory from "./useMonitorListenerFactory";
 
 export function defaultDroppableMethod(
   monitor: DragMonitor,
@@ -17,6 +17,7 @@ export function defaultDroppableMethod(
 }
 
 function droppable(context: typeof DragContext) {
+  const useMonitorListener = useMonitorListenerFactory(context);
   return function Droppable({
     children,
     method = defaultDroppableMethod,

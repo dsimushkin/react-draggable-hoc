@@ -19,5 +19,5 @@
     "strict": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/utils.ts", "src/PubSub.ts"]
+  "exclude": ["node_modules"]
 }

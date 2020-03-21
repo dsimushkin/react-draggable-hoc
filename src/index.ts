@@ -1,12 +1,17 @@
 import droppable from "./droppable";
 import draggable from "./draggable";
 import dragDropContainer, { DragContext } from "./dragDropContainer";
+import useDraggableFactory from "./useDraggableFactory";
+import useMonitorListenerFactory from "./useMonitorListenerFactory";
 
-export * from "./dragHooks";
 export * from "./helpers";
 export * from "./DragMonitor";
+export { default as useDragStopPropagation } from "./useDragStopPropagation";
 export { defaultPostProcessor } from "./draggable";
 export { defaultDroppableMethod } from "./droppable";
+
+export const useDraggable = useDraggableFactory(DragContext);
+export const useMonitorListener = useMonitorListenerFactory(DragContext);
 
 /**
  * Requires DragDropContainer with the same DragContext.
