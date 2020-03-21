@@ -8655,10 +8655,10 @@ react-dom@latest:
     prop-types "^15.6.2"
     scheduler "^0.19.1"
 
-react-draggable-hoc@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-1.2.1.tgz#d9c271aa009d2c65a03e1ffb6526ce40014bc769"
-  integrity sha512-xNHAMhFhT+izJrXR6a5JjSFeTYL+k7AjTyfSHSZ+0V1aLg3vlX0Bolhquri/HK1mFREi4fsVB7FE61JPkErSvg==
+react-draggable-hoc@latest:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-1.2.2.tgz#e8d91066143107e52a86d824b4373bafd1794ce5"
+  integrity sha512-ZbZrWnUFL+PxxHzfVYf+WLptf5xuAoUWzJJ6+0mkJwGOAGvqq1rI0o4A+A9bSL/24bU397xRNn3MLdLdIsZAiA==
 
 react-error-overlay@^6.0.7:
   version "6.0.7"
