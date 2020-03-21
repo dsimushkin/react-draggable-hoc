@@ -2,11 +2,15 @@ import * as React from "react";
 
 import { DragMonitor } from "./DragMonitor";
 
-export const DragContext = React.createContext({
-  monitor: new DragMonitor()
+export const DragContext = React.createContext<{
+  monitor: DragMonitor;
+  container?: React.RefObject<any>;
+}>({
+  monitor: new DragMonitor(),
+  container: undefined
 });
 
-export function dragDropContainerFactory(context: typeof DragContext) {
+function dragDropContainer(context: typeof DragContext) {
   const monitor = new DragMonitor();
 
   return function DragDropContainer({
@@ -21,12 +25,8 @@ export function dragDropContainerFactory(context: typeof DragContext) {
   } & Omit<JSX.IntrinsicElements["div"], "children">) {
     const ref = React.useRef(null);
 
-    React.useEffect(() => {
-      monitor.container = ref.current || undefined;
-    });
-
     return (
-      <context.Provider value={{ monitor }}>
+      <context.Provider value={{ monitor, container: ref }}>
         {typeof children === "function" ? (
           children({ ref })
         ) : (
@@ -39,4 +39,4 @@ export function dragDropContainerFactory(context: typeof DragContext) {
   };
 }
 
-export const DragDropContainer = dragDropContainerFactory(DragContext);
+export default dragDropContainer;

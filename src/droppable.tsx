@@ -1,7 +1,8 @@
 import * as React from "react";
 
-import { DragContext } from "./DragDropContainer";
+import { DragContext } from "./dragDropContainer";
 import { DragMonitor } from "./DragMonitor";
+import { useMonitorListener } from "./dragHooks";
 
 export function defaultDroppableMethod(
   monitor: DragMonitor,
@@ -15,7 +16,7 @@ export function defaultDroppableMethod(
   return false;
 }
 
-export function dropable(context: typeof DragContext) {
+function droppable(context: typeof DragContext) {
   return function Droppable({
     children,
     method = defaultDroppableMethod,
@@ -31,65 +32,40 @@ export function dropable(context: typeof DragContext) {
     const ref = React.useRef<any>();
     const factory = React.useCallback(
       monitor => ({
-        isHovered: monitor.dragProps ? method(monitor, ref) : false,
+        isHovered:
+          monitor.dragProps && !disabled ? method(monitor, ref) : false,
         dragProps: monitor.dragProps
       }),
-      [method]
+      [method, monitor, disabled]
     );
     const [props, change] = React.useState(factory(monitor));
-
-    React.useEffect(() => {
-      const node = ref.current;
-
-      if (node != null) {
-        if (props.isHovered) {
-          monitor.over(node);
-        } else {
-          monitor.out(node);
-        }
-      }
-
-      const listener =
-        typeof onDrop === "function" && props.isHovered
-          ? () => {
-              onDrop(monitor.dragProps);
-              change(factory(monitor));
-            }
-          : undefined;
-
-      if (listener != null) monitor.on("drop", listener);
-
-      return () => {
-        if (listener != null) monitor.off("drop", listener);
-      };
-    }, [props]);
-
-    React.useEffect(() => {
-      const listener = (monitor: DragMonitor) => {
+    const dragListener = React.useCallback(
+      (monitor: DragMonitor) => {
         const nprops = factory(monitor);
-
-        if (
-          props.isHovered !== nprops.isHovered ||
-          props.dragProps !== nprops.dragProps
-        ) {
+        if (Object.keys(nprops).some(key => nprops[key] !== props[key])) {
           change(nprops);
         }
-      };
-      if (!disabled) {
-        monitor.on("propsChange", listener);
-        monitor.on("drag", listener);
-      }
+      },
+      [props, change, factory]
+    );
+    useMonitorListener(dragListener, "dragStart", "drag", "cancel");
 
-      return () => {
-        if (!disabled) {
-          monitor.off("propsChange", listener);
-          monitor.off("drag", listener);
+    const dropListener = React.useCallback(
+      (monitor: DragMonitor) => {
+        const nprops = factory(monitor);
+        if (Object.keys(nprops).some(key => nprops[key] !== props[key])) {
+          change(nprops);
         }
-      };
-    }, [disabled, props]);
+        if (props.isHovered && typeof onDrop === "function") {
+          onDrop(props.dragProps);
+        }
+      },
+      [factory, monitor, props, onDrop]
+    );
+    useMonitorListener(dropListener, "drop");
 
     return children({ ref, ...props });
   };
 }
 
-export const Droppable = dropable(DragContext);
+export default droppable;

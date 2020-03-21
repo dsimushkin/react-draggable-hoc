@@ -1,68 +1,67 @@
-import { DragEvent } from "./DragMonitor";
-
 export type DragPhase = "dragStart" | "drag" | "drop";
 export type DragListener = (e: MouseEvent | TouchEvent) => void;
 
 export function attach(
   phase: DragPhase,
   fn: DragListener,
-  node = window,
+  node: HTMLElement | Window = window,
   config = { passive: false }
 ) {
   switch (phase) {
     case "dragStart":
-      node.addEventListener("mousedown", fn, config);
-      node.addEventListener("touchstart", fn, config);
-      break;
+      (node as HTMLElement).addEventListener("mousedown", fn, config);
+      (node as HTMLElement).addEventListener("touchstart", fn, config);
+      return fn;
     case "drag":
-      node.addEventListener("mousemove", fn, config);
-      node.addEventListener("touchmove", fn, config);
-      break;
+      (node as HTMLElement).addEventListener("mousemove", fn, config);
+      (node as HTMLElement).addEventListener("touchmove", fn, config);
+      return fn;
     case "drop":
-      node.addEventListener("mouseup", fn, config);
-      node.addEventListener("touchend", fn, config);
-      break;
+      (node as HTMLElement).addEventListener("mouseup", fn, config);
+      (node as HTMLElement).addEventListener("touchend", fn, config);
+      return fn;
     default:
       throw new Error(`Invalid phase ${phase}`);
   }
 }
 
-export function detach(phase: DragPhase, fn: DragListener, node = window) {
+export function detach(
+  phase: DragPhase,
+  fn: DragListener,
+  node: HTMLElement | Window = window
+) {
   switch (phase) {
     case "dragStart":
-      node.removeEventListener("mousedown", fn);
-      node.removeEventListener("touchstart", fn);
-      break;
+      (node as HTMLElement).removeEventListener("mousedown", fn);
+      (node as HTMLElement).removeEventListener("touchstart", fn);
+      return fn;
     case "drag":
-      node.removeEventListener("mousemove", fn);
-      node.removeEventListener("touchmove", fn);
-      break;
+      (node as HTMLElement).removeEventListener("mousemove", fn);
+      (node as HTMLElement).removeEventListener("touchmove", fn);
+      return fn;
     case "drop":
-      node.removeEventListener("mouseup", fn);
-      node.removeEventListener("touchend", fn);
-      break;
+      (node as HTMLElement).removeEventListener("mouseup", fn);
+      (node as HTMLElement).removeEventListener("touchend", fn);
+      return fn;
     default:
       throw new Error(`Invalid phase ${phase}`);
   }
 }
 
-export function isDragStart(e: DragEvent) {
-  return ["touchstart", "mousedown"].indexOf(e.type) >= 0 && isDragEvent(e);
+export function isDragStart(e: Event) {
+  return isDragEvent(e) && ["touchstart", "mousedown"].indexOf(e.type) >= 0;
 }
 
-export function isDragEvent(e: DragEvent) {
-  switch (e.type) {
-    case "touchstart":
-    case "touchmove":
-    case "touchend":
-      return e.touches.length === 1;
-    case "mousedown":
-    case "mousemove":
-    case "mouseup":
-      return e.buttons === 0 || e.buttons === 1;
-    default:
-      return false;
+export function isDragEvent(e: Event) {
+  if (e instanceof TouchEvent) {
+    return e.touches.length === 1;
   }
+
+  if (e instanceof MouseEvent) {
+    return e.buttons === 0 || e.buttons === 1;
+  }
+
+  return false;
 }
 
 export function remove<T>(arr: Array<T>, e: T) {
@@ -75,18 +74,47 @@ export function remove<T>(arr: Array<T>, e: T) {
   return undefined;
 }
 
-const id: string | undefined = undefined;
-export const log = (...messages: any) => {
-  if (id == null) return;
-  let element = document.getElementById(id);
-  if (element == null) {
-    element = document.createElement("div");
-    element.id = id;
-    document.body.appendChild(element);
+export const getBounds = (
+  container: HTMLElement,
+  rect: ClientRect | DOMRect
+) => {
+  if (container == null || rect == null) {
+    return {
+      maxX: +Infinity,
+      maxY: +Infinity,
+      minX: -Infinity,
+      minY: -Infinity
+    };
   }
-  element.innerHTML = "";
-  messages.forEach((e: any) => {
-    element!.innerHTML += JSON.stringify(e);
-  });
-  console.log(...messages);
+
+  const cr = container.getBoundingClientRect();
+
+  return {
+    maxX: cr.right - rect.right,
+    maxY: cr.bottom - rect.bottom,
+    minX: cr.left - rect.left,
+    minY: cr.top - rect.top
+  };
 };
+
+export const fixToRange = (v: number, min: number, max: number) => {
+  if (v == null) return v;
+  return Math.max(Math.min(v, max != null ? max : v), min != null ? min : v);
+};
+
+function getPointer(event: TouchEvent) {
+  return event.touches && event.touches.length
+    ? event.touches[0]
+    : event.changedTouches[0];
+}
+
+export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
+  const { pageX, pageY, target } =
+    event instanceof TouchEvent ? getPointer(event) : event;
+  return {
+    x: pageX,
+    y: pageY,
+    target,
+    event
+  };
+}

@@ -1,0 +1,43 @@
+import { remove } from "./helpers";
+
+class PubSub<T extends string, K extends Function> {
+  subs: {
+    [key in T]?: K[];
+  } = {};
+
+  on = (e: T, fn: K) => {
+    if (e == null) throw new Error("Event name should be provided");
+    this.off(e, fn);
+    if (this.subs[e] == null) this.subs[e] = [];
+    this.subs[e]!.push(fn);
+  };
+
+  off = (e: T, fn: K) => {
+    if (e == null) throw new Error("Event name should be provided");
+    if (this.subs[e] != null) {
+      remove(this.subs[e]!, fn);
+    }
+  };
+
+  notify = async (e: T, ...args: any) => {
+    if (e == null) throw new Error("Event name should be provided");
+    if (this.subs[e] != null) {
+      const subs = this.subs[e]!.slice();
+      for (let sub of subs) {
+        await sub(this, ...args);
+      }
+    }
+  };
+
+  notifySync = (e: T, ...args: any) => {
+    if (e == null) throw new Error("Event name should be provided");
+    if (this.subs[e] != null) {
+      const subs = this.subs[e]!.slice();
+      for (let sub of subs) {
+        sub(this, ...args);
+      }
+    }
+  };
+}
+
+export default PubSub;
