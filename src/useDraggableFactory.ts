@@ -10,7 +10,7 @@ import {
   detach
 } from "./helpers";
 
-export function useDraggableFactory(context: typeof DragContext) {
+function useDraggableFactory(context: typeof DragContext) {
   return function useDraggable(
     ref: React.RefObject<any>,
     { dragProps, delay = 0 }: { dragProps?: any; delay?: number } = {}
@@ -107,3 +107,5 @@ export function useDraggableFactory(context: typeof DragContext) {
     return r;
   };
 }
+
+export default useDraggableFactory;

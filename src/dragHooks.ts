@@ -3,8 +3,8 @@ import * as React from "react";
 import { DragPhase } from "./helpers";
 import { DragContext } from "./dragDropContainer";
 import useMonitorListenerFactory from "./useMonitorListenerFactory";
-import { useDraggableFactory } from "./useDraggableFactory";
-import { useDragPhaseListener } from "./useDragPhaseListener";
+import useDraggableFactory from "./useDraggableFactory";
+import useDragPhaseListener from "./useDragPhaseListener";
 
 export function useDragStopPropagation(
   ref: React.RefObject<any>,

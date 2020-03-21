@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { DragContext } from "./dragDropContainer";
-import { useDraggableFactory } from "./useDraggableFactory";
+import useDraggableFactory from "./useDraggableFactory";
 import useRect from "./useRect";
 
 export function defaultPostProcessor(

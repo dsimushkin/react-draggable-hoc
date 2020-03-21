@@ -1,7 +1,7 @@
 import * as React from "react";
 import { DragPhase, attach, detach } from "./helpers";
 
-export function useDragPhaseListener(
+function useDragPhaseListener(
   listener: (e: Event) => any,
   phases: DragPhase[],
   ref?: React.RefObject<any>
@@ -18,3 +18,5 @@ export function useDragPhaseListener(
     };
   });
 }
+
+export default useDragPhaseListener;
