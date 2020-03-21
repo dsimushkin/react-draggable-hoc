@@ -8,7 +8,7 @@
     "raf": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-draggable-hoc": "latest",
+    "react-draggable-hoc": "^1.2.1",
     "react-router-dom": "latest",
     "react-scripts": "latest"
   },
