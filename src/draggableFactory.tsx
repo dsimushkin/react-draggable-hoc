@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { DragContext } from "./dragDropContainer";
 import useDraggableFactory from "./useDraggableFactory";
 import useRect from "./useRect";
+import DragContext from "./IDragContext";
 
 export function defaultPostProcessor(
   props: any, // FIXME
@@ -40,7 +40,7 @@ function Detached({
  *
  * @param context DragContext
  */
-function draggable(context: typeof DragContext) {
+function draggableFactory(context: React.Context<DragContext>) {
   const useDraggable = useDraggableFactory(context);
 
   return function Draggable({
@@ -142,4 +142,4 @@ function draggable(context: typeof DragContext) {
   };
 }
 
-export default draggable;
+export default draggableFactory;

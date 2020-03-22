@@ -1,7 +1,9 @@
 {
-    "files.exclude": {
-        "**/node_modules": true
-    },
-    "editor.formatOnSave": true,
-    "prettier.trailingComma": "all"
+  "files.exclude": {
+    "**/node_modules": true,
+    // "**/lib": true,
+    "**/build": true
+  },
+  "editor.formatOnSave": true,
+  "prettier.trailingComma": "all"
 }

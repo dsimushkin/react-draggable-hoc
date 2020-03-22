@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { DragContext } from "./dragDropContainer";
+import DragContext from "./IDragContext";
 import { DragMonitor } from "./DragMonitor";
 import useMonitorListenerFactory from "./useMonitorListenerFactory";
 
@@ -16,7 +16,7 @@ export function defaultDroppableMethod(
   return false;
 }
 
-function droppable(context: typeof DragContext) {
+function droppableFactory(context: React.Context<DragContext>) {
   const useMonitorListener = useMonitorListenerFactory(context);
   return function Droppable({
     children,
@@ -73,4 +73,4 @@ function droppable(context: typeof DragContext) {
   };
 }
 
-export default droppable;
+export default droppableFactory;

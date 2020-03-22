@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { DragContext } from "./dragDropContainer";
 import { Listener, DragMonitorPhase } from "./DragMonitor";
+import DragContext from "./IDragContext";
 
-function useMonitorListenerFactory(context: typeof DragContext) {
+function useMonitorListenerFactory(context: React.Context<DragContext>) {
   return function useMonitorListener(
     listener: Listener,
     ...phases: DragMonitorPhase[]

@@ -1,16 +1,9 @@
 import * as React from "react";
 
 import { DragMonitor } from "./DragMonitor";
+import DragContext from "./IDragContext";
 
-export const DragContext = React.createContext<{
-  monitor: DragMonitor;
-  container?: React.RefObject<any>;
-}>({
-  monitor: new DragMonitor(),
-  container: undefined,
-});
-
-function dragDropContainer(context: typeof DragContext) {
+function dragDropContainer(context: React.Context<DragContext>) {
   const monitor = new DragMonitor();
 
   return function DragDropContainer({

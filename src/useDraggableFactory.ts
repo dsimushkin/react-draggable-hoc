@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { DragContext } from "./dragDropContainer";
 import useForceUpdate from "./useForceUpdate";
 import {
   DragListener,
@@ -9,8 +8,9 @@ import {
   attach,
   detach,
 } from "./helpers";
+import DragContext from "./IDragContext";
 
-function useDraggableFactory(context: typeof DragContext) {
+function useDraggableFactory(context: React.Context<DragContext>) {
   return function useDraggable(
     ref: React.RefObject<any>,
     {

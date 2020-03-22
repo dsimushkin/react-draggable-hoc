@@ -3,7 +3,6 @@
   "version": "0.0.10",
   "private": true,
   "main": "src/index.tsx",
-  "homepage": "http://dsimushkin.github.io/react-draggable-hoc",
   "dependencies": {
     "raf": "latest",
     "react": "latest",

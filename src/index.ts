@@ -1,13 +1,21 @@
-import droppable from "./droppable";
-import draggable from "./draggable";
-import dragDropContainer, { DragContext } from "./dragDropContainer";
+import * as React from "react";
+import droppable from "./droppableFactory";
+import draggable from "./draggableFactory";
+import dragDropContainer from "./dragDropContainerFactory";
 import useDraggableFactory from "./useDraggableFactory";
 import useMonitorListenerFactory from "./useMonitorListenerFactory";
+import DragContextType from "./IDragContext";
+import { DragMonitor } from "./DragMonitor";
 
 export { default as useDragStopPropagation } from "./useDragStopPropagation";
-export { defaultPostProcessor } from "./draggable";
-export { defaultDroppableMethod } from "./droppable";
+export { defaultPostProcessor } from "./draggableFactory";
+export { defaultDroppableMethod } from "./droppableFactory";
+export { default as DragContextType } from "./IDragContext";
 
+export const DragContext = React.createContext<DragContextType>({
+  monitor: new DragMonitor(),
+  container: undefined,
+});
 export const useDraggable = useDraggableFactory(DragContext);
 export const useMonitorListener = useMonitorListenerFactory(DragContext);
 
