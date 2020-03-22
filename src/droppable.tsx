@@ -6,7 +6,7 @@ import useMonitorListenerFactory from "./useMonitorListenerFactory";
 
 export function defaultDroppableMethod(
   monitor: DragMonitor,
-  ref: React.RefObject<any>
+  ref: React.RefObject<any>,
 ) {
   if (monitor.current && ref.current) {
     const { x, y } = monitor.current;
@@ -22,7 +22,7 @@ function droppable(context: typeof DragContext) {
     children,
     method = defaultDroppableMethod,
     onDrop,
-    disabled = false
+    disabled = false,
   }: {
     children: React.FunctionComponent<any>;
     method?: typeof defaultDroppableMethod;
@@ -35,9 +35,9 @@ function droppable(context: typeof DragContext) {
       monitor => ({
         isHovered:
           monitor.dragProps && !disabled ? method(monitor, ref) : false,
-        dragProps: monitor.dragProps
+        dragProps: monitor.dragProps,
       }),
-      [method, monitor, disabled]
+      [method, monitor, disabled],
     );
     const [props, change] = React.useState(factory(monitor));
     const dragListener = React.useCallback(
@@ -47,13 +47,17 @@ function droppable(context: typeof DragContext) {
           change(nprops);
         }
       },
-      [props, change, factory]
+      [props, change, factory],
     );
     useMonitorListener(dragListener, "dragStart", "drag", "cancel");
 
     const dropListener = React.useCallback(
       (monitor: DragMonitor) => {
-        const nprops = factory(monitor);
+        const nprops = {
+          dragProps: undefined,
+          isHovered: false,
+        };
+
         if (Object.keys(nprops).some(key => nprops[key] !== props[key])) {
           change(nprops);
         }
@@ -61,7 +65,7 @@ function droppable(context: typeof DragContext) {
           onDrop(props.dragProps);
         }
       },
-      [factory, monitor, props, onDrop]
+      [factory, monitor, props, onDrop],
     );
     useMonitorListener(dropListener, "drop");
 

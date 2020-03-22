@@ -7,7 +7,7 @@ export const DragContext = React.createContext<{
   container?: React.RefObject<any>;
 }>({
   monitor: new DragMonitor(),
-  container: undefined
+  container: undefined,
 });
 
 function dragDropContainer(context: typeof DragContext) {

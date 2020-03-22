@@ -1,4 +1,5 @@
-import { remove, getBounds, fixToRange, dragPayloadFactory } from "./helpers";
+import { getBounds, fixToRange, dragPayloadFactory } from "./helpers";
+import { remove } from "./utils";
 import PubSub from "./PubSub";
 
 export type Listener = (monitor: DragMonitor, node?: HTMLElement) => void;
@@ -37,13 +38,11 @@ export class DragMonitor extends PubSub<DragMonitorPhase, Listener> {
   };
 
   drop = async () => {
-    this.history = [];
     this.dragProps = undefined;
-    this.notify("drop");
+    await this.notify("drop");
   };
 
   cancel = async () => {
-    this.history = [];
     this.dragProps = undefined;
     this.notify("cancel");
   };
@@ -66,7 +65,7 @@ export class DragMonitor extends PubSub<DragMonitorPhase, Listener> {
 
     return {
       deltaX: fixToRange(this.deltaX, bounds.minX, bounds.maxX),
-      deltaY: fixToRange(this.deltaY, bounds.minY, bounds.maxY)
+      deltaY: fixToRange(this.deltaY, bounds.minY, bounds.maxY),
     };
   };
 

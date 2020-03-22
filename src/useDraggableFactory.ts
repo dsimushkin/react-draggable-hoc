@@ -7,13 +7,29 @@ import {
   isDragStart,
   isDragEvent,
   attach,
-  detach
+  detach,
 } from "./helpers";
 
 function useDraggableFactory(context: typeof DragContext) {
   return function useDraggable(
     ref: React.RefObject<any>,
-    { dragProps, delay = 0 }: { dragProps?: any; delay?: number } = {}
+    {
+      dragProps,
+      delay = 0,
+      onDragStart,
+      onDrag,
+      onDrop,
+      onDelayedDrag,
+      onDragCancel,
+    }: {
+      dragProps?: any;
+      delay?: number;
+      onDragStart?: DragListener;
+      onDrag?: DragListener;
+      onDrop?: DragListener;
+      onDelayedDrag?: DragListener;
+      onDragCancel?: DragListener;
+    } = {},
   ) {
     const { monitor, container } = React.useContext(context);
     const [isDragged, change] = React.useState(false);
@@ -30,11 +46,15 @@ function useDraggableFactory(context: typeof DragContext) {
           if (!isDragged) change(true);
           monitor.dragProps = dragProps;
           monitor.start(e);
+          if (typeof onDragStart === "function") onDragStart(e);
         }
       };
-      const cancelListener = () => {
+      const cancelListener = (e: MouseEvent | TouchEvent) => {
         clearTimeout(t);
         if (delayed != null) changeDelayed(undefined);
+        if (typeof onDragCancel === "function") {
+          onDragCancel(e);
+        }
       };
 
       let t: number;
@@ -53,6 +73,9 @@ function useDraggableFactory(context: typeof DragContext) {
           if (delay > 0) {
             dragStartListener = (e: MouseEvent | TouchEvent) => {
               changeDelayed(e);
+              if (typeof onDelayedDrag === "function") {
+                onDelayedDrag(e);
+              }
             };
           } else {
             dragStartListener = syncListener;
@@ -64,16 +87,25 @@ function useDraggableFactory(context: typeof DragContext) {
             if (!isDragEvent(e) || window.getSelection()?.toString()) {
               if (isDragged) change(false);
               monitor.cancel();
+              if (typeof onDragCancel === "function") {
+                onDragCancel(e);
+              }
             } else {
               e.preventDefault();
               forceUpdate();
               monitor.drag(e);
+              if (typeof onDrag === "function") {
+                onDrag(e);
+              }
             }
           };
 
-          dropListener = (e: Event) => {
+          dropListener = (e: MouseEvent | TouchEvent) => {
             if (isDragged) change(false);
             monitor.drop();
+            if (typeof onDrop === "function") {
+              onDrop(e);
+            }
           };
         }
       }
@@ -109,7 +141,7 @@ function useDraggableFactory(context: typeof DragContext) {
       isDragged,
       delayed,
       monitor,
-      container
+      container,
     };
 
     return r;

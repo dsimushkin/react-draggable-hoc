@@ -4,7 +4,7 @@ import { DragPhase, attach, detach } from "./helpers";
 function useDragPhaseListener(
   listener: (e: Event) => any,
   phases: DragPhase[],
-  ref?: React.RefObject<any>
+  ref?: React.RefObject<any>,
 ) {
   React.useEffect(() => {
     if (typeof listener !== "function" || (ref != null && ref.current == null))

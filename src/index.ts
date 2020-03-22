@@ -4,8 +4,6 @@ import dragDropContainer, { DragContext } from "./dragDropContainer";
 import useDraggableFactory from "./useDraggableFactory";
 import useMonitorListenerFactory from "./useMonitorListenerFactory";
 
-export * from "./helpers";
-export * from "./DragMonitor";
 export { default as useDragStopPropagation } from "./useDragStopPropagation";
 export { defaultPostProcessor } from "./draggable";
 export { defaultDroppableMethod } from "./droppable";

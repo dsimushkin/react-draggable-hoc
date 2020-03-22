@@ -11,7 +11,7 @@ function useRect(ref: React.RefObject<any>, deps: any[] = []) {
     const { width, height, left, top } = rect;
     return [
       { width, height },
-      { left, top }
+      { left, top },
     ];
   }, [rect]);
 

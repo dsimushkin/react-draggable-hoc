@@ -5,7 +5,7 @@ export function attach(
   phase: DragPhase,
   fn: DragListener,
   node: HTMLElement | Window = window,
-  config: Parameters<typeof addEventListener>[2] = { passive: false }
+  config: Parameters<typeof addEventListener>[2] = { passive: false },
 ) {
   switch (phase) {
     case "dragStart":
@@ -28,7 +28,7 @@ export function attach(
 export function detach(
   phase: DragPhase,
   fn: DragListener,
-  node: HTMLElement | Window = window
+  node: HTMLElement | Window = window,
 ) {
   switch (phase) {
     case "dragStart":
@@ -76,26 +76,16 @@ export function isDragEvent(e: Event) {
   return false;
 }
 
-export function remove<T>(arr: Array<T>, e: T) {
-  const index = arr.indexOf(e);
-
-  if (index >= 0) {
-    return arr.splice(index, 1);
-  }
-
-  return undefined;
-}
-
 export const getBounds = (
   container: HTMLElement,
-  rect: ClientRect | DOMRect
+  rect: ClientRect | DOMRect,
 ) => {
   if (container == null || rect == null) {
     return {
       maxX: +Infinity,
       maxY: +Infinity,
       minX: -Infinity,
-      minY: -Infinity
+      minY: -Infinity,
     };
   }
 
@@ -105,7 +95,7 @@ export const getBounds = (
     maxX: cr.right - rect.right,
     maxY: cr.bottom - rect.bottom,
     minX: cr.left - rect.left,
-    minY: cr.top - rect.top
+    minY: cr.top - rect.top,
   };
 };
 
@@ -128,6 +118,6 @@ export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
     x: pageX,
     y: pageY,
     target,
-    event
+    event,
   };
 }

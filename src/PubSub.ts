@@ -1,4 +1,4 @@
-import { remove } from "./helpers";
+import { remove } from "./utils";
 
 class PubSub<T extends string, K extends Function> {
   subs: {

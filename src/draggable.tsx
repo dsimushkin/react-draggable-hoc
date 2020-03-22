@@ -7,15 +7,15 @@ import useRect from "./useRect";
 
 export function defaultPostProcessor(
   props: any, // FIXME
-  ref: React.RefObject<HTMLDivElement>
+  ref: React.RefObject<HTMLDivElement>,
 ) {
   if (ref && ref.current) {
     return {
       ...props,
       ...props.monitor.getDeltas(
         props.container.current,
-        ref.current.getBoundingClientRect()
-      )
+        ref.current.getBoundingClientRect(),
+      ),
     };
   }
 
@@ -24,14 +24,14 @@ export function defaultPostProcessor(
 
 function Detached({
   children,
-  parent
+  parent,
 }: {
   children: React.ReactNode;
   parent: HTMLElement;
 }) {
   return ReactDOM.createPortal(
     <React.Fragment>{children}</React.Fragment>,
-    parent
+    parent,
   );
 }
 
@@ -52,7 +52,7 @@ function draggable(context: typeof DragContext) {
     delay = 100,
     detachedParent = document.body,
     onDragStart,
-    onDragEnd
+    onDragEnd,
   }: {
     dragProps: any; // drag props to be used
     className?: string;
@@ -77,8 +77,8 @@ function draggable(context: typeof DragContext) {
       typeof children === "function" ? handleRef : ref,
       {
         dragProps,
-        delay
-      }
+        delay,
+      },
     );
     const prevProps = React.useRef(props);
 
@@ -86,13 +86,13 @@ function draggable(context: typeof DragContext) {
 
     const { deltaX, deltaY, isDragged } = React.useMemo(
       () => postProcess(props, ref),
-      [props, postProcess, ref]
+      [props, postProcess, ref],
     );
 
     const isDetached = React.useMemo(
       () =>
         isDragged && Math.max(...[deltaX, deltaY].map(Math.abs)) >= detachDelta,
-      [deltaX, deltaY, detachDelta, isDragged]
+      [deltaX, deltaY, detachDelta, isDragged],
     );
 
     React.useEffect(() => {
@@ -121,7 +121,7 @@ function draggable(context: typeof DragContext) {
                 transform: `translate3d(${deltaX}px, ${deltaY}px, 1px)`,
                 position: "fixed",
                 ...size,
-                ...position
+                ...position,
               }}
               id="dragged-node-clone"
             >
@@ -134,7 +134,7 @@ function draggable(context: typeof DragContext) {
         {typeof children === "function"
           ? children({
               handleRef,
-              isDetached
+              isDetached,
             })
           : children}
       </div>
