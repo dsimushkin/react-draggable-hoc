@@ -24,7 +24,11 @@ function droppableFactory(context: React.Context<DragContext>) {
     onDrop,
     disabled = false,
   }: {
-    children: React.FunctionComponent<any>;
+    children: React.FunctionComponent<{
+      ref: React.RefObject<any>;
+      dragProps: any;
+      isHovered: Boolean;
+    }>;
     method?: typeof defaultDroppableMethod;
     onDrop?: (dragProps: any) => void;
     disabled?: boolean;

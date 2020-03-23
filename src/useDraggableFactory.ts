@@ -28,7 +28,7 @@ function useDraggableFactory(context: React.Context<DragContext>) {
       onDrag?: DragListener;
       onDrop?: DragListener;
       onDelayedDrag?: DragListener;
-      onDragCancel?: DragListener;
+      onDragCancel?: Function;
     } = {},
   ) {
     const { monitor, container } = React.useContext(context);

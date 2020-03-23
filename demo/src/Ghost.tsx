@@ -5,7 +5,7 @@ import {
   Draggable,
   Droppable,
   defaultPostProcessor,
-  useDragStopPropagation
+  useDragStopPropagation,
 } from "react-draggable-hoc";
 
 const randomColor = () => {
@@ -34,10 +34,11 @@ interface IContentProps {
   backgroundColor: string;
 }
 
-const postProcess = (props: any, ref: any) => {
+// stick to line
+const postProcess = (props: any, ref: React.RefObject<any>) => {
   return {
     ...defaultPostProcessor(props, ref),
-    deltaY: ref && ref.current ? ref.current.clientHeight : 0
+    deltaY: ref && ref.current ? ref.current.clientHeight : 0,
   };
 };
 
@@ -60,7 +61,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
         document.body.style.cursor = "default";
       }}
     >
-      {({ handleRef, isDragged }: any) =>
+      {({ handleRef, isDetached }) =>
         handleRef != null ? (
           <Droppable
             onDrop={onDrop}
@@ -71,12 +72,12 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
               return a.left <= x && a.right >= x;
             }}
           >
-            {({ isHovered, ref }: any) => (
+            {({ isHovered, ref }) => (
               <div
                 style={{
                   display: "inline-block",
                   textAlign: "left",
-                  position: "relative"
+                  position: "relative",
                 }}
                 ref={ref}
               >
@@ -85,7 +86,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
                   value={value}
                   style={{
                     backgroundColor,
-                    color: isDragged ? "red" : color
+                    color: isDetached ? "red" : color,
                   }}
                   className={isHovered ? "hovered" : undefined}
                   handleRef={handleRef}
@@ -98,7 +99,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
             value={value}
             style={{
               backgroundColor,
-              color
+              color,
             }}
           />
         )

@@ -1,5 +1,4 @@
 import { getBounds, fixToRange, dragPayloadFactory } from "./helpers";
-import { remove } from "./utils";
 import PubSub from "./PubSub";
 
 export type Listener = (monitor: DragMonitor, node?: HTMLElement) => void;
@@ -25,7 +24,6 @@ export type DragMonitorPhase =
 export class DragMonitor extends PubSub<DragMonitorPhase, Listener> {
   history: ReturnType<typeof dragPayloadFactory>[] = [];
   dragProps: any = undefined;
-  hovered: HTMLElement[] = [];
 
   start = async (...e: Parameters<typeof dragPayloadFactory>) => {
     this.history = [dragPayloadFactory(...e)];
@@ -45,19 +43,6 @@ export class DragMonitor extends PubSub<DragMonitorPhase, Listener> {
   cancel = async () => {
     this.dragProps = undefined;
     this.notify("cancel");
-  };
-
-  over = (node: HTMLElement) => {
-    if (this.hovered.indexOf(node) < 0) {
-      this.hovered.push(node);
-      this.notify("over", node);
-    }
-  };
-
-  out = (node: HTMLElement) => {
-    if (remove(this.hovered, node)) {
-      this.notify("out", node);
-    }
   };
 
   getDeltas = (container: HTMLElement, rect: ClientRect | DOMRect) => {

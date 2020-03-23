@@ -78,9 +78,12 @@ function draggableFactory(context: React.Context<DragContext>) {
       {
         dragProps,
         delay,
+        onDelayedDrag: delay > 0 ? onDragStart : undefined,
+        onDragStart: delay === 0 ? onDragStart : undefined,
+        onDrop: onDragEnd,
+        onDragCancel: onDragEnd,
       },
     );
-    const prevProps = React.useRef(props);
 
     const [, size, position] = useRect(ref, [props.delayed]);
 
@@ -94,20 +97,6 @@ function draggableFactory(context: React.Context<DragContext>) {
         isDragged && Math.max(...[deltaX, deltaY].map(Math.abs)) >= detachDelta,
       [deltaX, deltaY, detachDelta, isDragged],
     );
-
-    React.useEffect(() => {
-      if (prevProps.current.isDragged !== props.isDragged) {
-        if (props.isDragged && typeof onDragStart === "function") {
-          onDragStart();
-        }
-
-        if (!props.isDragged && typeof onDragEnd === "function") {
-          onDragEnd();
-        }
-      }
-
-      prevProps.current = props;
-    }, [props, onDragStart, onDragEnd]);
 
     return (
       <div
