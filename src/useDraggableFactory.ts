@@ -13,11 +13,12 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
     {
       dragProps,
       delay = 0,
+      onDelayedDrag,
       onDragStart,
       onDrag,
       onDrop,
-      onDelayedDrag,
       onDragCancel,
+      disabled = false,
     }: {
       dragProps?: any;
       delay?: number;
@@ -26,6 +27,7 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
       onDrop?: DragListener;
       onDelayedDrag?: DragListener;
       onDragCancel?: Function;
+      disabled?: Boolean;
     } = {},
   ) {
     const { observer, container } = React.useContext(context);
@@ -34,6 +36,8 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
     const [forceUpdate] = useForceUpdate();
 
     React.useEffect(() => {
+      if (disabled) return;
+
       const node = ref && ref.current;
 
       const delayedListener: DragListener = state => {
@@ -65,7 +69,6 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
 
       const dragListener: DragListener | undefined = isDragged
         ? state => {
-            console.log("drag");
             forceUpdate();
             if (typeof onDrag === "function") {
               onDrag(state);
@@ -90,11 +93,17 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
             onDelayedDrag: delayedListener,
             onDrop: dropListener,
             onDrag: dragListener,
-            onDragCancel: cancelListener,
           })
         : undefined;
 
+      if (cancelListener) {
+        observer.on("cancel", cancelListener);
+      }
+
       return () => {
+        if (cancelListener) {
+          observer.off("cancel", cancelListener);
+        }
         if (typeof destroy === "function") {
           destroy();
         }
@@ -110,6 +119,7 @@ function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
       isDelayed,
       state,
       container,
+      observer,
     };
 
     return r;

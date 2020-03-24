@@ -11,8 +11,12 @@ import {
   attach,
   detach,
   getSelection,
+  clearSelection,
+  DragPhase,
 } from "./HtmlHelpers";
 import { getBounds, fixToRange } from "./helpers";
+
+import { sleep } from "./utils";
 
 function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   const { pageX, pageY, target } = isTouchEvent(event)
@@ -35,25 +39,49 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
   let dropListener: DndEventListener | undefined = undefined;
 
   let dragged: HTMLElement | undefined = undefined;
+  let wasDetached = false;
   let dragProps: T | undefined = undefined;
   let history: HtmlDragPayload[] = [];
   let initialized = false;
   let t: number | undefined = undefined;
+
   let st: number | undefined = undefined;
+  let selection: string = "";
+
+  const clearSelectionMonitor = () => {
+    if (st != null) {
+      clearInterval(st);
+      st = undefined;
+    }
+  };
+
+  const checkSelection = () => {
+    return selection !== getSelection();
+  };
+
+  const monitorSelection = () => {
+    clearSelectionMonitor();
+    selection = getSelection();
+    st = window.setInterval(() => {
+      if (checkSelection()) {
+        clearSelectionMonitor();
+        cancelListener();
+      }
+    }, 10);
+  };
 
   const cleanup = () => {
     if (t != null) {
       clearTimeout(t);
       t = undefined;
     }
-    if (st != null) {
-      clearInterval(st);
-      st = undefined;
-    }
+    selection = "";
+    clearSelectionMonitor();
     dragged = undefined;
     dragProps = undefined;
     dragListener = undefined;
     dropListener = undefined;
+    wasDetached = false;
   };
 
   const cancelListener = async () => {
@@ -91,6 +119,10 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
       return dragged;
     }
 
+    get wasDetached() {
+      return wasDetached;
+    }
+
     getDeltas = (container: HTMLElement, rect: ClientRect | DOMRect) => {
       const bounds = getBounds(container, rect);
 
@@ -102,8 +134,7 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
   })();
 
   const onDragListener = async (e: DndEvent) => {
-    clearInterval(st);
-    st = undefined;
+    clearSelectionMonitor();
 
     if (t != null) {
       cancelListener();
@@ -112,10 +143,13 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
 
     if (dragged != null) {
       e.preventDefault();
-      if (!isDragEvent(e) || getSelection()) {
+      if (!isDragEvent(e) || checkSelection()) {
         cancelListener();
-      } else if (typeof dragListener === "function") {
-        dragListener(e);
+      } else {
+        wasDetached = true;
+        if (typeof dragListener === "function") {
+          dragListener(e);
+        }
       }
     }
   };
@@ -129,15 +163,6 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     if (dragged != null && typeof dropListener === "function") {
       dropListener(e);
     }
-  };
-
-  const monitorSelection = () => {
-    clearInterval(st);
-    st = window.setInterval(() => {
-      if (getSelection()) {
-        cancelListener();
-      }
-    }, 10);
   };
 
   const makeDraggable = (
@@ -166,10 +191,16 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
+      await sleep(0);
+      if (!config.delay) {
+        clearSelection();
+        selection = getSelection();
+      }
+
       if (
         isDragStart(e) &&
         node?.contains(e.target as HTMLElement) &&
-        !getSelection()
+        !checkSelection()
       ) {
         cleanup();
         dragListener = defaultDragListener;
@@ -188,20 +219,21 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     };
 
     const delayedDragListener = async (e: DndEvent) => {
-      if (!getSelection()) {
-        t = window.setTimeout(() => {
-          t = undefined;
-          if (getSelection()) {
-            cancelListener();
-          } else {
-            defaultDragStartListener(e);
-          }
-        }, config.delay);
-        if (typeof config.onDelayedDrag === "function") {
-          config.onDelayedDrag(sharedState);
+      await sleep(0);
+      clearSelection();
+      selection = getSelection();
+      t = window.setTimeout(() => {
+        t = undefined;
+        if (checkSelection()) {
+          cancelListener();
+        } else {
+          defaultDragStartListener(e);
         }
-        await subs.notify("delayedDrag", sharedState);
+      }, config.delay);
+      if (typeof config.onDelayedDrag === "function") {
+        config.onDelayedDrag(sharedState);
       }
+      await subs.notify("delayedDrag", sharedState);
     };
 
     if (node === dragged) {
@@ -212,22 +244,24 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     const listener = config.delay
       ? delayedDragListener
       : defaultDragStartListener;
-    attach("dragStart", listener, node);
+    attach("dragStart", listener, node, { passive: true, capture: false });
 
     return () => {
-      detach("dragStart", listener, node);
-      dragListener = undefined;
-      dropListener = undefined;
+      detach("dragStart", listener, node, { capture: false });
+      if (node === dragged) {
+        dragListener = undefined;
+        dropListener = undefined;
+      }
     };
   };
 
   const init = () => {
     if (!initialized) {
-      attach("drag", onDragListener);
-      attach("drop", onDropListener);
-      window.addEventListener("scroll", cancelListener, true);
-      window.addEventListener("contextmenu", cancelListener, true);
-      window.addEventListener("touchcancel", cancelListener, true);
+      attach("drag", onDragListener, window, { passive: false });
+      attach("drop", onDropListener, window, { passive: false });
+      window.addEventListener("scroll", cancelListener, { passive: true });
+      window.addEventListener("contextmenu", cancelListener, { passive: true });
+      window.addEventListener("touchcancel", cancelListener, { passive: true });
       initialized = true;
     }
   };
@@ -237,9 +271,9 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     if (initialized) {
       detach("drag", onDragListener);
       detach("drop", onDropListener);
-      window.removeEventListener("scroll", cancelListener, true);
-      window.removeEventListener("contextmenu", cancelListener, true);
-      window.removeEventListener("touchcancel", cancelListener, true);
+      window.removeEventListener("scroll", cancelListener);
+      window.removeEventListener("contextmenu", cancelListener);
+      window.removeEventListener("touchcancel", cancelListener);
       initialized = false;
     }
   };
@@ -251,6 +285,21 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     init,
     destroy,
     state: sharedState,
+    stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => {
+      // if (node == null) throw new Error("Invalid target");
+      const listener = (e: DndEvent) => {
+        e.stopPropagation();
+      };
+      phases.forEach(phase => {
+        attach(phase, listener, node, { passive: false, capture: false });
+      });
+
+      return () => {
+        phases.forEach(phase => {
+          detach(phase, listener, node, { capture: false });
+        });
+      };
+    },
   };
 }
 

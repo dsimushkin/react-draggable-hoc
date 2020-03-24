@@ -1,3 +1,5 @@
+import { DragPhase } from "./HtmlHelpers";
+
 export type DnDPhases =
   | "dragStart"
   | "drag"
@@ -7,7 +9,7 @@ export type DnDPhases =
 
 export interface ISharedState<T, E> {
   readonly dragProps?: T;
-  cancel: Function;
+  cancel: () => void;
   readonly initial?: E;
   readonly current?: E;
   readonly deltaX: number;
@@ -33,8 +35,9 @@ export interface IDndObserver<T, E> {
       onDrag?: (state: ISharedState<T, E>) => void;
       onDragCancel?: (state: ISharedState<T, E>) => void;
     },
-  ) => Function;
-  init: Function;
-  destroy: Function;
+  ) => () => void;
+  init: () => void;
+  destroy: () => void;
   state: ISharedState<T, E>;
+  stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
 }

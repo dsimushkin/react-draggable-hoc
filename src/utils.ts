@@ -22,3 +22,16 @@ export function remove<T>(arr: Array<T>, e: T) {
 
   return undefined;
 }
+
+/**
+ * Helper functions for ease of async/await usage.
+ *
+ * @param {*} ms
+ */
+export const sleep = (ms?: number) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+};

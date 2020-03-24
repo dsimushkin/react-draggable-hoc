@@ -58,7 +58,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
         document.body.style.cursor = "ew-resize";
       }}
       onDragEnd={() => {
-        document.body.style.cursor = "default";
+        document.body.style.cursor = "initial";
       }}
     >
       {({ handleRef, isDetached }) =>
@@ -72,7 +72,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
               return a.left <= x && a.right >= x;
             }}
           >
-            {({ isHovered, ref }) => (
+            {({ isHovered, dragProps, ref }) => (
               <div
                 style={{
                   display: "inline-block",
@@ -83,10 +83,17 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
               >
                 {/* change text color when element is dragged */}
                 <ContentElement
-                  value={value}
+                  value={
+                    dragProps
+                      ? isHovered
+                        ? "Change color"
+                        : "Hover me"
+                      : value
+                  }
                   style={{
                     backgroundColor,
                     color: isDetached ? "red" : color,
+                    width: "120px",
                   }}
                   className={isHovered ? "hovered" : undefined}
                   handleRef={handleRef}

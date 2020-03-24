@@ -3,14 +3,29 @@ export type DragPhase = "dragStart" | "drag" | "drop";
 export type DndEventListener = (e: DndEvent) => void;
 
 export function getSelection() {
-  return window.getSelection()?.toString();
+  return window.getSelection()!.toString();
+}
+
+export function clearSelection() {
+  if (window.getSelection) {
+    if (window.getSelection()!.empty) {
+      // Chrome
+      window.getSelection()!.empty();
+    } else if (window.getSelection()!.removeAllRanges) {
+      // Firefox
+      window.getSelection()!.removeAllRanges();
+    }
+  } else if ((document as any).selection) {
+    // IE?
+    (document as any).selection.empty();
+  }
 }
 
 export function attach(
   phase: DragPhase,
   fn: DndEventListener,
   node: HTMLElement | Window = window,
-  config: Parameters<typeof addEventListener>[2] = { passive: false },
+  config?: Parameters<typeof addEventListener>[2],
 ) {
   switch (phase) {
     case "dragStart":
@@ -34,19 +49,20 @@ export function detach(
   phase: DragPhase,
   fn: DndEventListener,
   node: HTMLElement | Window = window,
+  config?: Parameters<typeof removeEventListener>[2],
 ) {
   switch (phase) {
     case "dragStart":
-      (node as HTMLElement).removeEventListener("mousedown", fn);
-      (node as HTMLElement).removeEventListener("touchstart", fn);
+      (node as HTMLElement).removeEventListener("mousedown", fn, config);
+      (node as HTMLElement).removeEventListener("touchstart", fn, config);
       return fn;
     case "drag":
-      (node as HTMLElement).removeEventListener("mousemove", fn);
-      (node as HTMLElement).removeEventListener("touchmove", fn);
+      (node as HTMLElement).removeEventListener("mousemove", fn, config);
+      (node as HTMLElement).removeEventListener("touchmove", fn, config);
       return fn;
     case "drop":
-      (node as HTMLElement).removeEventListener("mouseup", fn);
-      (node as HTMLElement).removeEventListener("touchend", fn);
+      (node as HTMLElement).removeEventListener("mouseup", fn, config);
+      (node as HTMLElement).removeEventListener("touchend", fn, config);
       return fn;
     default:
       throw new Error(`Invalid phase ${phase}`);
