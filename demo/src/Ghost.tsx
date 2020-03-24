@@ -45,10 +45,6 @@ const postProcess = (props: any, ref: React.RefObject<any>) => {
 const Content = ({ backgroundColor, value }: IContentProps) => {
   const [color, changeColor] = React.useState<string>();
 
-  const onDrop = (dragProps: string) => {
-    changeColor(dragProps);
-  };
-
   return (
     <Draggable
       delay={100}
@@ -64,8 +60,12 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
       {({ handleRef, isDetached }) =>
         handleRef != null ? (
           <Droppable
-            onDrop={onDrop}
-            method={(state, nodeRef) => {
+            onDrop={dragProps => {
+              if (dragProps !== backgroundColor) {
+                changeColor(dragProps as string);
+              }
+            }}
+            method={(state, nodeRef, defaultMethod) => {
               const a = nodeRef.current.getBoundingClientRect();
               const { x } = state.current!;
 
@@ -85,17 +85,25 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
                 <ContentElement
                   value={
                     dragProps
-                      ? isHovered
-                        ? "Change color"
+                      ? dragProps === backgroundColor
+                        ? isHovered
+                          ? "Not here"
+                          : "I'm dragged"
+                        : isHovered
+                        ? "Drop here"
                         : "Hover me"
                       : value
                   }
                   style={{
                     backgroundColor,
-                    color: isDetached ? "red" : color,
-                    width: "120px",
+                    color: isDetached ? "#fff" : color,
+                    width: "100px",
                   }}
-                  className={isHovered ? "hovered" : undefined}
+                  className={
+                    isHovered && dragProps !== backgroundColor
+                      ? "hovered"
+                      : undefined
+                  }
                   handleRef={handleRef}
                 />
               </div>
@@ -107,6 +115,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
             style={{
               backgroundColor,
               color,
+              width: "100px",
             }}
           />
         )
@@ -119,12 +128,12 @@ export const GhostExample = () => (
   <DragDropContainer className="Ghost-container">
     {({ ref }) => (
       <div className="Ghost-container" ref={ref}>
-        {Array(20)
+        {Array(60)
           .fill(0)
           .map((_, i) => {
             const color = randomColor();
             return (
-              <Content backgroundColor={color} value={`Hello ${i}`} key={i} />
+              <Content backgroundColor={color} value={`Drag me`} key={i} />
             );
           })}
       </div>

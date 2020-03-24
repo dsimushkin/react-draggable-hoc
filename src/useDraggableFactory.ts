@@ -19,7 +19,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDragCancel,
       disabled = false,
     }: {
-      dragProps?: any;
+      dragProps: T;
       delay?: number;
       onDragStart?: (state: D["state"]) => void;
       onDrag?: (state: D["state"]) => void;
@@ -27,18 +27,15 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDelayedDrag?: (state: D["state"]) => void;
       onDragCancel?: Function;
       disabled?: Boolean;
-    } = {},
+    },
   ) {
     const { observer, container } = React.useContext(context);
-    if (observer == null) {
-      console.error("Dnd context not found");
-    }
     const [isDragged, change] = React.useState(false);
     const [isDelayed, changeDelayed] = React.useState(false);
     const [forceUpdate] = useForceUpdate();
 
     React.useEffect(() => {
-      if (disabled || observer == null) return;
+      if (disabled === true || observer == null) return;
 
       const node = ref && ref.current;
 
@@ -121,7 +118,6 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       isDelayed,
       state,
       container,
-      observer,
     };
 
     return r;

@@ -11,9 +11,6 @@ function useDndObserverListenerFactory<T, D extends IDndObserver<T, any, any>>(
     ...phases: DnDPhases[]
   ) {
     const { observer } = React.useContext(context);
-    if (observer == null) {
-      console.error("Dnd context not found");
-    }
     React.useEffect(() => {
       if (typeof listener !== "function" || observer == null) return;
 

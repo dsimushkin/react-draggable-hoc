@@ -13,8 +13,10 @@ export const SimpleExample = () => {
     [dropped],
   );
 
-  const onDrop = (dragProps: number) => {
-    changeDropped([...dropped, dragProps]);
+  const onDrop: React.ComponentProps<
+    typeof Droppable
+  >["onDrop"] = dragProps => {
+    changeDropped([...dropped, dragProps as number]);
   };
 
   return (

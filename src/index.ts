@@ -8,6 +8,7 @@ import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import DragContextType from "./IDragContext";
 import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
 import { DragPhase } from "./HtmlHelpers";
+import { some } from "./utils";
 
 export { defaultPostProcessor } from "./draggableFactory";
 export { defaultDroppableMethod } from "./HtmlMethods";
@@ -15,10 +16,19 @@ export { default as DragContextType } from "./IDragContext";
 export * from "./helpers";
 
 export const DragContext = React.createContext<
-  DragContextType<any, IHtmlDndObserver<any>>
+  DragContextType<some, IHtmlDndObserver<any>>
 >({
   observer: HtmlDndObserver<any>(),
   container: undefined,
+  defaultDroppableMethod(state, ref) {
+    const node = ref.current;
+    if (state.current && node) {
+      const { x, y } = state.current;
+      return document.elementsFromPoint(x, y).indexOf(node) >= 0;
+    }
+
+    return false;
+  },
 });
 export const useDraggable = useDraggableFactory(DragContext);
 export const useDroppable = useDroppableFactory(DragContext);

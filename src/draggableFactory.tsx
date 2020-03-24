@@ -7,8 +7,8 @@ import DragContext from "./IDragContext";
 import { IHtmlDndObserver } from "./HtmlDndObserver";
 import { getDeltas } from "./HtmlHelpers";
 
-export function defaultPostProcessor(
-  props: any, // FIXME
+export function defaultPostProcessor<T>(
+  props: IHtmlDndObserver<T>["state"] & { container?: React.RefObject<any> },
   ref: React.RefObject<HTMLDivElement>,
 ) {
   if (ref && ref.current) {
@@ -61,7 +61,7 @@ function draggableFactory<T>(
     onDragEnd,
     onDrag,
   }: {
-    dragProps: any; // drag props to be used
+    dragProps: NonNullable<T>; // drag props to be used
     className?: string;
     postProcess?: (props: any, ref: React.RefObject<HTMLDivElement>) => any; //FIXME
     detachDelta?: number;

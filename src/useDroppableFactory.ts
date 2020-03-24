@@ -16,17 +16,32 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any>>(
       onDrop,
       disabled = false,
     }: {
-      method?: (state: D["state"], ref: React.RefObject<any>) => Boolean;
+      method?: (
+        state: D["state"],
+        ref: React.RefObject<any>,
+        defaultMethod: (
+          state: D["state"],
+          ref: React.RefObject<any>,
+        ) => Boolean,
+      ) => Boolean;
       onDrop?: (dragProps: any) => void;
       disabled?: boolean;
     },
   ) {
-    const { observer } = React.useContext(context);
+    const { observer, defaultDroppableMethod } = React.useContext(context);
+    const methodWrapper = React.useCallback(
+      (state: D["state"], ref: React.RefObject<any>) => {
+        return typeof method === "function"
+          ? method(state, ref, defaultDroppableMethod)
+          : defaultDroppableMethod(state, ref);
+      },
+      [method],
+    );
     const factory = React.useCallback(
       (state: D["state"]) => ({
         isHovered:
-          state.dragProps != null && !disabled && typeof method === "function"
-            ? method(state as any, ref)
+          state.dragProps != null && !disabled
+            ? methodWrapper(state as any, ref)
             : false,
         dragProps: state.dragProps,
       }),

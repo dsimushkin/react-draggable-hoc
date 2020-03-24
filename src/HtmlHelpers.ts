@@ -1,4 +1,4 @@
-import { getBounds, fixToRange } from "./helpers";
+import { fixToRange } from "./helpers";
 
 export type DndEvent = MouseEvent | TouchEvent;
 export type DragPhase = "dragStart" | "drag" | "drop";
@@ -104,6 +104,29 @@ export function getPointer(event: TouchEvent) {
     ? event.touches[0]
     : event.changedTouches[0];
 }
+
+export const getBounds = (
+  container: HTMLElement,
+  rect: ClientRect | DOMRect,
+) => {
+  if (container == null || rect == null) {
+    return {
+      maxX: +Infinity,
+      maxY: +Infinity,
+      minX: -Infinity,
+      minY: -Infinity,
+    };
+  }
+
+  const cr = container.getBoundingClientRect();
+
+  return {
+    maxX: cr.right - rect.right,
+    maxY: cr.bottom - rect.bottom,
+    minX: cr.left - rect.left,
+    minY: cr.top - rect.top,
+  };
+};
 
 export const getDeltas = (
   container: HTMLElement,

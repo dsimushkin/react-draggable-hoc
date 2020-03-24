@@ -2,31 +2,32 @@ import * as React from "react";
 
 import DragContext from "./IDragContext";
 import useDroppableFactory from "./useDroppableFactory";
-import { IHtmlDndObserver } from "./HtmlDndObserver";
-import { defaultDroppableMethod } from "./HtmlMethods";
+import { IDndObserver } from "./IDndObserver";
 
-function droppableFactory<T>(
-  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
+function droppableFactory<T, D extends IDndObserver<T, any, any>>(
+  context: React.Context<DragContext<T, D>>,
 ) {
   const useDroppable = useDroppableFactory(context);
 
   return function Droppable({
     children,
-    method = defaultDroppableMethod,
+    method,
     onDrop,
     disabled = false,
   }: {
     children: React.FunctionComponent<{
       ref: React.RefObject<any>;
-      dragProps: any;
+      dragProps: T;
       isHovered: Boolean;
     }>;
-    method?: typeof defaultDroppableMethod;
-    onDrop?: (dragProps: any) => void;
-    disabled?: boolean;
-  }) {
+  } & Parameters<typeof useDroppable>[1]) {
     const ref = React.useRef<any>();
-    const props = useDroppable(ref, { method, disabled, onDrop });
+
+    const props = useDroppable(ref, {
+      method,
+      disabled,
+      onDrop,
+    });
 
     return children({ ref, ...props });
   };

@@ -3,6 +3,7 @@ import * as React from "react";
 import DragContext from "./IDragContext";
 
 import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
+import { defaultDroppableMethod } from "./HtmlMethods";
 
 function dragDropContainer<T>(
   context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
@@ -22,7 +23,9 @@ function dragDropContainer<T>(
     const ref = React.useRef(null);
 
     return (
-      <context.Provider value={{ observer, container: ref }}>
+      <context.Provider
+        value={{ observer, defaultDroppableMethod, container: ref }}
+      >
         {typeof children === "function" ? (
           children({ ref })
         ) : (
