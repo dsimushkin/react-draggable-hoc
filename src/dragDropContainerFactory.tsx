@@ -2,10 +2,10 @@ import * as React from "react";
 
 import DragContext from "./IDragContext";
 
-import HtmlDndObserver, { HtmlDragPayload } from "./HtmlDndObserver";
+import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
 
 function dragDropContainer<T>(
-  context: React.Context<DragContext<T, HtmlDragPayload>>,
+  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
 ) {
   const observer = HtmlDndObserver<T>();
 

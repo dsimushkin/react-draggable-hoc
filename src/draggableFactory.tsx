@@ -4,7 +4,8 @@ import * as ReactDOM from "react-dom";
 import useDraggableFactory from "./useDraggableFactory";
 import useRect from "./useRect";
 import DragContext from "./IDragContext";
-import { HtmlDragPayload } from "./HtmlDndObserver";
+import { IHtmlDndObserver } from "./HtmlDndObserver";
+import { getDeltas } from "./HtmlHelpers";
 
 export function defaultPostProcessor(
   props: any, // FIXME
@@ -13,9 +14,11 @@ export function defaultPostProcessor(
   if (ref && ref.current) {
     return {
       ...props,
-      ...props.state.getDeltas(
-        props.container.current,
+      ...getDeltas(
+        (props.container && props.container.current) || document.body,
         ref.current.getBoundingClientRect(),
+        props.deltaX,
+        props.deltaY,
       ),
     };
   }
@@ -42,7 +45,7 @@ function Detached({
  * @param context DragContext
  */
 function draggableFactory<T>(
-  context: React.Context<DragContext<T, HtmlDragPayload>>,
+  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
 ) {
   const useDraggable = useDraggableFactory(context);
 
@@ -65,9 +68,9 @@ function draggableFactory<T>(
     delay?: number;
     detachedParent?: HTMLElement;
     key?: any;
-    onDragStart?: () => any;
-    onDragEnd?: () => any;
-    onDrag?: () => any;
+    onDragStart?: (state: IHtmlDndObserver<T>["state"]) => void;
+    onDragEnd?: (state: IHtmlDndObserver<T>["state"]) => void;
+    onDrag?: (state: IHtmlDndObserver<T>["state"]) => void;
     children?:
       | React.FunctionComponent<{
           handleRef?: React.RefObject<any>;

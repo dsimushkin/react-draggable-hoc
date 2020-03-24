@@ -1,3 +1,5 @@
+import { getBounds, fixToRange } from "./helpers";
+
 export type DndEvent = MouseEvent | TouchEvent;
 export type DragPhase = "dragStart" | "drag" | "drop";
 export type DndEventListener = (e: DndEvent) => void;
@@ -102,3 +104,17 @@ export function getPointer(event: TouchEvent) {
     ? event.touches[0]
     : event.changedTouches[0];
 }
+
+export const getDeltas = (
+  container: HTMLElement,
+  rect: ClientRect | DOMRect,
+  deltaX: number,
+  deltaY: number,
+) => {
+  const bounds = getBounds(container, rect);
+
+  return {
+    deltaX: fixToRange(deltaX, bounds.minX, bounds.maxX),
+    deltaY: fixToRange(deltaY, bounds.minY, bounds.maxY),
+  };
+};

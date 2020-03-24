@@ -1,5 +1,3 @@
-import { DragPhase } from "./HtmlHelpers";
-
 export type DnDPhases =
   | "dragStart"
   | "drag"
@@ -7,37 +5,33 @@ export type DnDPhases =
   | "drop"
   | "delayedDrag";
 
-export interface ISharedState<T, E> {
+export interface ISharedState<T, E, N> {
   readonly dragProps?: T;
   cancel: () => void;
-  readonly initial?: E;
-  readonly current?: E;
+  readonly initial?: { x: number; y: number; event: E };
+  readonly current?: { x: number; y: number; event: E };
   readonly deltaX: number;
   readonly deltaY: number;
-  readonly node: any;
-  getDeltas: (
-    container: HTMLElement,
-    rect: ClientRect | DOMRect,
-  ) => { deltaX: number; deltaY: number };
+  readonly node?: N;
+  readonly wasDetached: Boolean;
 }
 
-export interface IDndObserver<T, E> {
-  on: (e: DnDPhases, fn: (state: ISharedState<T, E>) => void) => void;
-  off: (e: DnDPhases, fn: (state: ISharedState<T, E>) => void) => void;
+export interface IDndObserver<T, E, N> {
+  on: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void;
+  off: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void;
   makeDraggable: (
-    node: HTMLElement,
+    node: N,
     config?: {
       delay?: number;
       dragProps?: T;
-      onDragStart?: (state: ISharedState<T, E>) => void;
-      onDelayedDrag?: (state: ISharedState<T, E>) => void;
-      onDrop?: (state: ISharedState<T, E>) => void;
-      onDrag?: (state: ISharedState<T, E>) => void;
-      onDragCancel?: (state: ISharedState<T, E>) => void;
+      onDragStart?: (state: ISharedState<T, E, N>) => void;
+      onDelayedDrag?: (state: ISharedState<T, E, N>) => void;
+      onDrop?: (state: ISharedState<T, E, N>) => void;
+      onDrag?: (state: ISharedState<T, E, N>) => void;
+      onDragCancel?: (state: ISharedState<T, E, N>) => void;
     },
   ) => () => void;
   init: () => void;
   destroy: () => void;
-  state: ISharedState<T, E>;
-  stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
+  state: ISharedState<T, E, N>;
 }

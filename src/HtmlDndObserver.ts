@@ -14,25 +14,28 @@ import {
   clearSelection,
   DragPhase,
 } from "./HtmlHelpers";
-import { getBounds, fixToRange } from "./helpers";
 
 import { sleep } from "./utils";
 
 function dragPayloadFactory(event: MouseEvent | TouchEvent) {
-  const { pageX, pageY, target } = isTouchEvent(event)
+  const { pageX, pageY } = isTouchEvent(event)
     ? getPointer(event as TouchEvent)
     : (event as MouseEvent);
   return {
     x: pageX,
     y: pageY,
-    target,
     event,
   };
 }
 
 export type HtmlDragPayload = ReturnType<typeof dragPayloadFactory>;
 
-function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
+export interface IHtmlDndObserver<T>
+  extends IDndObserver<T, DndEvent, HTMLElement> {
+  stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
+}
+
+function HtmlDndObserver<T>(): IHtmlDndObserver<T> {
   const subs = new PubSub<DnDPhases, (state: typeof sharedState) => void>();
 
   let dragListener: DndEventListener | undefined = undefined;
@@ -92,7 +95,8 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     }
   };
 
-  const sharedState = new (class implements ISharedState<T, HtmlDragPayload> {
+  const sharedState = new (class
+    implements ISharedState<T, DndEvent, HTMLElement> {
     get dragProps() {
       return dragProps;
     }
@@ -122,15 +126,6 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
     get wasDetached() {
       return wasDetached;
     }
-
-    getDeltas = (container: HTMLElement, rect: ClientRect | DOMRect) => {
-      const bounds = getBounds(container, rect);
-
-      return {
-        deltaX: fixToRange(this.deltaX, bounds.minX, bounds.maxX),
-        deltaY: fixToRange(this.deltaY, bounds.minY, bounds.maxY),
-      };
-    };
   })();
 
   const onDragListener = async (e: DndEvent) => {
@@ -167,14 +162,13 @@ function HtmlDndObserver<T>(): IDndObserver<T, HtmlDragPayload> {
 
   const makeDraggable = (
     node: HTMLElement,
-    config: Parameters<
-      IDndObserver<T, HtmlDragPayload>["makeDraggable"]
-    >[1] = {},
+    config: Parameters<IHtmlDndObserver<T>["makeDraggable"]>[1] = {},
   ) => {
     init();
     node.style.userSelect = "none";
 
     const defaultDragListener = async (e: DndEvent) => {
+      await sleep(0);
       history.push(dragPayloadFactory(e));
       if (typeof config.onDrag === "function") {
         config.onDrag(sharedState);

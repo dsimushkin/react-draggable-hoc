@@ -4,25 +4,27 @@ import draggable from "./draggableFactory";
 import dragDropContainer from "./dragDropContainerFactory";
 import useDraggableFactory from "./useDraggableFactory";
 import useDroppableFactory from "./useDroppableFactory";
-import useMonitorListenerFactory from "./useDndObserverListenerFactory";
+import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import DragContextType from "./IDragContext";
-import HtmlDndObserver, { HtmlDragPayload } from "./HtmlDndObserver";
+import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
 import { DragPhase } from "./HtmlHelpers";
 
 export { defaultPostProcessor } from "./draggableFactory";
-export { defaultDroppableMethod } from "./useDroppableFactory";
+export { defaultDroppableMethod } from "./HtmlMethods";
 export { default as DragContextType } from "./IDragContext";
 export * from "./helpers";
 
 export const DragContext = React.createContext<
-  DragContextType<any, HtmlDragPayload>
+  DragContextType<any, IHtmlDndObserver<any>>
 >({
   observer: HtmlDndObserver<any>(),
   container: undefined,
 });
 export const useDraggable = useDraggableFactory(DragContext);
 export const useDroppable = useDroppableFactory(DragContext);
-export const useMonitorListener = useMonitorListenerFactory(DragContext);
+export const useDndObserverListener = useDndObserverListenerFactory(
+  DragContext,
+);
 
 export function useDragStopPropagation(
   ref: React.RefObject<any>,

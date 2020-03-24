@@ -1,8 +1,8 @@
 import * as React from "react";
 import { IDndObserver } from "./IDndObserver";
 
-interface IDragContext<T, E> {
-  observer: IDndObserver<T, E>;
+interface IDragContext<T, D extends IDndObserver<T, any, any>> {
+  observer: D;
   container?: React.RefObject<any>;
 }
 

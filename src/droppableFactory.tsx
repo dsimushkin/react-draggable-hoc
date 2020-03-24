@@ -1,12 +1,12 @@
 import * as React from "react";
 
 import DragContext from "./IDragContext";
-import useDroppableFactory, {
-  defaultDroppableMethod,
-} from "./useDroppableFactory";
+import useDroppableFactory from "./useDroppableFactory";
+import { IHtmlDndObserver } from "./HtmlDndObserver";
+import { defaultDroppableMethod } from "./HtmlMethods";
 
-function droppableFactory<T, HtmlDragPayload>(
-  context: React.Context<DragContext<T, HtmlDragPayload>>,
+function droppableFactory<T>(
+  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
 ) {
   const useDroppable = useDroppableFactory(context);
 
