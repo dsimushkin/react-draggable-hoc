@@ -87,9 +87,7 @@ function draggableFactory<T>(
         onDragStart: delay === 0 ? onDragStart : undefined,
         onDrop: onDragEnd,
         onDragCancel: onDragEnd,
-        onDrag: () => {
-          console.log("drag");
-        },
+        onDrag: onDrag,
       },
     );
 
