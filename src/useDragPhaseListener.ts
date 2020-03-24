@@ -1,5 +1,5 @@
 import * as React from "react";
-import { DragPhase, attach, detach } from "./helpers";
+import { DragPhase, attach, detach } from "./HtmlHelpers";
 
 function useDragPhaseListener(
   listener: (e: Event) => any,

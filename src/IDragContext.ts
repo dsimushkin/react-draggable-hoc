@@ -1,8 +1,8 @@
 import * as React from "react";
-import { DragMonitor } from "./DragMonitor";
+import { IDndObserver } from "./IDndObserver";
 
-interface IDragContext {
-  monitor: DragMonitor;
+interface IDragContext<T, E> {
+  observer: IDndObserver<T, E>;
   container?: React.RefObject<any>;
 }
 

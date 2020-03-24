@@ -1,23 +1,27 @@
 import * as React from "react";
 
 import DragContext from "./IDragContext";
-import { DragMonitor } from "./DragMonitor";
-import useMonitorListenerFactory from "./useMonitorListenerFactory";
+import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
+import { ISharedState } from "./IDndObserver";
+import { HtmlDragPayload } from "./HtmlDndObserver";
 
-export function defaultDroppableMethod(
-  monitor: DragMonitor,
+export function defaultDroppableMethod<T>(
+  state: ISharedState<T, HtmlDragPayload>,
   ref: React.RefObject<any>,
 ) {
-  if (monitor.current && ref.current) {
-    const { x, y } = monitor.current;
+  if (state.current && ref.current) {
+    const { x, y } = state.current;
     return document.elementsFromPoint(x, y).indexOf(ref.current) >= 0;
   }
 
   return false;
 }
 
-function droppableFactory(context: React.Context<DragContext>) {
-  const useMonitorListener = useMonitorListenerFactory(context);
+function droppableFactory<T, HtmlDragPayload>(
+  context: React.Context<DragContext<T, HtmlDragPayload>>,
+) {
+  const useDndObserverListener = useDndObserverListenerFactory(context);
+  type SharedState = ISharedState<T, HtmlDragPayload>;
   return function Droppable({
     children,
     method = defaultDroppableMethod,
@@ -33,30 +37,30 @@ function droppableFactory(context: React.Context<DragContext>) {
     onDrop?: (dragProps: any) => void;
     disabled?: boolean;
   }) {
-    const { monitor } = React.useContext(context);
+    const { observer } = React.useContext(context);
     const ref = React.useRef<any>();
     const factory = React.useCallback(
-      monitor => ({
+      (state: SharedState) => ({
         isHovered:
-          monitor.dragProps && !disabled ? method(monitor, ref) : false,
-        dragProps: monitor.dragProps,
+          state.dragProps && !disabled ? method(state as any, ref) : false,
+        dragProps: state.dragProps,
       }),
-      [method, monitor, disabled],
+      [method, observer, disabled],
     );
-    const [props, change] = React.useState(factory(monitor));
+    const [props, change] = React.useState(factory(observer.state));
     const dragListener = React.useCallback(
-      (monitor: DragMonitor) => {
-        const nprops = factory(monitor);
+      (state: SharedState) => {
+        const nprops = factory(state);
         if (Object.keys(nprops).some(key => nprops[key] !== props[key])) {
           change(nprops);
         }
       },
       [props, change, factory],
     );
-    useMonitorListener(dragListener, "dragStart", "drag", "cancel");
+    useDndObserverListener(dragListener, "dragStart", "drag", "cancel");
 
     const dropListener = React.useCallback(
-      (monitor: DragMonitor) => {
+      (state: SharedState) => {
         const nprops = {
           dragProps: undefined,
           isHovered: false,
@@ -69,9 +73,9 @@ function droppableFactory(context: React.Context<DragContext>) {
           onDrop(props.dragProps);
         }
       },
-      [factory, monitor, props, onDrop],
+      [factory, observer, props, onDrop],
     );
-    useMonitorListener(dropListener, "drop");
+    useDndObserverListener(dropListener, "drop");
 
     return children({ ref, ...props });
   };

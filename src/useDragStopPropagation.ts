@@ -1,5 +1,5 @@
 import useDragPhaseListener from "./useDragPhaseListener";
-import { DragPhase } from "./helpers";
+import { DragPhase } from "./HtmlHelpers";
 
 function useDragStopPropagation(
   ref: React.RefObject<any>,

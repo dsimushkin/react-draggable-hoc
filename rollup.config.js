@@ -5,13 +5,13 @@ import resolve from "@rollup/plugin-node-resolve";
 import path from "path";
 
 const files = [
-  "dragDropContainerFactory.tsx",
-  "draggableFactory.tsx",
-  "droppableFactory.tsx",
-  "helpers.ts",
-  "useDraggableFactory.ts",
-  "useDragPhaseListener.ts",
-  "useMonitorListenerFactory.ts",
+  // "dragDropContainerFactory.tsx",
+  // "draggableFactory.tsx",
+  // "droppableFactory.tsx",
+  // "helpers.ts",
+  // "useDraggableFactory.ts",
+  // "useDragPhaseListener.ts",
+  // "useMonitorListenerFactory.ts",
 ];
 
 const plugins = [

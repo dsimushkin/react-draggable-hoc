@@ -6,7 +6,7 @@ import { HashRouter } from "react-router-dom";
 
 import App from "./App";
 import "./index.css";
-import registerServiceWorker from "./registerServiceWorker";
+import { unregister } from "./registerServiceWorker";
 
 ReactDOM.render(
   <HashRouter>
@@ -14,4 +14,4 @@ ReactDOM.render(
   </HashRouter>,
   document.getElementById("root"),
 );
-registerServiceWorker();
+unregister();

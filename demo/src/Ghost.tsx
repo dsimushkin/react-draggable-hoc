@@ -65,9 +65,9 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
         handleRef != null ? (
           <Droppable
             onDrop={onDrop}
-            method={(monitor, nodeRef) => {
+            method={(state, nodeRef) => {
               const a = nodeRef.current.getBoundingClientRect();
-              const { x } = monitor.current!;
+              const { x } = state.current!;
 
               return a.left <= x && a.right >= x;
             }}

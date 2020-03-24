@@ -1,10 +1,13 @@
 import * as React from "react";
 
-import { DragMonitor } from "./DragMonitor";
 import DragContext from "./IDragContext";
 
-function dragDropContainer(context: React.Context<DragContext>) {
-  const monitor = new DragMonitor();
+import HtmlDndObserver, { HtmlDragPayload } from "./HtmlDndObserver";
+
+function dragDropContainer<T>(
+  context: React.Context<DragContext<T, HtmlDragPayload>>,
+) {
+  const observer = HtmlDndObserver<T>();
 
   return function DragDropContainer({
     children,
@@ -19,7 +22,7 @@ function dragDropContainer(context: React.Context<DragContext>) {
     const ref = React.useRef(null);
 
     return (
-      <context.Provider value={{ monitor, container: ref }}>
+      <context.Provider value={{ observer, container: ref }}>
         {typeof children === "function" ? (
           children({ ref })
         ) : (

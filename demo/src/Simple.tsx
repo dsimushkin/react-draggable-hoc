@@ -10,7 +10,7 @@ export const SimpleExample = () => {
   const [dropped, changeDropped] = React.useState<number[]>([]);
   const values = React.useMemo(
     () => initialValues.filter(v => dropped.indexOf(v) < 0),
-    [dropped]
+    [dropped],
   );
 
   const onDrop = (dragProps: number) => {
@@ -36,7 +36,7 @@ export const SimpleExample = () => {
             ref={ref}
             style={{
               backgroundColor: isHovered ? "rgba(0, 130, 20, 0.2)" : undefined,
-              border: dragProps ? "1px dashed #ccc" : undefined
+              border: dragProps ? "1px dashed #ccc" : undefined,
             }}
           >
             {values.length > 0

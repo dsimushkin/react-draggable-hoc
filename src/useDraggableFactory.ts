@@ -1,16 +1,13 @@
 import * as React from "react";
 
+import { ISharedState } from "./IDndObserver";
+
 import useForceUpdate from "./useForceUpdate";
-import {
-  DragListener,
-  isDragStart,
-  isDragEvent,
-  attach,
-  detach,
-} from "./helpers";
 import DragContext from "./IDragContext";
 
-function useDraggableFactory(context: React.Context<DragContext>) {
+function useDraggableFactory<T, E>(context: React.Context<DragContext<T, E>>) {
+  type DragListener = (state: ISharedState<T, E>) => void;
+
   return function useDraggable(
     ref: React.RefObject<any>,
     {
@@ -31,116 +28,87 @@ function useDraggableFactory(context: React.Context<DragContext>) {
       onDragCancel?: Function;
     } = {},
   ) {
-    const { monitor, container } = React.useContext(context);
+    const { observer, container } = React.useContext(context);
     const [isDragged, change] = React.useState(false);
-    const [delayed, changeDelayed] = React.useState<MouseEvent | TouchEvent>();
+    const [isDelayed, changeDelayed] = React.useState(false);
     const [forceUpdate] = useForceUpdate();
 
     React.useEffect(() => {
       const node = ref && ref.current;
 
-      if (node) node.style.userSelect = "none";
-
-      const syncListener: DragListener = e => {
-        if (isDragStart(e) && node?.contains(e.target as Node)) {
-          if (!isDragged) change(true);
-          monitor.dragProps = dragProps;
-          monitor.start(e);
-          if (typeof onDragStart === "function") onDragStart(e);
-        }
-      };
-      const cancelListener = (e: MouseEvent | TouchEvent) => {
-        clearTimeout(t);
-        if (delayed != null) changeDelayed(undefined);
-        if (typeof onDragCancel === "function") {
-          onDragCancel(e);
-        }
-      };
-
-      let t: number;
-      let dragListener: DragListener | undefined = undefined;
-      let dropListener: DragListener | undefined = undefined;
-      let dragStartListener: DragListener | undefined = undefined;
-
-      if (delayed != null) {
-        t = window.setTimeout(() => {
-          syncListener(delayed);
-          changeDelayed(undefined);
-        }, delay);
-        dropListener = dragListener = cancelListener;
-      } else {
-        if (node != null && !isDragged) {
-          if (delay > 0) {
-            dragStartListener = (e: MouseEvent | TouchEvent) => {
-              changeDelayed(e);
-              if (typeof onDelayedDrag === "function") {
-                onDelayedDrag(e);
-              }
-            };
-          } else {
-            dragStartListener = syncListener;
+      const delayedListener: DragListener = state => {
+        if (!isDelayed) {
+          changeDelayed(true);
+          if (typeof onDelayedDrag === "function") {
+            onDelayedDrag(state);
           }
         }
+      };
 
-        if (isDragged) {
-          dragListener = (e: MouseEvent | TouchEvent) => {
-            if (!isDragEvent(e) || window.getSelection()?.toString()) {
+      const cancelListener: DragListener | undefined =
+        isDragged || isDelayed
+          ? state => {
+              if (isDelayed) changeDelayed(false);
               if (isDragged) change(false);
-              monitor.cancel();
               if (typeof onDragCancel === "function") {
-                onDragCancel(e);
-              }
-            } else {
-              e.preventDefault();
-              forceUpdate();
-              monitor.drag(e);
-              if (typeof onDrag === "function") {
-                onDrag(e);
+                onDragCancel(state);
               }
             }
-          };
+          : undefined;
 
-          dropListener = (e: MouseEvent | TouchEvent) => {
-            if (isDragged) change(false);
-            monitor.drop();
-            if (typeof onDrop === "function") {
-              onDrop(e);
-            }
-          };
+      const dragStartListener: DragListener = state => {
+        if (!isDragged) change(true);
+        if (typeof onDragStart === "function") {
+          onDragStart(state);
         }
-      }
+      };
 
-      if (dropListener != null) {
-        attach("drop", dropListener);
-      }
-      if (dragListener != null) {
-        attach("drag", dragListener);
-      }
-      if (dragStartListener != null) {
-        attach("dragStart", dragStartListener, node);
-      }
+      const dragListener: DragListener | undefined = isDragged
+        ? state => {
+            console.log("drag");
+            forceUpdate();
+            if (typeof onDrag === "function") {
+              onDrag(state);
+            }
+          }
+        : undefined;
+
+      const dropListener: DragListener | undefined = isDragged
+        ? state => {
+            change(false);
+            if (typeof onDrop === "function") {
+              onDrop(state);
+            }
+          }
+        : undefined;
+
+      const destroy = node
+        ? observer.makeDraggable(node, {
+            delay,
+            dragProps,
+            onDragStart: dragStartListener,
+            onDelayedDrag: delayedListener,
+            onDrop: dropListener,
+            onDrag: dragListener,
+            onDragCancel: cancelListener,
+          })
+        : undefined;
 
       return () => {
-        clearTimeout(t);
-
-        if (dropListener != null) {
-          detach("drop", dropListener);
-        }
-        if (dragListener != null) {
-          detach("drag", dragListener);
-        }
-        if (dragStartListener != null) {
-          detach("dragStart", dragStartListener, node);
+        if (typeof destroy === "function") {
+          destroy();
         }
       };
     });
 
+    const { state } = observer;
+
     const r = {
-      deltaX: isDragged ? monitor.deltaX : 0,
-      deltaY: isDragged ? monitor.deltaY : 0,
+      deltaX: isDragged ? state.deltaX : 0,
+      deltaY: isDragged ? state.deltaY : 0,
       isDragged,
-      delayed,
-      monitor,
+      isDelayed,
+      state,
       container,
     };
 

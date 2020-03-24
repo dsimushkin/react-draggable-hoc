@@ -24,7 +24,7 @@ class PubSub<T extends string, K extends Function> {
     if (this.subs[e] != null) {
       const subs = this.subs[e]!.slice();
       for (let sub of subs) {
-        await sub(this, ...args);
+        await sub(...args);
       }
     }
   };
@@ -34,7 +34,7 @@ class PubSub<T extends string, K extends Function> {
     if (this.subs[e] != null) {
       const subs = this.subs[e]!.slice();
       for (let sub of subs) {
-        sub(this, ...args);
+        sub(...args);
       }
     }
   };

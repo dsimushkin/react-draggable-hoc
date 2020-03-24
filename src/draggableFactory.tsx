@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom";
 import useDraggableFactory from "./useDraggableFactory";
 import useRect from "./useRect";
 import DragContext from "./IDragContext";
+import { HtmlDragPayload } from "./HtmlDndObserver";
 
 export function defaultPostProcessor(
   props: any, // FIXME
@@ -12,7 +13,7 @@ export function defaultPostProcessor(
   if (ref && ref.current) {
     return {
       ...props,
-      ...props.monitor.getDeltas(
+      ...props.state.getDeltas(
         props.container.current,
         ref.current.getBoundingClientRect(),
       ),
@@ -40,7 +41,9 @@ function Detached({
  *
  * @param context DragContext
  */
-function draggableFactory(context: React.Context<DragContext>) {
+function draggableFactory<T>(
+  context: React.Context<DragContext<T, HtmlDragPayload>>,
+) {
   const useDraggable = useDraggableFactory(context);
 
   return function Draggable({
@@ -53,6 +56,7 @@ function draggableFactory(context: React.Context<DragContext>) {
     detachedParent = document.body,
     onDragStart,
     onDragEnd,
+    onDrag,
   }: {
     dragProps: any; // drag props to be used
     className?: string;
@@ -63,6 +67,7 @@ function draggableFactory(context: React.Context<DragContext>) {
     key?: any;
     onDragStart?: () => any;
     onDragEnd?: () => any;
+    onDrag?: () => any;
     children?:
       | React.FunctionComponent<{
           handleRef?: React.RefObject<any>;
@@ -82,10 +87,15 @@ function draggableFactory(context: React.Context<DragContext>) {
         onDragStart: delay === 0 ? onDragStart : undefined,
         onDrop: onDragEnd,
         onDragCancel: onDragEnd,
+        onDrag: () => {
+          console.log("drag");
+        },
       },
     );
 
-    const [, size, position] = useRect(ref, [props.delayed]);
+    const [, size, position] = useRect(ref, [
+      delay ? props.isDelayed : props.isDragged,
+    ]);
 
     const { deltaX, deltaY, isDragged } = React.useMemo(
       () => postProcess(props, ref),
