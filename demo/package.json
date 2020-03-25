@@ -21,7 +21,8 @@
     "commit:lock": "git commit yarn.lock -m \"Upgrade yarn lock\"",
     "rmlink": "yarn unlink react-draggable-hoc",
     "predeploy": "yarn rmlink && yarn upgrade:manual && yarn build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "postdeploy": "yarn commit:lock"
   },
   "devDependencies": {
     "@types/jest": "latest",
