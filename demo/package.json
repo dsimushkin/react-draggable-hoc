@@ -18,6 +18,7 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "upgrade:manual": "rm -rf node_modules yarn.lock && yarn install",
+    "commit:lock": "git commit yarn.lock -m \"Upgrade yarn lock\"",
     "rmlink": "yarn unlink react-draggable-hoc",
     "predeploy": "yarn rmlink && yarn upgrade:manual && yarn build",
     "deploy": "gh-pages -d build"
