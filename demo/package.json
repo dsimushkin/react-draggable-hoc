@@ -17,12 +17,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "upgrade:manual": "rm -rf node_modules yarn.lock && yarn install",
-    "commit:lock": "git commit yarn.lock -m \"Upgrade yarn lock\"",
+    "commit:lock": "(git commit yarn.lock -m \"Upgrade yarn lock\" > \\dev\\null) && (echo \"yarn.lock commited\") || (echo \"\nyarn.lock hasn't changed\n\")",
+    "upgrade:manual": "rm -rf node_modules yarn.lock && yarn install && comit:lock",
     "rmlink": "yarn unlink react-draggable-hoc",
     "predeploy": "yarn rmlink && yarn upgrade:manual && yarn build",
-    "deploy": "gh-pages -d build",
-    "postdeploy": "yarn commit:lock"
+    "deploy": "gh-pages -d build"
   },
   "devDependencies": {
     "@types/jest": "latest",
