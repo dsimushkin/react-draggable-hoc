@@ -24,7 +24,8 @@ class PubSub<T extends string, K extends (...args: any[]) => any> {
     if (e == null) throw new Error("Event name should be provided");
     await sleep(0);
     if (this.subs[e] != null) {
-      for (let sub of this.subs[e]!) {
+      const subs = this.subs[e]!.slice();
+      for (let sub of subs) {
         await sub(...args);
       }
     }
@@ -33,7 +34,8 @@ class PubSub<T extends string, K extends (...args: any[]) => any> {
   notifySync = (e: T, ...args: Parameters<K>) => {
     if (e == null) throw new Error("Event name should be provided");
     if (this.subs[e] != null) {
-      for (let sub of this.subs[e]!) {
+      const subs = this.subs[e]!.slice();
+      for (let sub of subs) {
         sub(...args);
       }
     }

@@ -11,6 +11,7 @@ import {
   getSelection,
   clearSelection,
   DragPhase,
+  isMouseEvent,
 } from "./HtmlHelpers";
 
 import { sleep } from "./utils";
@@ -34,7 +35,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   private st: number | undefined = undefined;
   private selection: string = "";
 
-  cleanup() {
+  cleanup = () => {
     super.cleanup();
     if (this.t != null) {
       clearTimeout(this.t);
@@ -44,15 +45,15 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.clearSelectionMonitor();
     this.dragListener = undefined;
     this.dropListener = undefined;
-  }
+  };
 
-  async cancel() {
+  cancel = async () => {
     let notificationNeeded = this.t != null || this.dragged != null;
     this.cleanup();
     if (notificationNeeded) {
       await this.subs.notify("cancel", this.state);
     }
-  }
+  };
 
   private clearSelectionMonitor = () => {
     if (this.st != null) {
@@ -62,7 +63,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   };
 
   private checkSelection = () => {
-    return this.selection !== getSelection();
+    const selection = getSelection();
+    const result = this.selection !== selection;
+    this.selection = selection;
+    return result;
   };
 
   private monitorSelection = () => {
@@ -113,7 +117,12 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     config = {},
   ) => {
     this.init();
-    node.style.userSelect = "none";
+    try {
+      node.style.userSelect = "none";
+      node.style.webkitUserSelect = "none";
+      node.style.msUserSelect = "none";
+      (node.style as any).MozUserSelect = "none";
+    } catch (e) {}
 
     const defaultDragListener = async (e: DndEvent) => {
       await sleep(0);
@@ -143,9 +152,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
 
       if (
         isDragStart(e) &&
-        node?.contains(e.target as HTMLElement) &&
+        // node?.contains(e.target as HTMLElement) && // CHECKME
         !this.checkSelection()
       ) {
+        e.preventDefault();
         this.cleanup();
         this.dragListener = defaultDragListener;
         this.dropListener = defaultDropListener;
@@ -163,21 +173,26 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     };
 
     const delayedDragListener = async (e: DndEvent) => {
-      await sleep(0);
-      clearSelection();
-      this.selection = getSelection();
-      this.t = window.setTimeout(() => {
-        this.t = undefined;
-        if (this.checkSelection()) {
-          this.cancel();
-        } else {
-          defaultDragStartListener(e);
+      if (isDragStart(e)) {
+        if (isMouseEvent(e)) {
+          e.preventDefault();
         }
-      }, config.delay);
-      if (typeof config.onDelayedDrag === "function") {
-        config.onDelayedDrag(this.state);
+        await sleep(0);
+        clearSelection();
+        this.selection = getSelection();
+        this.t = window.setTimeout(() => {
+          this.t = undefined;
+          if (this.checkSelection()) {
+            this.cancel();
+          } else {
+            defaultDragStartListener(e);
+          }
+        }, config.delay);
+        if (typeof config.onDelayedDrag === "function") {
+          config.onDelayedDrag(this.state);
+        }
+        await this.subs.notify("delayedDrag", this.state);
       }
-      await this.subs.notify("delayedDrag", this.state);
     };
 
     if (node === this.dragged) {
@@ -188,7 +203,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     const listener = config.delay
       ? delayedDragListener
       : defaultDragStartListener;
-    attach("dragStart", listener, node, { passive: true, capture: false });
+    attach("dragStart", listener, node, { passive: false, capture: false });
 
     return () => {
       detach("dragStart", listener, node, { capture: false });
@@ -203,7 +218,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     if (!this.initialized) {
       attach("drag", this.onDragListener, window, { passive: false });
       attach("drop", this.onDropListener, window, { passive: false });
-      window.addEventListener("scroll", this.cancel, { passive: true });
+      window.addEventListener("scroll", this.cancel as any, { passive: true });
       window.addEventListener("contextmenu", this.cancel, { passive: true });
       window.addEventListener("touchcancel", this.cancel, { passive: true });
       this.initialized = true;
@@ -215,7 +230,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     if (this.initialized) {
       detach("drag", this.onDragListener);
       detach("drop", this.onDropListener);
-      window.removeEventListener("scroll", this.cancel);
+      window.removeEventListener("scroll", this.cancel as any);
       window.removeEventListener("contextmenu", this.cancel);
       window.removeEventListener("touchcancel", this.cancel);
       this.initialized = false;
