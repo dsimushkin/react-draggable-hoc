@@ -1,17 +1,17 @@
 import typescript from "rollup-plugin-typescript2";
 import external from "rollup-plugin-peer-deps-external";
-// import commonjs from "@rollup/plugin-commonjs";
+import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
 import path from "path";
+import fs from "fs";
 
-const files = [
-  // "dragDropContainerFactory.tsx",
-  // "draggableFactory.tsx",
-  // "droppableFactory.tsx",
-  // "helpers.ts",
-  // "useDraggableFactory.ts",
-  // "useDragPhaseListener.ts",
-  // "useMonitorListenerFactory.ts",
+const exclude = [
+  "devUtils.ts",
+  "PubSub.ts",
+  "useRect.ts",
+  "useForceUpdate.ts",
+  "utils.ts",
+  "IDragContext.ts",
 ];
 
 const plugins = [
@@ -20,10 +20,11 @@ const plugins = [
   typescript({
     clean: true,
   }),
-  // commonjs(),
 ];
 
-export default files
+export default fs
+  .readdirSync("./src")
+  .filter(file => exclude.indexOf(file) < 0 && /\.ts[x]$/.test(file))
   .map(file => {
     const extInitial = path.extname(file);
     const basename = path.basename(file, extInitial);
@@ -52,5 +53,5 @@ export default files
         sourcemap: true,
       },
     ],
-    plugins,
+    plugins: [...plugins, commonjs()],
   });
