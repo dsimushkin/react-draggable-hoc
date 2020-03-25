@@ -41,7 +41,6 @@ export interface IDndObserver<T, E, N> {
   wasDetached: Boolean;
   history: ISharedState<T, E, N>["history"];
 
-  cleanup(): any;
   on: PubSub<DnDPhases, (state: ISharedState<T, E, N>) => void>["on"];
   off: PubSub<DnDPhases, (state: ISharedState<T, E, N>) => void>["off"];
 
@@ -49,7 +48,9 @@ export interface IDndObserver<T, E, N> {
 }
 
 // Typescript ABC sucks section
-export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {}
+export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {
+  cleanup(): any;
+}
 
 export abstract class DndObserver<T, E, N> {
   // protected
