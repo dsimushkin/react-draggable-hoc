@@ -181,6 +181,8 @@ function HtmlDndObserver<T>(): IHtmlDndObserver<T> {
     };
 
     const defaultDropListener = async (e: DndEvent) => {
+      await sleep(0);
+      history.push(dragPayloadFactory(e));
       if (typeof config.onDrop === "function") {
         config.onDrop(sharedState);
       }
