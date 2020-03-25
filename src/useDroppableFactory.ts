@@ -24,7 +24,7 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any>>(
           ref: React.RefObject<any>,
         ) => Boolean,
       ) => Boolean;
-      onDrop?: (dragProps: any) => void;
+      onDrop?: (state: D["state"]) => void;
       disabled?: boolean;
     },
   ) {
@@ -71,7 +71,7 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any>>(
         }
 
         if (props.isHovered && typeof onDrop === "function") {
-          onDrop(props.dragProps);
+          onDrop(state);
         }
       },
       [factory, observer, props, onDrop],

@@ -25,7 +25,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDrag?: (state: D["state"]) => void;
       onDrop?: (state: D["state"]) => void;
       onDelayedDrag?: (state: D["state"]) => void;
-      onDragCancel?: Function;
+      onDragCancel?: (state: D["state"]) => void;
       disabled?: Boolean;
     },
   ) {

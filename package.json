@@ -3,10 +3,10 @@
   "version": "1.3.0",
   "description": "drag by ref using hook",
   "private": false,
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "lib/index.jsx",
+  "types": "lib/index.d.tsx",
   "exports": {
-    ".": "./lib/index.js",
+    ".": "./lib/index.jsx",
     "./": "./lib/"
   },
   "files": [

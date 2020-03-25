@@ -10,6 +10,7 @@ class PubSub<T extends string, K extends Function> {
     this.off(e, fn);
     if (this.subs[e] == null) this.subs[e] = [];
     this.subs[e]!.push(fn);
+    return () => this.off(e, fn);
   };
 
   off = (e: T, fn: K) => {

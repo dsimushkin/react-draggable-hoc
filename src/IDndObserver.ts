@@ -10,6 +10,7 @@ export interface ISharedState<T, E, N> {
   cancel: () => void;
   readonly initial?: { x: number; y: number; event: E };
   readonly current?: { x: number; y: number; event: E };
+  readonly history: { x: number; y: number; event: E }[];
   readonly deltaX: number;
   readonly deltaY: number;
   readonly node?: N;
@@ -17,7 +18,7 @@ export interface ISharedState<T, E, N> {
 }
 
 export interface IDndObserver<T, E, N> {
-  on: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void;
+  on: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => () => void;
   off: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void;
   makeDraggable: (
     node: N,

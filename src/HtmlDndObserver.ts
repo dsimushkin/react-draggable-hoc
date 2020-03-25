@@ -111,6 +111,10 @@ function HtmlDndObserver<T>(): IHtmlDndObserver<T> {
       return history.length ? history[history.length - 1] : undefined;
     }
 
+    get history() {
+      return history;
+    }
+
     get deltaX() {
       return history.length < 2 ? 0 : this.current!.x - this.initial!.x;
     }

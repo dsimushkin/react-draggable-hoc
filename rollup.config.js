@@ -43,10 +43,10 @@ export default files
     };
   })
   .concat({
-    input: "src/index.ts",
+    input: "src/index.tsx",
     output: [
       {
-        file: "lib/index.js",
+        file: "lib/index.jsx",
         format: "cjs",
         exports: "named",
         sourcemap: true,

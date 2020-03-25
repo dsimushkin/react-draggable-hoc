@@ -87,3 +87,19 @@ export const Droppable = droppable(DragContext);
 export const Draggable = draggable(DragContext);
 
 export const DragDropContainer = dragDropContainer(DragContext);
+
+export function withDndContext(context: typeof DragContext) {
+  return function<T>(WrappedComponent: React.ComponentType<T>) {
+    return function WithDndContext(
+      props: T & { observer: IHtmlDndObserver<any> },
+    ) {
+      return (
+        <context.Consumer>
+          {({ observer }) => (
+            <WrappedComponent {...props} observer={observer} />
+          )}
+        </context.Consumer>
+      );
+    };
+  };
+}
