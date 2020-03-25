@@ -17,7 +17,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "commit:lock": "(git commit yarn.lock -m \"Upgrade yarn lock\" > \\dev\\null) && (echo \"yarn.lock commited\") || (echo \"\nyarn.lock hasn't changed\n\")",
+    "commit:lock": "(git commit yarn.lock -m \"Upgrade yarn lock\" > /dev/null) && (echo \"yarn.lock commited\") || (echo \"\nyarn.lock hasn't changed\n\")",
     "upgrade:manual": "rm -rf node_modules yarn.lock && yarn install && yarn commit:lock",
     "rmlink": "yarn unlink react-draggable-hoc",
     "predeploy": "yarn rmlink && yarn upgrade:manual && yarn build",
