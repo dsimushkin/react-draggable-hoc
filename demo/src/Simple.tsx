@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { DragDropContainer, Draggable, Droppable } from "react-draggable-hoc";
 
-const initialValues = Array(400)
+const initialValues = Array(20)
   .fill(undefined)
   .map((_, i) => i + 1);
 
@@ -45,8 +45,10 @@ export const SimpleExample = () => {
               ? dragProps
                 ? "Drop it here"
                 : "Start dragging"
-              : "Nothing to drag"}
-            <div>Dropped values: [{dropped.join(", ")}]</div>
+              : "Congratulations, You Win!"}
+            {values.length > 0 && (
+              <div>Dropped values: [{dropped.join(", ")}]</div>
+            )}
           </div>
         )}
       </Droppable>
