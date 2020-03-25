@@ -13,9 +13,9 @@ export const SimpleExample = () => {
     [dropped],
   );
 
-  const onDrop: React.ComponentProps<
-    typeof Droppable
-  >["onDrop"] = dragProps => {
+  const onDrop: React.ComponentProps<typeof Droppable>["onDrop"] = ({
+    dragProps,
+  }) => {
     changeDropped([...dropped, dragProps as number]);
   };
 

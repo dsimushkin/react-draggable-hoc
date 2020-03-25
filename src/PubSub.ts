@@ -1,6 +1,6 @@
-import { remove } from "./utils";
+import { remove, sleep } from "./utils";
 
-class PubSub<T extends string, K extends Function> {
+class PubSub<T extends string, K extends (...args: any[]) => any> {
   subs: {
     [key in T]?: K[];
   } = {};
@@ -20,21 +20,20 @@ class PubSub<T extends string, K extends Function> {
     }
   };
 
-  notify = async (e: T, ...args: any) => {
+  notify = async (e: T, ...args: Parameters<K>) => {
     if (e == null) throw new Error("Event name should be provided");
+    await sleep(0);
     if (this.subs[e] != null) {
-      const subs = this.subs[e]!.slice();
-      for (let sub of subs) {
+      for (let sub of this.subs[e]!) {
         await sub(...args);
       }
     }
   };
 
-  notifySync = (e: T, ...args: any) => {
+  notifySync = (e: T, ...args: Parameters<K>) => {
     if (e == null) throw new Error("Event name should be provided");
     if (this.subs[e] != null) {
-      const subs = this.subs[e]!.slice();
-      for (let sub of subs) {
+      for (let sub of this.subs[e]!) {
         sub(...args);
       }
     }

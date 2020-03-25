@@ -4,11 +4,11 @@ import * as ReactDOM from "react-dom";
 import useDraggableFactory from "./useDraggableFactory";
 import useRect from "./useRect";
 import DragContext from "./IDragContext";
-import { IHtmlDndObserver } from "./HtmlDndObserver";
+import HtmlDndObserver from "./HtmlDndObserver";
 import { getDeltas } from "./HtmlHelpers";
 
 export function defaultPostProcessor<T>(
-  props: IHtmlDndObserver<T>["state"] & { container?: React.RefObject<any> },
+  props: any & { container?: React.RefObject<any> },
   ref: React.RefObject<HTMLDivElement>,
 ) {
   if (ref && ref.current) {
@@ -45,7 +45,7 @@ function Detached({
  * @param context DragContext
  */
 function draggableFactory<T>(
-  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
+  context: React.Context<DragContext<T, HtmlDndObserver<T>>>,
 ) {
   const useDraggable = useDraggableFactory(context);
 
@@ -57,9 +57,10 @@ function draggableFactory<T>(
     detachDelta = 20,
     delay = 100,
     detachedParent = document.body,
+    onDelayedDrag,
     onDragStart,
-    onDragEnd,
     onDrag,
+    onDragEnd,
   }: {
     dragProps: NonNullable<T>; // drag props to be used
     className?: string;
@@ -68,9 +69,10 @@ function draggableFactory<T>(
     delay?: number;
     detachedParent?: HTMLElement;
     key?: any;
-    onDragStart?: (state: IHtmlDndObserver<T>["state"]) => void;
-    onDragEnd?: (state: IHtmlDndObserver<T>["state"]) => void;
-    onDrag?: (state: IHtmlDndObserver<T>["state"]) => void;
+    onDelayedDrag?: (state: HtmlDndObserver<T>["state"]) => void;
+    onDragStart?: (state: HtmlDndObserver<T>["state"]) => void;
+    onDrag?: (state: HtmlDndObserver<T>["state"]) => void;
+    onDragEnd?: (state: HtmlDndObserver<T>["state"]) => void;
     children?:
       | React.FunctionComponent<{
           handleRef?: React.RefObject<any>;
@@ -86,8 +88,8 @@ function draggableFactory<T>(
       {
         dragProps,
         delay,
-        onDelayedDrag: delay > 0 ? onDragStart : undefined,
-        onDragStart: delay === 0 ? onDragStart : undefined,
+        onDelayedDrag,
+        onDragStart,
         onDrop: onDragEnd,
         onDragCancel: onDragEnd,
         onDrag: onDrag,

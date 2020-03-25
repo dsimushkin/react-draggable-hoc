@@ -60,7 +60,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
       {({ handleRef, isDetached }) =>
         handleRef != null ? (
           <Droppable
-            onDrop={dragProps => {
+            onDrop={({ dragProps }) => {
               if (dragProps !== backgroundColor) {
                 changeColor(dragProps as string);
               }

@@ -1,7 +1,7 @@
-import { IHtmlDndObserver } from "./HtmlDndObserver";
+import HtmlDndObserver from "./HtmlDndObserver";
 
 export function defaultDroppableMethod<T>(
-  state: IHtmlDndObserver<T>["state"],
+  state: HtmlDndObserver<T>["state"],
   ref: React.RefObject<any>,
 ) {
   const node = ref.current;

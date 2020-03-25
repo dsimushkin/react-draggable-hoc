@@ -221,10 +221,11 @@ The whole idea behind the library was to create a single realization to quickly 
 Hooks utilize `DragContext` (React context API) behind the curtains, which injects the following observer
 
 ```ts
+// drag phases
+type DnDPhases = "dragStart" | "drag" | "cancel" | "drop" | "delayedDrag";
+
 interface IDndObserver<T, E, N> {
-  on: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void; // subscribe a listener to Dnd phase
-  off: (e: DnDPhases, fn: (state: ISharedState<T, E, N>) => void) => void; // unsubscribe a listener from Dnd phase
-  makeDraggable: (
+  makeDraggable(
     node: N,
     config?: {
       delay?: number;
@@ -235,13 +236,22 @@ interface IDndObserver<T, E, N> {
       onDrag?: (state: ISharedState<T, E, N>) => void;
       onDragCancel?: (state: ISharedState<T, E, N>) => void;
     },
-  ) => () => void; // make an element draggable, returns a function to destroy the draggable.
-  init: () => void; // lazy initialization (auto performed when makeDraggable is used)
-  destroy: () => void; // lazy destruction
-  state: ISharedState<T, E, N>; // represents the state of the Dnd
-}
+  ): () => void; // make an element draggable, returns a function to destroy the draggable.
+  init(): void; // lazy initialization (auto performed when makeDraggable is used)
+  destroy(): void; // lazy destruction
+  cancel(): void;
 
-type DnDPhases = "dragStart" | "drag" | "cancel" | "drop" | "delayedDrag";
+  dragProps?: T;
+  dragged?: N;
+  wasDetached: Boolean;
+  history: ISharedState<T, E, N>["history"];
+
+  on: PubSub<DnDPhases, (state: ISharedState<T, E, N>) => void>["on"]; // subscribe a listener to Dnd phase
+  off: PubSub<DnDPhases, (state: ISharedState<T, E, N>) => void>["off"]; // unsubscribe a listener from Dnd phase
+
+  // calculated shared state
+  readonly state: ISharedState<T, E, N>;
+}
 ```
 
 The interface does not depend on the browser API and can be implemented for other platform usage.
@@ -249,8 +259,11 @@ The interface does not depend on the browser API and can be implemented for othe
 Browser realization, which is currently the default, additionally provides the `stopPropagation` method
 
 ```ts
-interface IHtmlDndObserver<T>
-  extends IDndObserver<T, MouseEvent | TouchEvent, HTMLElement> {
+class HtmlDndObserver<T> extends IDndObserver<
+  T,
+  MouseEvent | TouchEvent,
+  HTMLElement
+> {
   stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
 }
 ```

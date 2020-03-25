@@ -1,6 +1,4 @@
-import PubSub from "./PubSub";
-
-import { DnDPhases, IDndObserver, ISharedState } from "./IDndObserver";
+import { DndObserver } from "./IDndObserver";
 import {
   isTouchEvent,
   getPointer,
@@ -28,217 +26,163 @@ function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   };
 }
 
-export type HtmlDragPayload = ReturnType<typeof dragPayloadFactory>;
+class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
+  private dragListener: DndEventListener | undefined = undefined;
+  private dropListener: DndEventListener | undefined = undefined;
+  private initialized = false;
+  private t: number | undefined = undefined;
+  private st: number | undefined = undefined;
+  private selection: string = "";
 
-export interface IHtmlDndObserver<T>
-  extends IDndObserver<T, DndEvent, HTMLElement> {
-  stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
-}
+  cleanup() {
+    super.cleanup();
+    if (this.t != null) {
+      clearTimeout(this.t);
+      this.t = undefined;
+    }
+    this.selection = "";
+    this.clearSelectionMonitor();
+    this.dragListener = undefined;
+    this.dropListener = undefined;
+  }
 
-function HtmlDndObserver<T>(): IHtmlDndObserver<T> {
-  const subs = new PubSub<DnDPhases, (state: typeof sharedState) => void>();
+  async cancel() {
+    let notificationNeeded = this.t != null || this.dragged != null;
+    this.cleanup();
+    if (notificationNeeded) {
+      await this.subs.notify("cancel", this.state);
+    }
+  }
 
-  let dragListener: DndEventListener | undefined = undefined;
-  let dropListener: DndEventListener | undefined = undefined;
-
-  let dragged: HTMLElement | undefined = undefined;
-  let wasDetached = false;
-  let dragProps: T | undefined = undefined;
-  let history: HtmlDragPayload[] = [];
-  let initialized = false;
-  let t: number | undefined = undefined;
-
-  let st: number | undefined = undefined;
-  let selection: string = "";
-
-  const clearSelectionMonitor = () => {
-    if (st != null) {
-      clearInterval(st);
-      st = undefined;
+  private clearSelectionMonitor = () => {
+    if (this.st != null) {
+      clearInterval(this.st);
+      this.st = undefined;
     }
   };
 
-  const checkSelection = () => {
-    return selection !== getSelection();
+  private checkSelection = () => {
+    return this.selection !== getSelection();
   };
 
-  const monitorSelection = () => {
-    clearSelectionMonitor();
-    selection = getSelection();
-    st = window.setInterval(() => {
-      if (checkSelection()) {
-        clearSelectionMonitor();
-        cancelListener();
+  private monitorSelection = () => {
+    this.clearSelectionMonitor();
+    this.selection = getSelection();
+    this.st = window.setInterval(() => {
+      if (this.checkSelection()) {
+        this.clearSelectionMonitor();
+        this.cancel();
       }
     }, 10);
   };
 
-  const cleanup = () => {
-    if (t != null) {
-      clearTimeout(t);
-      t = undefined;
-    }
-    selection = "";
-    clearSelectionMonitor();
-    dragged = undefined;
-    dragProps = undefined;
-    dragListener = undefined;
-    dropListener = undefined;
-    wasDetached = false;
-  };
+  private onDragListener = async (e: DndEvent) => {
+    this.clearSelectionMonitor();
 
-  const cancelListener = async () => {
-    let notificationNeeded = t != null || dragged != null;
-    cleanup();
-    if (notificationNeeded) {
-      await subs.notify("cancel", sharedState);
-    }
-  };
-
-  const sharedState = new (class
-    implements ISharedState<T, DndEvent, HTMLElement> {
-    get dragProps() {
-      return dragProps;
-    }
-
-    cancel = cancelListener;
-
-    get initial() {
-      return history.length ? history[0] : undefined;
-    }
-
-    get current() {
-      return history.length ? history[history.length - 1] : undefined;
-    }
-
-    get history() {
-      return history;
-    }
-
-    get deltaX() {
-      return history.length < 2 ? 0 : this.current!.x - this.initial!.x;
-    }
-
-    get deltaY() {
-      return history.length < 2 ? 0 : this.current!.y - this.initial!.y;
-    }
-
-    get node() {
-      return dragged;
-    }
-
-    get wasDetached() {
-      return wasDetached;
-    }
-  })();
-
-  const onDragListener = async (e: DndEvent) => {
-    clearSelectionMonitor();
-
-    if (t != null) {
-      cancelListener();
+    if (this.t != null) {
+      this.cancel();
       return;
     }
 
-    if (dragged != null) {
+    if (this.dragged != null) {
       e.preventDefault();
-      if (!isDragEvent(e) || checkSelection()) {
-        cancelListener();
+      if (!isDragEvent(e) || this.checkSelection()) {
+        this.cancel();
       } else {
-        wasDetached = true;
-        if (typeof dragListener === "function") {
-          dragListener(e);
+        this.wasDetached = true;
+        if (typeof this.dragListener === "function") {
+          this.dragListener(e);
         }
       }
     }
   };
 
-  const onDropListener = async (e: DndEvent) => {
-    if (t != null) {
-      cancelListener();
+  private onDropListener = async (e: DndEvent) => {
+    if (this.t != null) {
+      this.cancel();
       return;
     }
 
-    if (dragged != null && typeof dropListener === "function") {
-      dropListener(e);
+    if (this.dragged != null && typeof this.dropListener === "function") {
+      this.dropListener(e);
     }
   };
 
-  const makeDraggable = (
-    node: HTMLElement,
-    config: Parameters<IHtmlDndObserver<T>["makeDraggable"]>[1] = {},
+  makeDraggable: DndObserver<T, DndEvent, HTMLElement>["makeDraggable"] = (
+    node,
+    config = {},
   ) => {
-    init();
+    this.init();
     node.style.userSelect = "none";
 
     const defaultDragListener = async (e: DndEvent) => {
       await sleep(0);
-      history.push(dragPayloadFactory(e));
+      this.history.push(dragPayloadFactory(e));
       if (typeof config.onDrag === "function") {
-        config.onDrag(sharedState);
+        config.onDrag(this.state);
       }
-      subs.notify("drag", sharedState);
+      await this.subs.notify("drag", this.state);
     };
 
     const defaultDropListener = async (e: DndEvent) => {
       await sleep(0);
-      history.push(dragPayloadFactory(e));
+      this.history.push(dragPayloadFactory(e));
       if (typeof config.onDrop === "function") {
-        config.onDrop(sharedState);
+        config.onDrop(this.state);
       }
-      subs.notifySync("drop", sharedState);
-      cleanup();
+      await this.subs.notify("drop", this.state);
+      this.cleanup();
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
       await sleep(0);
       if (!config.delay) {
         clearSelection();
-        selection = getSelection();
+        this.selection = getSelection();
       }
 
       if (
         isDragStart(e) &&
         node?.contains(e.target as HTMLElement) &&
-        !checkSelection()
+        !this.checkSelection()
       ) {
-        cleanup();
-        dragListener = defaultDragListener;
-        dropListener = defaultDropListener;
+        this.cleanup();
+        this.dragListener = defaultDragListener;
+        this.dropListener = defaultDropListener;
 
-        history = [dragPayloadFactory(e)];
-        dragProps = config.dragProps;
-        dragged = node;
+        this.history = [dragPayloadFactory(e)];
+        this.dragProps = config.dragProps;
+        this.dragged = node;
 
         if (typeof config.onDragStart === "function") {
-          config.onDragStart(sharedState);
+          config.onDragStart(this.state);
         }
-        await subs.notify("dragStart", sharedState);
-        monitorSelection();
+        await this.subs.notify("dragStart", this.state);
+        this.monitorSelection();
       }
     };
 
     const delayedDragListener = async (e: DndEvent) => {
       await sleep(0);
       clearSelection();
-      selection = getSelection();
-      t = window.setTimeout(() => {
-        t = undefined;
-        if (checkSelection()) {
-          cancelListener();
+      this.selection = getSelection();
+      this.t = window.setTimeout(() => {
+        this.t = undefined;
+        if (this.checkSelection()) {
+          this.cancel();
         } else {
           defaultDragStartListener(e);
         }
       }, config.delay);
       if (typeof config.onDelayedDrag === "function") {
-        config.onDelayedDrag(sharedState);
+        config.onDelayedDrag(this.state);
       }
-      await subs.notify("delayedDrag", sharedState);
+      await this.subs.notify("delayedDrag", this.state);
     };
 
-    if (node === dragged) {
-      dragListener = defaultDragListener;
-      dropListener = defaultDropListener;
+    if (node === this.dragged) {
+      this.dragListener = defaultDragListener;
+      this.dropListener = defaultDropListener;
     }
 
     const listener = config.delay
@@ -248,58 +192,50 @@ function HtmlDndObserver<T>(): IHtmlDndObserver<T> {
 
     return () => {
       detach("dragStart", listener, node, { capture: false });
-      if (node === dragged) {
-        dragListener = undefined;
-        dropListener = undefined;
+      if (node === this.dragged) {
+        this.dragListener = undefined;
+        this.dropListener = undefined;
       }
     };
   };
 
-  const init = () => {
-    if (!initialized) {
-      attach("drag", onDragListener, window, { passive: false });
-      attach("drop", onDropListener, window, { passive: false });
-      window.addEventListener("scroll", cancelListener, { passive: true });
-      window.addEventListener("contextmenu", cancelListener, { passive: true });
-      window.addEventListener("touchcancel", cancelListener, { passive: true });
-      initialized = true;
+  init = () => {
+    if (!this.initialized) {
+      attach("drag", this.onDragListener, window, { passive: false });
+      attach("drop", this.onDropListener, window, { passive: false });
+      window.addEventListener("scroll", this.cancel, { passive: true });
+      window.addEventListener("contextmenu", this.cancel, { passive: true });
+      window.addEventListener("touchcancel", this.cancel, { passive: true });
+      this.initialized = true;
     }
   };
 
-  const destroy = () => {
-    cleanup();
-    if (initialized) {
-      detach("drag", onDragListener);
-      detach("drop", onDropListener);
-      window.removeEventListener("scroll", cancelListener);
-      window.removeEventListener("contextmenu", cancelListener);
-      window.removeEventListener("touchcancel", cancelListener);
-      initialized = false;
+  destroy = () => {
+    this.cleanup();
+    if (this.initialized) {
+      detach("drag", this.onDragListener);
+      detach("drop", this.onDropListener);
+      window.removeEventListener("scroll", this.cancel);
+      window.removeEventListener("contextmenu", this.cancel);
+      window.removeEventListener("touchcancel", this.cancel);
+      this.initialized = false;
     }
   };
 
-  return {
-    on: subs.on,
-    off: subs.off,
-    makeDraggable,
-    init,
-    destroy,
-    state: sharedState,
-    stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => {
-      // if (node == null) throw new Error("Invalid target");
-      const listener = (e: DndEvent) => {
-        e.stopPropagation();
-      };
+  stopPropagation = (node: HTMLElement, ...phases: DragPhase[]) => {
+    // if (node == null) throw new Error("Invalid target");
+    const listener = (e: DndEvent) => {
+      e.stopPropagation();
+    };
+    phases.forEach(phase => {
+      attach(phase, listener, node, { passive: false, capture: false });
+    });
+
+    return () => {
       phases.forEach(phase => {
-        attach(phase, listener, node, { passive: false, capture: false });
+        detach(phase, listener, node, { capture: false });
       });
-
-      return () => {
-        phases.forEach(phase => {
-          detach(phase, listener, node, { capture: false });
-        });
-      };
-    },
+    };
   };
 }
 

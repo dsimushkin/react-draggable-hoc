@@ -5,10 +5,10 @@ import dragDropContainer from "./dragDropContainerFactory";
 import useDraggableFactory from "./useDraggableFactory";
 import useDroppableFactory from "./useDroppableFactory";
 import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
+import withDndContextFactory from "./withDndContextFactory";
 import DragContextType from "./IDragContext";
-import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
+import HtmlDndObserver from "./HtmlDndObserver";
 import { DragPhase } from "./HtmlHelpers";
-import { some } from "./utils";
 
 export { defaultPostProcessor } from "./draggableFactory";
 export { defaultDroppableMethod } from "./HtmlMethods";
@@ -16,9 +16,9 @@ export { default as DragContextType } from "./IDragContext";
 export * from "./helpers";
 
 export const DragContext = React.createContext<
-  DragContextType<some, IHtmlDndObserver<any>>
+  DragContextType<any, HtmlDndObserver<any>>
 >({
-  observer: HtmlDndObserver<any>(),
+  observer: new HtmlDndObserver<any>(),
   container: undefined,
   defaultDroppableMethod(state, ref) {
     const node = ref.current;
@@ -88,18 +88,7 @@ export const Draggable = draggable(DragContext);
 
 export const DragDropContainer = dragDropContainer(DragContext);
 
-export function withDndContext(context: typeof DragContext) {
-  return function<T>(WrappedComponent: React.ComponentType<T>) {
-    return function WithDndContext(
-      props: T & { observer: IHtmlDndObserver<any> },
-    ) {
-      return (
-        <context.Consumer>
-          {({ observer }) => (
-            <WrappedComponent {...props} observer={observer} />
-          )}
-        </context.Consumer>
-      );
-    };
-  };
-}
+/**
+ * A HOC to inject DragContext as props into a Component
+ */
+export const withDndContext = withDndContextFactory(DragContext);

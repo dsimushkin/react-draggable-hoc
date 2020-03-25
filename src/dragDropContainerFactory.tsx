@@ -2,13 +2,13 @@ import * as React from "react";
 
 import DragContext from "./IDragContext";
 
-import HtmlDndObserver, { IHtmlDndObserver } from "./HtmlDndObserver";
+import HtmlDndObserver from "./HtmlDndObserver";
 import { defaultDroppableMethod } from "./HtmlMethods";
 
 function dragDropContainer<T>(
-  context: React.Context<DragContext<T, IHtmlDndObserver<T>>>,
+  context: React.Context<DragContext<T, HtmlDndObserver<T>>>,
 ) {
-  const observer = HtmlDndObserver<T>();
+  const observer = new HtmlDndObserver<T>();
 
   return function DragDropContainer({
     children,
