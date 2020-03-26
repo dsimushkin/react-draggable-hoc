@@ -12,6 +12,7 @@ const exclude = [
   "useForceUpdate.ts",
   "utils.ts",
   "IDragContext.ts",
+  "throttle.ts",
 ];
 
 const plugins = [

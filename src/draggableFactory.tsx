@@ -76,7 +76,7 @@ function draggableFactory<T>(
     onDrag?: (state: HtmlDndObserver<T>["state"]) => void;
     onDragEnd?: (state: HtmlDndObserver<T>["state"]) => void;
     throttleMs?: number;
-    disabled: Boolean;
+    disabled?: Boolean;
     children?:
       | React.FunctionComponent<{
           handleRef?: React.RefObject<any>;
