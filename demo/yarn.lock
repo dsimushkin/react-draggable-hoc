@@ -2624,7 +2624,7 @@ chardet@^0.7.0:
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
 
-chokidar@^2.0.2, chokidar@^2.1.8:
+chokidar@^2.1.8:
   version "2.1.8"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.8.tgz#804b3a7b6a99358c3c5c61e71d8728f041cff917"
   integrity sha512-ZmZUazfOzf0Nve7duiCKD23PFSCs4JPoYyccjUFF3aQkQadqBhfzhjkwBH2mNOG9cTBwhamM37EIsIkZw3nRgg==
@@ -8681,9 +8681,9 @@ react-dom@latest:
     scheduler "^0.19.1"
 
 react-draggable-hoc@latest:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.0.4.tgz#4af1a5c974ed81ffa3b1aa0e6e45456e3088ae88"
-  integrity sha512-DOuZam+7amW34vqdzjLZJC4h6Xx6+d9sZk2kF+f8mwo5FLt+psY35oV8ci2XZEyAxEHAqWLg9UuBg1Mwc2vb/Q==
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.0.5.tgz#a51035ef8695347a5d1c58bbb6910cc2ed051beb"
+  integrity sha512-G4kCg4XSvZKAZzimHhXL0zi8EOxezX8hHJPWEZkwBjdIOw7F1qDr6rsLUKVnuDgkH1cYdWqSHekq9ao8NmwRdw==
 
 react-error-overlay@^6.0.7:
   version "6.0.7"
@@ -9470,9 +9470,9 @@ side-channel@^1.0.2:
     object-inspect "^1.7.0"
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
-  integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.3.tgz#a1410c2edd8f077b08b4e253c8eacfcaf057461c"
+  integrity sha512-VUJ49FC8U1OxwZLxIbTTrDvLnf/6TDgxZcK8wxR8zs13xpx7xbG60ndBlhNrFi2EMuFRoeDoJO7wthSLq42EjA==
 
 simple-swizzle@^0.2.2:
   version "0.2.2"
@@ -10541,11 +10541,11 @@ walker@^1.0.7, walker@~1.0.5:
     makeerror "1.0.x"
 
 watchpack@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.6.0.tgz#4bc12c2ebe8aa277a71f1d3f14d685c7b446cd00"
-  integrity sha512-i6dHe3EyLjMmDlU1/bGQpEw25XSjkJULPuAVKCbNRefQVq48yXKUpwg538F7AZTf9kyr57zj++pQFltUa5H7yA==
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.6.1.tgz#280da0a8718592174010c078c7585a74cd8cd0e2"
+  integrity sha512-+IF9hfUFOrYOOaKyfaI7h7dquUIOgyEMoQMLA7OP5FxegKA2+XdXThAZ9TU2kucfhDH7rfMHs1oPYziVGWRnZA==
   dependencies:
-    chokidar "^2.0.2"
+    chokidar "^2.1.8"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
 
