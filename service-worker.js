@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/react-draggable-hoc/precache-manifest.eb6157bf24d4313a42978ac3a529be2f.js"
+  "/react-draggable-hoc/precache-manifest.f698e6ae21ce36c04db1d417bdb7c283.js"
 );
 
 self.addEventListener('message', (event) => {

@@ -5,17 +5,17 @@
     "main.js.map": "/react-draggable-hoc/static/js/main.d3b38f21.chunk.js.map",
     "runtime-main.js": "/react-draggable-hoc/static/js/runtime-main.74ab7bd7.js",
     "runtime-main.js.map": "/react-draggable-hoc/static/js/runtime-main.74ab7bd7.js.map",
-    "static/js/2.8e42cc62.chunk.js": "/react-draggable-hoc/static/js/2.8e42cc62.chunk.js",
-    "static/js/2.8e42cc62.chunk.js.map": "/react-draggable-hoc/static/js/2.8e42cc62.chunk.js.map",
+    "static/js/2.90f17d29.chunk.js": "/react-draggable-hoc/static/js/2.90f17d29.chunk.js",
+    "static/js/2.90f17d29.chunk.js.map": "/react-draggable-hoc/static/js/2.90f17d29.chunk.js.map",
     "index.html": "/react-draggable-hoc/index.html",
-    "precache-manifest.eb6157bf24d4313a42978ac3a529be2f.js": "/react-draggable-hoc/precache-manifest.eb6157bf24d4313a42978ac3a529be2f.js",
+    "precache-manifest.f698e6ae21ce36c04db1d417bdb7c283.js": "/react-draggable-hoc/precache-manifest.f698e6ae21ce36c04db1d417bdb7c283.js",
     "service-worker.js": "/react-draggable-hoc/service-worker.js",
     "static/css/main.4fcaf3dd.chunk.css.map": "/react-draggable-hoc/static/css/main.4fcaf3dd.chunk.css.map",
-    "static/js/2.8e42cc62.chunk.js.LICENSE.txt": "/react-draggable-hoc/static/js/2.8e42cc62.chunk.js.LICENSE.txt"
+    "static/js/2.90f17d29.chunk.js.LICENSE.txt": "/react-draggable-hoc/static/js/2.90f17d29.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.74ab7bd7.js",
-    "static/js/2.8e42cc62.chunk.js",
+    "static/js/2.90f17d29.chunk.js",
     "static/css/main.4fcaf3dd.chunk.css",
     "static/js/main.d3b38f21.chunk.js"
   ]
