@@ -5,7 +5,6 @@ import {
   Draggable,
   Droppable,
   defaultPostProcessor,
-  useDragStopPropagation,
 } from "react-draggable-hoc";
 
 const randomColor = () => {
@@ -16,7 +15,6 @@ const randomColor = () => {
 // use a separate component to create a ghost
 const ContentElement = ({ className = "", style, handleRef, value }: any) => {
   const ref = React.useRef(null);
-  useDragStopPropagation(ref, "dragStart");
   return (
     <span style={style} className={`Cell ${className}`} ref={handleRef}>
       <div className="handle">
@@ -47,7 +45,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
 
   return (
     <Draggable
-      delay={100}
+      delay={20}
       dragProps={backgroundColor}
       postProcess={postProcess}
       onDragStart={() => {
@@ -148,14 +146,25 @@ export const GhostExampleTitle = () => (
     with a ghost stuck to row bottom <br />
     custom hover implementation <br />
     drag handle <br />
-    and a delay of 100ms <br />
+    delay of 20ms (scroll is still preserved) <br />
+    and fixed body <br />
     ew-resize cursor on drag
   </p>
 );
 
-export default () => (
-  <React.Fragment>
-    <GhostExampleTitle />
-    <GhostExample />
-  </React.Fragment>
-);
+export default () => {
+  React.useEffect(() => {
+    document.body.style.position = "fixed";
+
+    return () => {
+      document.body.style.position = "initial";
+    };
+  });
+
+  return (
+    <React.Fragment>
+      <GhostExampleTitle />
+      <GhostExample />
+    </React.Fragment>
+  );
+};

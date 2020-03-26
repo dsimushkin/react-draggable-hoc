@@ -8,7 +8,6 @@ import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import withDndContextFactory from "./withDndContextFactory";
 import DragContextType from "./IDragContext";
 import HtmlDndObserver from "./HtmlDndObserver";
-import { DragPhase } from "./HtmlHelpers";
 
 export { defaultPostProcessor } from "./draggableFactory";
 export { defaultDroppableMethod } from "./HtmlMethods";
@@ -35,21 +34,6 @@ export const useDroppable = useDroppableFactory(DragContext);
 export const useDndObserverListener = useDndObserverListenerFactory(
   DragContext,
 );
-
-export function useDragStopPropagation(
-  ref: React.RefObject<any>,
-  ...phases: DragPhase[]
-) {
-  const { observer } = React.useContext(DragContext);
-  if (ref == null) {
-    console.warn("Do not use useDragStopPropagation without a ref");
-  }
-  React.useEffect(() => {
-    if (ref == null || ref.current == null) return;
-    const node = ref.current;
-    return observer.stopPropagation(node, ...phases);
-  });
-}
 
 /**
  * Requires DragDropContainer with the same DragContext.

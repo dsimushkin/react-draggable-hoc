@@ -10,7 +10,6 @@ import {
   detach,
   getSelection,
   clearSelection,
-  DragPhase,
   isMouseEvent,
 } from "./HtmlHelpers";
 
@@ -172,66 +171,70 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
-      this.delayed = undefined;
+      if (this.dragged == null) {
+        this.delayed = undefined;
 
-      if (!config.delay) {
-        clearSelection();
-        this.selection = getSelection();
-      }
-
-      if (isDragStart(e) && !this.checkSelection()) {
-        if (isMouseEvent(e)) {
-          // prevent Safari/ desktop from scrolling during mousemove
-          // if touchstart is prevented, click won't be fired
-          e.preventDefault();
-        }
-        this.cleanup();
-        this.dragListener = defaultDragListener;
-        this.dropListener = defaultDropListener;
-        this.canceListener = config.onDragCancel;
-
-        this.history = [dragPayloadFactory(e)];
-        this.dragProps = config.dragProps;
-        this.dragged = node;
-
-        if (typeof config.onDragStart === "function") {
-          config.onDragStart(this.state);
+        if (!config.delay) {
+          clearSelection();
+          this.selection = getSelection();
         }
 
-        await this.subs.notify("dragStart", this.state);
-        this.monitorSelection();
+        if (isDragStart(e) && !this.checkSelection()) {
+          if (isMouseEvent(e)) {
+            // prevent Safari/ desktop from scrolling during mousemove
+            // if touchstart is prevented, click won't be fired
+            e.preventDefault();
+          }
+          this.cleanup();
+          this.dragListener = defaultDragListener;
+          this.dropListener = defaultDropListener;
+          this.canceListener = config.onDragCancel;
+
+          this.history = [dragPayloadFactory(e)];
+          this.dragProps = config.dragProps;
+          this.dragged = node;
+
+          if (typeof config.onDragStart === "function") {
+            config.onDragStart(this.state);
+          }
+
+          await this.subs.notify("dragStart", this.state);
+          this.monitorSelection();
+        }
       }
     };
 
     const delayedDragListener = async (e: DndEvent) => {
-      if (isDragStart(e)) {
-        if (isMouseEvent(e)) {
-          // prevent Safari/ desktop from scrolling during mousemove
-          // if touchstart is prevented, click won't be fired
-          e.preventDefault();
-        }
-
-        // deal with text selection
-        clearSelection();
-        this.selection = getSelection();
-
-        this.canceListener = config.onDragCancel;
-        this.delayed = e;
-
-        this.t = window.setTimeout(() => {
-          this.t = undefined;
-          if (this.checkSelection()) {
-            this.cancel(e);
-          } else {
-            defaultDragStartListener(e);
+      if (this.delayed == null && this.dragged == null) {
+        if (isDragStart(e)) {
+          if (isMouseEvent(e)) {
+            // prevent Safari/ desktop from scrolling during mousemove
+            // if touchstart is prevented, click won't be fired
+            e.preventDefault();
           }
-        }, config.delay);
 
-        if (typeof config.onDelayedDrag === "function") {
-          config.onDelayedDrag(this.state);
+          // deal with text selection
+          clearSelection();
+          this.selection = getSelection();
+
+          this.canceListener = config.onDragCancel;
+          this.delayed = e;
+
+          this.t = window.setTimeout(() => {
+            this.t = undefined;
+            if (this.checkSelection()) {
+              this.cancel(e);
+            } else {
+              defaultDragStartListener(e);
+            }
+          }, config.delay);
+
+          if (typeof config.onDelayedDrag === "function") {
+            config.onDelayedDrag(this.state);
+          }
+
+          await this.subs.notify("delayedDrag", this.state);
         }
-
-        await this.subs.notify("delayedDrag", this.state);
       }
     };
 
@@ -241,9 +244,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       this.canceListener = config.onDragCancel;
     }
 
-    const listener = config.delay
-      ? delayedDragListener
-      : defaultDragStartListener;
+    const listener =
+      config != null && config.delay != null && config.delay > 0
+        ? delayedDragListener
+        : defaultDragStartListener;
 
     attach("dragStart", listener, node, { passive: false, capture: false });
 
@@ -277,23 +281,6 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       window.removeEventListener("touchcancel", this.cancel);
       this.initialized = false;
     }
-  };
-
-  stopPropagation = (node: HTMLElement, ...phases: DragPhase[]) => {
-    if (node == null) return;
-
-    const listener = (e: DndEvent) => {
-      e.stopPropagation();
-    };
-    phases.forEach(phase => {
-      attach(phase, listener, node, { passive: false, capture: false });
-    });
-
-    return () => {
-      phases.forEach(phase => {
-        detach(phase, listener, node, { capture: false });
-      });
-    };
   };
 }
 

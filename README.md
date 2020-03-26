@@ -43,7 +43,7 @@ Additionally `Draggable` component supports the following properties:
 | children                           | JSX or functional component | Rendered twice: as a node inplace and as a detached element. In case of a functional component `handleRef` will be passed only for the node inplace |
 | postProcess = defaultPostProcessor | (drag props, ref)           | Used to inject custom properties into drag props. Useful for changes in positioning                                                                 |
 | detachDelta = 20                   | number                      | A delta that is used to detach (influences isDetached for functional children)                                                                      |
-| delay = 100                        | number                      | A delay in ms. If a move event is fired within a delay, from the moment the drag is started, the drag will be canceled.                             |
+| delay = 30                         | number                      | A delay in ms. If a move event is fired within a delay, from the moment the drag is started, the drag will be canceled.                             |
 | detachedParent = document.body     | HTMLNode                    | HTML node, where the detached element will be rendered                                                                                              |
 | onDragStart                        | () => any                   | A function fired when the drag is started (after delay)                                                                                             |
 | onDragEnd                          | () => any                   | A function fired when the drag is finished                                                                                                          |
@@ -183,34 +183,6 @@ interface ISharedState<T, E, N> {
   deltaY: number; // change of the pageY during Dnd
   node: N; // dragged element
   wasDetached: Boolean; // if at least one drag event was fired (useful for detecting click events)
-}
-```
-
-In situations when a draggable is inside (from DOM perspective) of another draggable, one might want to utilize event stopPropagation. For this purpose `useDragStopPropagation` hook can be used for all required dnd phases ("dragStart" | "drag" | "drop"):
-
-```jsx
-import { useDraggable, useDragStopPropagation } form "react-draggable-hoc"
-
-function MyDraggable({dragProps}) {
-    const ref = React.useRef();
-    const { isDragged, deltaX, deltaY } = useDraggable(
-      ref, { dragProps }
-    );
-    useDragStopPropagation(ref, "dragStart", "drag", "drop"); // most of the time only dragStart is required for draggables
-    const style = React.useMemo(() => (
-      isDragged ? {
-        transform: `translate3d(${deltaX}px, ${deltaY}px, 0)`
-      } : undefined
-    ), [isDragged, deltaX, deltaY]);
-
-    return (
-        <div
-            ref={ref}
-            style={style}
-        >
-            ...
-        </div>
-    )
 }
 ```
 

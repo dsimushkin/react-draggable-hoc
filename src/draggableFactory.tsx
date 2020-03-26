@@ -55,7 +55,7 @@ function draggableFactory<T>(
     children,
     postProcess = defaultPostProcessor,
     detachDelta = 20,
-    delay = 60,
+    delay = 30,
     detachedParent = document.body,
     onDelayedDrag,
     onDragStart,
