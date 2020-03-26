@@ -71,16 +71,12 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       [isDelayed, changeDelayed, onDelayedDrag],
     );
 
-    const cancelListener = React.useMemo(() => {
-      return isDragged || isDelayed
-        ? (state: D["state"]) => {
-            if (isDelayed) changeDelayed(false);
-            if (isDragged) change(false);
-            if (typeof onDragCancel === "function") {
-              onDragCancel(state);
-            }
-          }
-        : undefined;
+    const cancelListener = React.useCallback(() => {
+      if (isDelayed) changeDelayed(false);
+      if (isDragged) change(false);
+      if (typeof onDragCancel === "function") {
+        onDragCancel(observer.state);
+      }
     }, [isDragged, isDelayed, changeDelayed, change, onDragCancel]);
 
     const dragStartListener = React.useCallback(
@@ -106,17 +102,11 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
             onDelayedDrag: delayedListener,
             onDrop: dropListener,
             onDrag: dragListener,
+            onDragCancel: cancelListener,
           })
         : undefined;
 
-      if (cancelListener) {
-        observer.on("cancel", cancelListener);
-      }
-
       return () => {
-        if (cancelListener) {
-          observer.off("cancel", cancelListener);
-        }
         if (typeof destroy === "function") {
           destroy();
         }

@@ -29,7 +29,7 @@ export interface IDndObserver<T, E, N> {
       onDelayedDrag?: (state: ISharedState<T, E, N>) => void;
       onDrop?: (state: ISharedState<T, E, N>) => void;
       onDrag?: (state: ISharedState<T, E, N>) => void;
-      onDragCancel?: (state: ISharedState<T, E, N>) => void;
+      onDragCancel?: (...args: any) => void;
     },
   ): () => void;
   init(): void;

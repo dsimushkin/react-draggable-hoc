@@ -47,6 +47,8 @@ Additionally `Draggable` component supports the following properties:
 | detachedParent = document.body     | HTMLNode                    | HTML node, where the detached element will be rendered                                                                                              |
 | onDragStart                        | () => any                   | A function fired when the drag is started (after delay)                                                                                             |
 | onDragEnd                          | () => any                   | A function fired when the drag is finished                                                                                                          |
+| throttleMs = 20                    | number                      | Throttling in ms. If equal to 0, throttling is disabled                                                                                             |
+| disabled = false                   | Boolean                     | Flag for disabling draggability                                                                                                                     |
 
 If you want the node to be dragged only inside a container, use `DragDropContainer`
 
@@ -234,7 +236,7 @@ interface IDndObserver<T, E, N> {
       onDelayedDrag?: (state: ISharedState<T, E, N>) => void;
       onDrop?: (state: ISharedState<T, E, N>) => void;
       onDrag?: (state: ISharedState<T, E, N>) => void;
-      onDragCancel?: (state: ISharedState<T, E, N>) => void;
+      onDragCancel?: (...args: any) => void;
     },
   ): () => void; // make an element draggable, returns a function to destroy the draggable.
   init(): void; // lazy initialization (auto performed when makeDraggable is used)

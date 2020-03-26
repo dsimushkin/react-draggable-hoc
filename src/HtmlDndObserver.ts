@@ -33,6 +33,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   private historyLength: number;
   private dragListener: DndEventListener | undefined = undefined;
   private dropListener: DndEventListener | undefined = undefined;
+  private canceListener: ((...args: any) => void) | undefined = undefined;
   private initialized = false;
   private t: number | undefined = undefined;
   private delayed: DndEvent | undefined = undefined;
@@ -49,12 +50,17 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.clearSelectionMonitor();
     this.dragListener = undefined;
     this.dropListener = undefined;
+    this.canceListener = undefined;
     this.delayed = undefined;
   };
 
-  cancel = async (...e: any[]) => {
+  cancel = async (...args: any[]) => {
     let notificationNeeded = this.t != null || this.dragged != null;
+    const { canceListener } = this;
     this.cleanup();
+    if (typeof canceListener === "function") {
+      canceListener(...args);
+    }
     if (notificationNeeded) {
       await this.subs.notify("cancel", this.state);
     }
@@ -178,6 +184,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         this.cleanup();
         this.dragListener = defaultDragListener;
         this.dropListener = defaultDropListener;
+        this.canceListener = config.onDragCancel;
 
         this.history = [dragPayloadFactory(e)];
         this.dragProps = config.dragProps;
@@ -201,6 +208,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         clearSelection();
         this.selection = getSelection();
         this.delayed = e;
+        this.canceListener = config.onDragCancel;
         this.t = window.setTimeout(() => {
           this.t = undefined;
           if (this.checkSelection()) {
@@ -220,6 +228,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     if (node === this.dragged) {
       this.dragListener = defaultDragListener;
       this.dropListener = defaultDropListener;
+      this.canceListener = config.onDragCancel;
     }
 
     const listener = config.delay

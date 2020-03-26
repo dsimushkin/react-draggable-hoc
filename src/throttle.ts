@@ -1,4 +1,6 @@
 export default function(callback: any, delay: number) {
+  if ((delay = 0)) return callback;
+
   let t: number | undefined;
   let lastExec = 0;
 
@@ -10,6 +12,7 @@ export default function(callback: any, delay: number) {
     function exec() {
       lastExec = Date.now();
       callback.apply(self, args);
+      t = undefined;
     }
 
     if (t == null) {

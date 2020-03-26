@@ -61,6 +61,8 @@ function draggableFactory<T>(
     onDragStart,
     onDrag,
     onDragEnd,
+    throttleMs,
+    disabled,
   }: {
     dragProps: NonNullable<T>; // drag props to be used
     className?: string;
@@ -73,6 +75,8 @@ function draggableFactory<T>(
     onDragStart?: (state: HtmlDndObserver<T>["state"]) => void;
     onDrag?: (state: HtmlDndObserver<T>["state"]) => void;
     onDragEnd?: (state: HtmlDndObserver<T>["state"]) => void;
+    throttleMs?: number;
+    disabled: Boolean;
     children?:
       | React.FunctionComponent<{
           handleRef?: React.RefObject<any>;
@@ -86,6 +90,7 @@ function draggableFactory<T>(
     const props = useDraggable(
       typeof children === "function" ? handleRef : ref,
       {
+        disabled,
         dragProps,
         delay,
         onDelayedDrag,
@@ -93,6 +98,7 @@ function draggableFactory<T>(
         onDrop: onDragEnd,
         onDragCancel: onDragEnd,
         onDrag: onDrag,
+        throttleMs,
       },
     );
 
