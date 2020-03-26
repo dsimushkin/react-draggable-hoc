@@ -13,10 +13,9 @@ import {
   DragPhase,
   isMouseEvent,
 } from "./HtmlHelpers";
+import throttle from "./throttle";
 
-import { sleep } from "./utils";
-
-function dragPayloadFactory(event: MouseEvent | TouchEvent) {
+export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   const { pageX, pageY } = isTouchEvent(event)
     ? getPointer(event as TouchEvent)
     : (event as MouseEvent);
@@ -28,10 +27,17 @@ function dragPayloadFactory(event: MouseEvent | TouchEvent) {
 }
 
 class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
+  constructor({ dragThrottle = 10, historyLength = 2 } = {}) {
+    super();
+    this.historyLength = historyLength;
+    this.onDragListener = throttle(this.onDragListener, dragThrottle);
+  }
+  private historyLength: number;
   private dragListener: DndEventListener | undefined = undefined;
   private dropListener: DndEventListener | undefined = undefined;
   private initialized = false;
   private t: number | undefined = undefined;
+  private delayed: DndEvent | undefined = undefined;
   private st: number | undefined = undefined;
   private selection: string = "";
 
@@ -45,9 +51,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.clearSelectionMonitor();
     this.dragListener = undefined;
     this.dropListener = undefined;
+    this.delayed = undefined;
   };
 
-  cancel = async () => {
+  cancel = async (...e: any[]) => {
     let notificationNeeded = this.t != null || this.dragged != null;
     this.cleanup();
     if (notificationNeeded) {
@@ -75,7 +82,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.st = window.setInterval(() => {
       if (this.checkSelection()) {
         this.clearSelectionMonitor();
-        this.cancel();
+        this.cancel("selection monitor");
       }
     }, 10);
   };
@@ -83,15 +90,21 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   private onDragListener = async (e: DndEvent) => {
     this.clearSelectionMonitor();
 
-    if (this.t != null) {
-      this.cancel();
+    if (this.delayed != null) {
+      let shouldCancel = true;
+      if (isMouseEvent(e)) {
+        const p = dragPayloadFactory(e);
+        const n = dragPayloadFactory(this.delayed);
+        shouldCancel = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y)) > 2;
+      }
+      if (shouldCancel) this.cancel(e, "inside timeout");
       return;
     }
 
     if (this.dragged != null) {
       e.preventDefault();
       if (!isDragEvent(e) || this.checkSelection()) {
-        this.cancel();
+        this.cancel(e);
       } else {
         this.wasDetached = true;
         if (typeof this.dragListener === "function") {
@@ -103,7 +116,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
 
   private onDropListener = async (e: DndEvent) => {
     if (this.t != null) {
-      this.cancel();
+      this.cancel(e);
       return;
     }
 
@@ -125,8 +138,11 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     } catch (e) {}
 
     const defaultDragListener = async (e: DndEvent) => {
-      await sleep(0);
-      this.history.push(dragPayloadFactory(e));
+      this.history.splice(
+        this.historyLength > 1 ? this.historyLength : 1,
+        this.history.length,
+        dragPayloadFactory(e),
+      );
       if (typeof config.onDrag === "function") {
         config.onDrag(this.state);
       }
@@ -134,17 +150,22 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     };
 
     const defaultDropListener = async (e: DndEvent) => {
-      await sleep(0);
-      this.history.push(dragPayloadFactory(e));
+      this.history.splice(
+        this.historyLength > 1 ? this.historyLength : 1,
+        this.history.length,
+        dragPayloadFactory(e),
+      );
       if (typeof config.onDrop === "function") {
         config.onDrop(this.state);
       }
+
       await this.subs.notify("drop", this.state);
       this.cleanup();
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
-      await sleep(0);
+      this.delayed = undefined;
+
       if (!config.delay) {
         clearSelection();
         this.selection = getSelection();
@@ -167,6 +188,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         if (typeof config.onDragStart === "function") {
           config.onDragStart(this.state);
         }
+
         await this.subs.notify("dragStart", this.state);
         this.monitorSelection();
       }
@@ -177,13 +199,14 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         if (isMouseEvent(e)) {
           e.preventDefault();
         }
-        await sleep(0);
+
         clearSelection();
         this.selection = getSelection();
+        this.delayed = e;
         this.t = window.setTimeout(() => {
           this.t = undefined;
           if (this.checkSelection()) {
-            this.cancel();
+            this.cancel(e);
           } else {
             defaultDragStartListener(e);
           }
@@ -191,6 +214,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         if (typeof config.onDelayedDrag === "function") {
           config.onDelayedDrag(this.state);
         }
+
         await this.subs.notify("delayedDrag", this.state);
       }
     };

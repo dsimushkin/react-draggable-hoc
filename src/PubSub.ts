@@ -1,4 +1,4 @@
-import { remove, sleep } from "./utils";
+import { remove } from "./utils";
 
 class PubSub<T extends string, K extends (...args: any[]) => any> {
   subs: {
@@ -22,7 +22,6 @@ class PubSub<T extends string, K extends (...args: any[]) => any> {
 
   notify = async (e: T, ...args: Parameters<K>) => {
     if (e == null) throw new Error("Event name should be provided");
-    await sleep(0);
     if (this.subs[e] != null) {
       const subs = this.subs[e]!.slice();
       for (let sub of subs) {
