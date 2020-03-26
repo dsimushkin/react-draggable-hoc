@@ -3,6 +3,7 @@ import * as React from "react";
 import useForceUpdate from "./useForceUpdate";
 import DragContext from "./IDragContext";
 import { IDndObserver } from "./IDndObserver";
+import throttle from "./throttle";
 
 function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
   context: React.Context<DragContext<T, D>>,
@@ -18,6 +19,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDrop,
       onDragCancel,
       disabled = false,
+      throttleMs = 10,
     }: {
       dragProps: T;
       delay?: number;
@@ -27,6 +29,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDelayedDrag?: (state: D["state"]) => void;
       onDragCancel?: (state: D["state"]) => void;
       disabled?: Boolean;
+      throttleMs?: number;
     },
   ) {
     const { observer, container } = React.useContext(context);
@@ -34,48 +37,19 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
     const [isDelayed, changeDelayed] = React.useState(false);
     const [forceUpdate] = useForceUpdate();
 
-    React.useEffect(() => {
-      if (disabled === true || observer == null) return;
-
-      const node = ref && ref.current;
-
-      const delayedListener = (state: D["state"]) => {
-        if (!isDelayed) {
-          changeDelayed(true);
-          if (typeof onDelayedDrag === "function") {
-            onDelayedDrag(state);
-          }
-        }
-      };
-
-      const cancelListener =
-        isDragged || isDelayed
-          ? (state: D["state"]) => {
-              if (isDelayed) changeDelayed(false);
-              if (isDragged) change(false);
-              if (typeof onDragCancel === "function") {
-                onDragCancel(state);
-              }
-            }
-          : undefined;
-
-      const dragStartListener = (state: D["state"]) => {
-        if (!isDragged) change(true);
-        if (typeof onDragStart === "function") {
-          onDragStart(state);
-        }
-      };
-
-      const dragListener = isDragged
-        ? (state: D["state"]) => {
+    const dragListener = React.useMemo(() => {
+      return isDragged
+        ? throttle(async (state: D["state"]) => {
             forceUpdate();
             if (typeof onDrag === "function") {
               onDrag(state);
             }
-          }
+          }, throttleMs)
         : undefined;
+    }, [isDragged, onDrag, forceUpdate]);
 
-      const dropListener = isDragged
+    const dropListener = React.useMemo(() => {
+      return isDragged
         ? (state: D["state"]) => {
             change(false);
             if (typeof onDrop === "function") {
@@ -83,6 +57,46 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
             }
           }
         : undefined;
+    }, [isDragged, change, onDrop]);
+
+    const delayedListener = React.useCallback(
+      (state: D["state"]) => {
+        if (!isDelayed) {
+          changeDelayed(true);
+          if (typeof onDelayedDrag === "function") {
+            onDelayedDrag(state);
+          }
+        }
+      },
+      [isDelayed, changeDelayed, onDelayedDrag],
+    );
+
+    const cancelListener = React.useMemo(() => {
+      return isDragged || isDelayed
+        ? (state: D["state"]) => {
+            if (isDelayed) changeDelayed(false);
+            if (isDragged) change(false);
+            if (typeof onDragCancel === "function") {
+              onDragCancel(state);
+            }
+          }
+        : undefined;
+    }, [isDragged, isDelayed, changeDelayed, change, onDragCancel]);
+
+    const dragStartListener = React.useCallback(
+      (state: D["state"]) => {
+        if (!isDragged) change(true);
+        if (typeof onDragStart === "function") {
+          onDragStart(state);
+        }
+      },
+      [isDragged, change, onDragStart],
+    );
+
+    React.useEffect(() => {
+      if (disabled === true || observer == null) return;
+
+      const node = ref && ref.current;
 
       const destroy = node
         ? observer.makeDraggable(node, {

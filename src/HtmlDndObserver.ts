@@ -13,7 +13,6 @@ import {
   DragPhase,
   isMouseEvent,
 } from "./HtmlHelpers";
-import throttle from "./throttle";
 
 export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   const { pageX, pageY } = isTouchEvent(event)
@@ -27,10 +26,9 @@ export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
 }
 
 class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
-  constructor({ dragThrottle = 10, historyLength = 2 } = {}) {
+  constructor({ historyLength = 2 } = {}) {
     super();
     this.historyLength = historyLength;
-    this.onDragListener = throttle(this.onDragListener, dragThrottle);
   }
   private historyLength: number;
   private dragListener: DndEventListener | undefined = undefined;
