@@ -96,20 +96,23 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
 
     if (this.delayed != null) {
       let shouldCancel = true;
+      // add a simple threshold for touchpads/trackpads
       if (isMouseEvent(e)) {
         const p = dragPayloadFactory(e);
         const n = dragPayloadFactory(this.delayed);
         shouldCancel = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y)) > 2;
       }
-      if (shouldCancel) this.cancel(e, "inside timeout");
+      if (shouldCancel) this.cancel(e, "delayed drag timeout");
       return;
     }
 
     if (this.dragged != null) {
-      e.preventDefault();
       if (!isDragEvent(e) || this.checkSelection()) {
+        // cancel drag on second touch
         this.cancel(e);
       } else {
+        // prevent scrolling on touch devices
+        e.preventDefault();
         this.wasDetached = true;
         if (typeof this.dragListener === "function") {
           this.dragListener(e);
@@ -134,6 +137,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     config = {},
   ) => {
     this.init();
+    // prevent from text selection on drag
     try {
       node.style.userSelect = "none";
       node.style.webkitUserSelect = "none";
@@ -175,12 +179,12 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         this.selection = getSelection();
       }
 
-      if (
-        isDragStart(e) &&
-        // node?.contains(e.target as HTMLElement) && // CHECKME
-        !this.checkSelection()
-      ) {
-        e.preventDefault();
+      if (isDragStart(e) && !this.checkSelection()) {
+        if (isMouseEvent(e)) {
+          // prevent Safari/ desktop from scrolling during mousemove
+          // if touchstart is prevented, click won't be fired
+          e.preventDefault();
+        }
         this.cleanup();
         this.dragListener = defaultDragListener;
         this.dropListener = defaultDropListener;
@@ -202,13 +206,18 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     const delayedDragListener = async (e: DndEvent) => {
       if (isDragStart(e)) {
         if (isMouseEvent(e)) {
+          // prevent Safari/ desktop from scrolling during mousemove
+          // if touchstart is prevented, click won't be fired
           e.preventDefault();
         }
 
+        // deal with text selection
         clearSelection();
         this.selection = getSelection();
-        this.delayed = e;
+
         this.canceListener = config.onDragCancel;
+        this.delayed = e;
+
         this.t = window.setTimeout(() => {
           this.t = undefined;
           if (this.checkSelection()) {
@@ -217,6 +226,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
             defaultDragStartListener(e);
           }
         }, config.delay);
+
         if (typeof config.onDelayedDrag === "function") {
           config.onDelayedDrag(this.state);
         }
@@ -234,6 +244,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     const listener = config.delay
       ? delayedDragListener
       : defaultDragStartListener;
+
     attach("dragStart", listener, node, { passive: false, capture: false });
 
     return () => {
@@ -269,7 +280,8 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   };
 
   stopPropagation = (node: HTMLElement, ...phases: DragPhase[]) => {
-    // if (node == null) throw new Error("Invalid target");
+    if (node == null) return;
+
     const listener = (e: DndEvent) => {
       e.stopPropagation();
     };
