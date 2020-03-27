@@ -126,8 +126,11 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       return;
     }
 
-    if (this.dragged != null && typeof this.dropListener === "function") {
-      this.dropListener(e);
+    if (this.dragged != null) {
+      if (typeof this.dropListener === "function") {
+        this.dropListener(e);
+      }
+      this.cleanup();
     }
   };
 
@@ -167,7 +170,6 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       }
 
       await this.subs.notify("drop", this.state);
-      this.cleanup();
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
