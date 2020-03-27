@@ -1,6 +1,6 @@
 {
   "name": "react-draggable-hoc",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "drag by ref using hook",
   "private": false,
   "main": "lib/index.js",
