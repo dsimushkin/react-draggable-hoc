@@ -4978,9 +4978,9 @@ html-entities@^1.2.1:
   integrity sha1-DfKTUfByEWNRXfueVUPl9u7VFi8=
 
 html-escaper@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.1.tgz#beed86b5d2b921e92533aa11bce6d8e3b583dee7"
-  integrity sha512-hNX23TjWwD3q56HpWjUHOKj1+4KKlnjv9PcmBUYKVpga+2cnb9nDx/B1o0yO4n+RZXZdiNxzx6B24C9aNMTkkQ==
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
+  integrity sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==
 
 html-minifier-terser@^5.0.1:
   version "5.0.5"
@@ -8681,9 +8681,9 @@ react-dom@latest:
     scheduler "^0.19.1"
 
 react-draggable-hoc@latest:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.0.6.tgz#faf9ee979168c13bb6169ade8bfef18670d33bf1"
-  integrity sha512-HoSKiet0m45fSWkv/Hej6EeTpSmICEhIrKlLYryJ0rbl+CstdWyQTCx8/jiFwNx2G6y8xRaipasGWwOn2+lGBA==
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.0.7.tgz#3bb1f20582499ddfdba1b47b442ae0f3ce35e0d1"
+  integrity sha512-hcc/u7e4oA6fmmzhm66M6zSeQ2hrMv2BIt8IgqIv+ILPe61Dv9oU6YzYzKggyqK5dTUk7J3hR1lXCy8iEqJm2g==
 
 react-error-overlay@^6.0.7:
   version "6.0.7"
