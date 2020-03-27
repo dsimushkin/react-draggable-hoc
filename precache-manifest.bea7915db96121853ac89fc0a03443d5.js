@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "eb1568b773eda8e54f9c7c2b70c36b86",
+    "revision": "df1d84f1bd68268fb184043dbfb67559",
     "url": "/react-draggable-hoc/index.html"
   },
   {
-    "revision": "ba0733b10332d28c2812",
+    "revision": "3e0e40ef1a0ba5f386de",
     "url": "/react-draggable-hoc/static/css/main.e30190dd.chunk.css"
   },
   {
-    "revision": "7b10ad64b884ec23c1d1",
-    "url": "/react-draggable-hoc/static/js/2.5f399e8b.chunk.js"
+    "revision": "efc779bddb1278c6c0e4",
+    "url": "/react-draggable-hoc/static/js/2.0aac6907.chunk.js"
   },
   {
     "revision": "c64c486544348f10a6d6c716950bc223",
-    "url": "/react-draggable-hoc/static/js/2.5f399e8b.chunk.js.LICENSE.txt"
+    "url": "/react-draggable-hoc/static/js/2.0aac6907.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "ba0733b10332d28c2812",
-    "url": "/react-draggable-hoc/static/js/main.a469eb47.chunk.js"
+    "revision": "3e0e40ef1a0ba5f386de",
+    "url": "/react-draggable-hoc/static/js/main.19d706ce.chunk.js"
   },
   {
     "revision": "39556393e9b7016b9515",
