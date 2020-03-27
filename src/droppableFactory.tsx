@@ -11,23 +11,17 @@ function droppableFactory<T, D extends IDndObserver<T, any, any>>(
 
   return function Droppable({
     children,
-    method,
-    onDrop,
-    disabled = false,
+    ...droppableProps
   }: {
     children: React.FunctionComponent<{
       ref: React.RefObject<any>;
-      dragProps: T;
+      dragProps?: T;
       isHovered: Boolean;
     }>;
   } & Parameters<typeof useDroppable>[1]) {
     const ref = React.useRef<any>();
 
-    const props = useDroppable(ref, {
-      method,
-      disabled,
-      onDrop,
-    });
+    const props = useDroppable(ref, droppableProps);
 
     return children({ ref, ...props });
   };

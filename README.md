@@ -81,7 +81,7 @@ import { Draggable, DragDropContainer, Droppable } from "react-draggable-hoc";
         console.log(`Dropped: ${dragProps}`);
       }}
     >
-      {({ isHovered, ref, dragProps }) => (
+      {({ isHovered, ref }) => (
         <div className={isHovered ? "hovered" : undefined} ref={ref}>
           ...
         </div>
@@ -142,7 +142,7 @@ import { useDroppable } form "react-draggable-hoc"
 
 function MyDropable({doSmthOnDrop}) {
     const ref = React.useRef();  // create a reference for the DOM node
-    const { isHovered, dragProps } = useDraggable(
+    const { isHovered } = useDroppable(
         ref,
         {
           method: (state, ref, defaultMethod),
@@ -151,7 +151,7 @@ function MyDropable({doSmthOnDrop}) {
               doSmthOnDrop();
             }
           },
-          disabled = false,
+          disabled = false
         }
     );
 

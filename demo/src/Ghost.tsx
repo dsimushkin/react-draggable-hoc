@@ -7,10 +7,20 @@ import {
   defaultPostProcessor,
 } from "react-draggable-hoc";
 
+const sleep = (ms?: number) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+};
+
 const randomColor = () => {
   const randomPart = () => Math.floor(Math.random() * 255);
   return "rgb(" + randomPart() + "," + randomPart() + "," + randomPart() + ")";
 };
+
+type DraggedPropsType = ReturnType<typeof randomColor>;
 
 // use a separate component to create a ghost
 const ContentElement = ({ className = "", style, handleRef, value }: any) => {
@@ -30,6 +40,8 @@ const ContentElement = ({ className = "", style, handleRef, value }: any) => {
 interface IContentProps {
   value: string;
   backgroundColor: string;
+  changeDraggedProps: (draggedProps?: DraggedPropsType) => void;
+  draggedProps?: DraggedPropsType;
 }
 
 // stick to line
@@ -40,7 +52,12 @@ const postProcess = (props: any, ref: React.RefObject<any>) => {
   };
 };
 
-const Content = ({ backgroundColor, value }: IContentProps) => {
+const Content = ({
+  backgroundColor,
+  value,
+  draggedProps,
+  changeDraggedProps,
+}: IContentProps) => {
   const [color, changeColor] = React.useState<string>();
 
   return (
@@ -49,28 +66,32 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
       dragProps={backgroundColor}
       postProcess={postProcess}
       onDragStart={() => {
+        changeDraggedProps(backgroundColor);
         document.body.style.cursor = "ew-resize";
       }}
       onDragEnd={() => {
+        changeDraggedProps(undefined);
         document.body.style.cursor = "initial";
       }}
     >
       {({ handleRef, isDetached }) =>
         handleRef != null ? (
           <Droppable
-            onDrop={({ dragProps }) => {
+            onDrop={async ({ dragProps }) => {
+              await sleep(0);
               if (dragProps !== backgroundColor) {
                 changeColor(dragProps as string);
               }
             }}
-            method={(state, nodeRef, defaultMethod) => {
+            method={(state, nodeRef) => {
               const a = nodeRef.current.getBoundingClientRect();
               const { x } = state.current!;
 
               return a.left <= x && a.right >= x;
             }}
+            disabled={handleRef == null}
           >
-            {({ isHovered, dragProps, ref }) => (
+            {({ isHovered, ref }) => (
               <div
                 style={{
                   display: "inline-block",
@@ -82,8 +103,8 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
                 {/* change text color when element is dragged */}
                 <ContentElement
                   value={
-                    dragProps
-                      ? dragProps === backgroundColor
+                    draggedProps
+                      ? draggedProps === backgroundColor
                         ? isHovered
                           ? "Not here"
                           : "I'm dragged"
@@ -98,7 +119,7 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
                     width: "100px",
                   }}
                   className={
-                    isHovered && dragProps !== backgroundColor
+                    isHovered && draggedProps !== backgroundColor
                       ? "hovered"
                       : undefined
                   }
@@ -122,22 +143,34 @@ const Content = ({ backgroundColor, value }: IContentProps) => {
   );
 };
 
-export const GhostExample = () => (
-  <DragDropContainer className="Ghost-container">
-    {({ ref }) => (
-      <div className="Ghost-container" ref={ref}>
-        {Array(60)
-          .fill(0)
-          .map((_, i) => {
-            const color = randomColor();
+const randomColors = Array(60)
+  .fill(0)
+  .map(() => randomColor());
+
+export const GhostExample = () => {
+  const [draggedProps, changeDraggedProps] = React.useState<
+    ReturnType<typeof randomColor>
+  >();
+  return (
+    <DragDropContainer className="Ghost-container">
+      {({ ref }) => (
+        <div className="Ghost-container" ref={ref}>
+          {randomColors.map((color, i) => {
             return (
-              <Content backgroundColor={color} value={`Drag me`} key={i} />
+              <Content
+                backgroundColor={color}
+                value={`Drag me`}
+                key={i}
+                changeDraggedProps={changeDraggedProps}
+                draggedProps={draggedProps}
+              />
             );
           })}
-      </div>
-    )}
-  </DragDropContainer>
-);
+        </div>
+      )}
+    </DragDropContainer>
+  );
+};
 
 export const GhostExampleTitle = () => (
   <p>

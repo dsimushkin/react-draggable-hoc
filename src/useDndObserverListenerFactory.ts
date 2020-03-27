@@ -7,7 +7,7 @@ function useDndObserverListenerFactory<T, D extends IDndObserver<T, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   return function useDndObserverListener(
-    listener: (state: D["state"]) => void,
+    listener?: (state: D["state"]) => void,
     ...phases: DnDPhases[]
   ) {
     const { observer } = React.useContext(context);
