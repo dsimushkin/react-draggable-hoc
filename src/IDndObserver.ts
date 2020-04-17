@@ -49,7 +49,7 @@ export interface IDndObserver<T, E, N> {
 
 // Typescript ABC sucks section
 export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {
-  cleanup(): any;
+  cleanup(): void;
 }
 
 export abstract class DndObserver<T, E, N> {

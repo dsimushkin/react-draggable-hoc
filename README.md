@@ -77,7 +77,7 @@ import { Draggable, DragDropContainer, Droppable } from "react-draggable-hoc";
     <Draggable dragProps="this is a prop that will be passed to onDrop" />
     ...
     <Droppable
-      onDrop={dragProps => {
+      onDrop={({ dragProps }) => {
         console.log(`Dropped: ${dragProps}`);
       }}
     >
@@ -88,6 +88,37 @@ import { Draggable, DragDropContainer, Droppable } from "react-draggable-hoc";
       )}
     </Droppable>
     ...
+  </div>
+</DragDropContainer>;
+```
+
+`NOTE:` if you use a lot of droppables, optional flag `withDragProps` of `Droppable` should be set to `false` to enhance performance and prevent re-rendering the element on drag start. To inject `dragProps` use `WithDragProps` as a parent of all droppables like this:
+
+```jsx
+import { Draggable, DragDropContainer, Droppable, WithDragProps } from "react-draggable-hoc";
+
+<DragDropContainer>
+  <div>
+    <WithDragProps>
+      {({dragProps}) => (
+        ...
+        <Draggable dragProps="this is a prop that will be passed to onDrop" />
+        ...
+        <Droppable
+          withDragProps={false}
+          onDrop={({dragProps}) => {
+            console.log(`Dropped: ${dragProps}`);
+          }}
+        >
+          {({ isHovered, ref }) => (
+            <div className={isHovered ? "hovered" : undefined} ref={ref}>
+              {dragProps ? "Drop it here" : null}
+            </div>
+          )}
+        </Droppable>
+        ...
+      )}
+    </WithDragProps>
   </div>
 </DragDropContainer>;
 ```
@@ -169,6 +200,20 @@ function MyDropable({doSmthOnDrop}) {
     )
 }
 ```
+
+if you need to enforce update on `dragProps` change during `drag start`, `drop` or `drag cancel` you can use `useDragProps` hook
+
+```jsx
+import { useDragProps } form "react-draggable-hoc"
+
+function MyComponent() {
+  const dragProps = useDragProps({disabled: false});
+
+  ...
+}
+```
+
+or a synthetic sugar called `WithDragProps`, which is a Component wrapper of the `useDragProps` with functional children.
 
 Most of the hooks lifecycle methods take `state` as a parameter. It represents the state of the Dnd observer events cache and calculated values:
 
@@ -290,7 +335,7 @@ const MyComponentWithDndContext = withDndContext(DragContext)(
     }
 
     render() {
-      <div ref={c => (this.c = c)} />;
+      <div ref={(c) => (this.c = c)} />;
     }
   },
 );

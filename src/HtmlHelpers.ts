@@ -3,6 +3,7 @@ import { fixToRange } from "./helpers";
 export type DndEvent = MouseEvent | TouchEvent;
 export type DragPhase = "dragStart" | "drag" | "drop";
 export type DndEventListener = (e: DndEvent) => void;
+export type AsyncDndEventListener = (e: DndEvent) => Promise<void>;
 
 export function getSelection() {
   return window.getSelection()!.toString();

@@ -70,7 +70,6 @@ function draggableFactory<T>(
     detachDelta?: number;
     delay?: number;
     detachedParent?: HTMLElement;
-    key?: any;
     onDelayedDrag?: (state: HtmlDndObserver<T>["state"]) => void;
     onDragStart?: (state: HtmlDndObserver<T>["state"]) => void;
     onDrag?: (state: HtmlDndObserver<T>["state"]) => void;

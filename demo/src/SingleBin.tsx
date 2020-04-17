@@ -9,7 +9,7 @@ const initialValues = Array(20)
 export const SimpleExample = () => {
   const [dropped, changeDropped] = React.useState<number[]>([]);
   const values = React.useMemo(
-    () => initialValues.filter(v => dropped.indexOf(v) < 0),
+    () => initialValues.filter((v) => dropped.indexOf(v) < 0),
     [dropped],
   );
 
@@ -22,7 +22,7 @@ export const SimpleExample = () => {
   return (
     <DragDropContainer className="Simple-page-container">
       <div className="Simple-row scrollable">
-        {values.map(i => (
+        {values.map((i) => (
           <Draggable key={i} dragProps={i} className="Simple-cell">
             <div className="Cell-simple">
               <span className="Handle">::</span>
@@ -32,7 +32,7 @@ export const SimpleExample = () => {
         ))}
       </div>
       <Droppable onDrop={onDrop}>
-        {({ isHovered, ref, dragProps }: any) => (
+        {({ isHovered, ref, dragProps }) => (
           <div
             className="Simple-bin"
             ref={ref}
@@ -59,7 +59,7 @@ export const SimpleExample = () => {
 export default () => (
   <React.Fragment>
     <p>
-      Simple Draggable and Droppable
+      Simple `Draggable` and And a single `Droppable` bin
       <br />
     </p>
     <SimpleExample />

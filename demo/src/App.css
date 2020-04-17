@@ -62,14 +62,12 @@
 
 .Simple-cell {
   border: 1px solid transparent;
+  max-width: 60px;
+  min-width: 40px;
 }
 
 .Simple-cell.dragged {
   border: 1px dashed #ccc;
-}
-
-.Simple-cell.dragged .Cell-simple {
-  /* visibility: hidden; */
 }
 
 .Simple-cell-ghost {
@@ -119,6 +117,20 @@
   margin: 1em;
   padding: 1em;
   min-height: 50px;
+}
+
+.Bins-container {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #fff;
+  padding-top: 10px;
+  margin: 0 -5px;
+}
+
+.Bins-container .Simple-bin {
+  background-color: #eee;
+  flex: 1;
+  margin: 5px;
 }
 
 menu {

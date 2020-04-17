@@ -8,6 +8,8 @@ import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import withDndContextFactory from "./withDndContextFactory";
 import DragContextType from "./IDragContext";
 import HtmlDndObserver from "./HtmlDndObserver";
+import withDragPropsFactory from "./withDragPropsFactory";
+import useDragPropsFactory from "./useDragPropsFactory";
 
 export { defaultPostProcessor } from "./draggableFactory";
 export { defaultDroppableMethod } from "./HtmlMethods";
@@ -79,3 +81,5 @@ export const DragDropContainer = dragDropContainer(DragContext);
  * A HOC to inject DragContext as props into a Component
  */
 export const withDndContext = withDndContextFactory(DragContext);
+export const WithDragProps = withDragPropsFactory(DragContext);
+export const useDragProps = useDragPropsFactory(DragContext);

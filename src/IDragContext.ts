@@ -8,7 +8,7 @@ interface IDragContext<T, D extends IDndObserver<T, any, any>> {
   defaultDroppableMethod: (
     state: D["state"],
     ref: React.RefObject<any>,
-  ) => Boolean;
+  ) => boolean;
 }
 
 export default IDragContext;

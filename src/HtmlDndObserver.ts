@@ -2,7 +2,7 @@ import { DndObserver } from "./IDndObserver";
 import {
   isTouchEvent,
   getPointer,
-  DndEventListener,
+  AsyncDndEventListener,
   DndEvent,
   isDragEvent,
   isDragStart,
@@ -30,8 +30,8 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.historyLength = historyLength;
   }
   private historyLength: number;
-  private dragListener: DndEventListener | undefined = undefined;
-  private dropListener: DndEventListener | undefined = undefined;
+  private dragListener: AsyncDndEventListener | undefined = undefined;
+  private dropListener: AsyncDndEventListener | undefined = undefined;
   private canceListener: ((...args: any) => void) | undefined = undefined;
   private initialized = false;
   private t: number | undefined = undefined;
@@ -128,7 +128,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
 
     if (this.dragged != null) {
       if (typeof this.dropListener === "function") {
-        this.dropListener(e);
+        await this.dropListener(e);
       }
       this.cleanup();
     }

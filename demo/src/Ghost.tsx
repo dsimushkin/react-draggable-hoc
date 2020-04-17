@@ -5,10 +5,11 @@ import {
   Draggable,
   Droppable,
   defaultPostProcessor,
+  WithDragProps,
 } from "react-draggable-hoc";
 
 const sleep = (ms?: number) => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
@@ -26,8 +27,8 @@ type DraggedPropsType = ReturnType<typeof randomColor>;
 const ContentElement = ({ className = "", style, handleRef, value }: any) => {
   const ref = React.useRef(null);
   return (
-    <span style={style} className={`Cell ${className}`} ref={handleRef}>
-      <div className="handle">
+    <span style={style} className={`Cell ${className}`}>
+      <div className="handle" ref={handleRef}>
         <div className="bar" style={{ backgroundColor: style.color }} />
         <div className="bar" style={{ backgroundColor: style.color }} />
         <div className="bar" style={{ backgroundColor: style.color }} />
@@ -40,7 +41,6 @@ const ContentElement = ({ className = "", style, handleRef, value }: any) => {
 interface IContentProps {
   value: string;
   backgroundColor: string;
-  changeDraggedProps: (draggedProps?: DraggedPropsType) => void;
   draggedProps?: DraggedPropsType;
 }
 
@@ -52,12 +52,7 @@ const postProcess = (props: any, ref: React.RefObject<any>) => {
   };
 };
 
-const Content = ({
-  backgroundColor,
-  value,
-  draggedProps,
-  changeDraggedProps,
-}: IContentProps) => {
+const Content = ({ backgroundColor, value, draggedProps }: IContentProps) => {
   const [color, changeColor] = React.useState<string>();
 
   return (
@@ -66,11 +61,9 @@ const Content = ({
       dragProps={backgroundColor}
       postProcess={postProcess}
       onDragStart={() => {
-        changeDraggedProps(backgroundColor);
         document.body.style.cursor = "ew-resize";
       }}
       onDragEnd={() => {
-        changeDraggedProps(undefined);
         document.body.style.cursor = "initial";
       }}
     >
@@ -90,6 +83,7 @@ const Content = ({
               return a.left <= x && a.right >= x;
             }}
             disabled={handleRef == null}
+            withDragProps={false}
           >
             {({ isHovered, ref }) => (
               <div
@@ -143,30 +137,28 @@ const Content = ({
   );
 };
 
-const randomColors = Array(60)
+const randomColors = Array(30)
   .fill(0)
   .map(() => randomColor());
 
 export const GhostExample = () => {
-  const [draggedProps, changeDraggedProps] = React.useState<
-    ReturnType<typeof randomColor>
-  >();
   return (
     <DragDropContainer className="Ghost-container">
       {({ ref }) => (
-        <div className="Ghost-container" ref={ref}>
-          {randomColors.map((color, i) => {
-            return (
-              <Content
-                backgroundColor={color}
-                value={`Drag me`}
-                key={i}
-                changeDraggedProps={changeDraggedProps}
-                draggedProps={draggedProps}
-              />
-            );
-          })}
-        </div>
+        <WithDragProps>
+          {({ dragProps: draggedProps }) => (
+            <div className="Ghost-container" ref={ref}>
+              {randomColors.map((color, i) => (
+                <Content
+                  backgroundColor={color}
+                  value={`Drag me`}
+                  key={i}
+                  draggedProps={draggedProps}
+                />
+              ))}
+            </div>
+          )}
+        </WithDragProps>
       )}
     </DragDropContainer>
   );
