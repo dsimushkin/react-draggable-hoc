@@ -63,7 +63,7 @@
 .Simple-cell {
   border: 1px solid transparent;
   max-width: 60px;
-  min-width: 40px;
+  min-width: 60px;
 }
 
 .Simple-cell.dragged {

@@ -169,7 +169,7 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         config.onDrop(this.state);
       }
 
-      await this.subs.notify("drop", this.state);
+      this.subs.notifySync("drop", this.state);
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {

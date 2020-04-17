@@ -31,27 +31,29 @@ export const SimpleExample = () => {
           </Draggable>
         ))}
       </div>
-      <Droppable onDrop={onDrop}>
-        {({ isHovered, ref, dragProps }) => (
-          <div
-            className="Simple-bin"
-            ref={ref}
-            style={{
-              backgroundColor: isHovered ? "rgba(0, 130, 20, 0.2)" : undefined,
-              border: dragProps ? "1px dashed #ccc" : undefined,
-            }}
-          >
-            {values.length > 0
-              ? dragProps
-                ? "Drop it here"
-                : "Start dragging"
-              : "Congratulations, You Win!"}
-            {values.length > 0 && (
-              <div>Dropped values: [{dropped.join(", ")}]</div>
-            )}
-          </div>
-        )}
-      </Droppable>
+      {values.length > 0 ? (
+        <Droppable onDrop={onDrop}>
+          {({ isHovered, ref, dragProps }) => (
+            <div
+              className="Simple-bin"
+              ref={ref}
+              style={{
+                backgroundColor: isHovered
+                  ? "rgba(0, 130, 20, 0.2)"
+                  : undefined,
+                border: dragProps ? "1px dashed #ccc" : undefined,
+              }}
+            >
+              {dragProps ? "Drop it here" : "Start dragging"}
+              {values.length > 0 && (
+                <div>Dropped values: [{dropped.join(", ")}]</div>
+              )}
+            </div>
+          )}
+        </Droppable>
+      ) : (
+        <div className="Simple-bin">Congratulations, You Win!</div>
+      )}
     </DragDropContainer>
   );
 };

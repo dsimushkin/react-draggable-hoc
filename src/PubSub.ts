@@ -33,9 +33,9 @@ class PubSub<T extends string, K extends (...args: any[]) => any> {
   notifySync = (e: T, ...args: Parameters<K>) => {
     if (e == null) throw new Error("Event name should be provided");
     if (this.subs[e] != null) {
-      const subs = this.subs[e]!.slice();
-      for (let sub of subs) {
-        sub(...args);
+      const subs = this.subs[e]!;
+      for (let i = 0; i < subs.length; i++) {
+        subs[i](...args);
       }
     }
   };
