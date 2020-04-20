@@ -8756,9 +8756,9 @@ react-dom@latest:
     scheduler "^0.19.1"
 
 react-draggable-hoc@latest:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.2.0.tgz#0b2d37766f00385667030104302c85aac54dc481"
-  integrity sha512-63lSSXt2jyuxb5fpswzKdjzMzX2WdOaw9Emu5UosJ7pM0uVZ5hvMIM3rAu/WCazohpPIdi9VzLLFyqQ99Rsfrg==
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/react-draggable-hoc/-/react-draggable-hoc-2.2.1.tgz#cf537756d9bc29997ddb508461eef63fa60c0d92"
+  integrity sha512-YBQF/fvEn+kfXBLIrXd9wX3iK9v7j/BgtZsmOdBJCaNLtOzugH3z+6R9lp7oUrf8NF99tOGnTC5uIx4XCne2Wg==
 
 react-error-overlay@^6.0.7:
   version "6.0.7"
