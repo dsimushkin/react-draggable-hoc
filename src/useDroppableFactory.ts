@@ -66,6 +66,7 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any>>(
     useDndObserverListener(
       !disabled ? defaultDragListener : undefined,
       "dragStart",
+      "dragPropsChange",
     );
 
     const dragListener = React.useMemo(() => {

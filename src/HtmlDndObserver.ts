@@ -32,15 +32,28 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   private historyLength: number;
   private dragListener: AsyncDndEventListener | undefined = undefined;
   private dropListener: AsyncDndEventListener | undefined = undefined;
-  private canceListener: ((...args: any) => void) | undefined = undefined;
   private initialized = false;
   private t: number | undefined = undefined;
   private delayed: DndEvent | undefined = undefined;
   private st: number | undefined = undefined;
   private selection: string = "";
+  private __dragProps?: T;
+
+  get dragProps() {
+    return this.__dragProps;
+  }
+
+  set dragProps(v) {
+    if (this.dragged != null && this.__dragProps !== v) {
+      this.__dragProps = v;
+      this.subs.notifySync("dragPropsChange", this.state);
+    }
+  }
 
   cleanup = () => {
-    super.cleanup();
+    this.dragged = undefined;
+    this.__dragProps = undefined;
+    this.wasDetached = false;
     if (this.t != null) {
       clearTimeout(this.t);
       this.t = undefined;
@@ -49,17 +62,12 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     this.clearSelectionMonitor();
     this.dragListener = undefined;
     this.dropListener = undefined;
-    this.canceListener = undefined;
     this.delayed = undefined;
   };
 
   cancel = async (...args: any[]) => {
     let notificationNeeded = this.t != null || this.dragged != null;
-    const { canceListener } = this;
     this.cleanup();
-    if (typeof canceListener === "function") {
-      canceListener(...args);
-    }
     if (notificationNeeded) {
       await this.subs.notify("cancel", this.state);
     }
@@ -121,6 +129,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   };
 
   private onDropListener = async (e: DndEvent) => {
+    // ensure no async history updates comes
+    this.dragListener = undefined;
+
+    // check delayed
     if (this.t != null) {
       this.cancel(e);
       return;
@@ -136,9 +148,15 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
 
   makeDraggable: DndObserver<T, DndEvent, HTMLElement>["makeDraggable"] = (
     node,
-    config = {},
+    config,
   ) => {
     this.init();
+    if (config == null || config.dragProps == null) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("dragProps are required from v2.2.0");
+      }
+      return () => {};
+    }
     // prevent from text selection on drag
     try {
       node.style.userSelect = "none";
@@ -190,17 +208,16 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
           this.cleanup();
           this.dragListener = defaultDragListener;
           this.dropListener = defaultDropListener;
-          this.canceListener = config.onDragCancel;
 
           this.history = [dragPayloadFactory(e)];
-          this.dragProps = config.dragProps;
+          this.__dragProps = config.dragProps;
           this.dragged = node;
 
           if (typeof config.onDragStart === "function") {
             config.onDragStart(this.state);
           }
 
-          await this.subs.notify("dragStart", this.state);
+          this.subs.notifySync("dragStart", this.state);
           this.monitorSelection();
         }
       }
@@ -219,7 +236,6 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
           clearSelection();
           this.selection = getSelection();
 
-          this.canceListener = config.onDragCancel;
           this.delayed = e;
 
           this.t = window.setTimeout(() => {
@@ -240,10 +256,13 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       }
     };
 
-    if (node === this.dragged) {
+    if (this.dragged != null && config.dragProps === this.dragProps) {
+      this.dragged = node;
       this.dragListener = defaultDragListener;
       this.dropListener = defaultDropListener;
-      this.canceListener = config.onDragCancel;
+      if (typeof config.onDragCancel === "function") {
+        this.subs.on("cancel", config.onDragCancel);
+      }
     }
 
     const listener =
@@ -252,12 +271,23 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
         : defaultDragStartListener;
 
     attach("dragStart", listener, node, { passive: false, capture: false });
+    if (typeof config.onDragPropsChange === "function") {
+      this.subs.on("dragPropsChange", config.onDragPropsChange);
+    }
 
     return () => {
       detach("dragStart", listener, node, { capture: false });
-      if (node === this.dragged) {
+      if (this.dragListener === defaultDragListener) {
         this.dragListener = undefined;
+      }
+      if (this.dropListener === defaultDropListener) {
         this.dropListener = undefined;
+      }
+      if (typeof config.onDragPropsChange === "function") {
+        this.subs.off("dragPropsChange", config.onDragPropsChange);
+      }
+      if (typeof config.onDragCancel === "function") {
+        this.subs.off("cancel", config.onDragCancel);
       }
     };
   };
@@ -266,7 +296,10 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     if (!this.initialized) {
       attach("drag", this.onDragListener, window, { passive: false });
       attach("drop", this.onDropListener, window, { passive: false });
-      window.addEventListener("scroll", this.cancel as any, { passive: true });
+      window.addEventListener("scroll", this.cancel as any, {
+        passive: true,
+        capture: true,
+      });
       window.addEventListener("contextmenu", this.cancel, { passive: true });
       window.addEventListener("touchcancel", this.cancel, { passive: true });
       this.initialized = true;
@@ -278,7 +311,9 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     if (this.initialized) {
       detach("drag", this.onDragListener);
       detach("drop", this.onDropListener);
-      window.removeEventListener("scroll", this.cancel as any);
+      window.removeEventListener("scroll", this.cancel as any, {
+        capture: true,
+      });
       window.removeEventListener("contextmenu", this.cancel);
       window.removeEventListener("touchcancel", this.cancel);
       this.initialized = false;

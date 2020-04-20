@@ -21,7 +21,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       disabled = false,
       throttleMs = 10,
     }: {
-      dragProps?: T;
+      dragProps: T;
       delay?: number;
       onDragStart?: (state: D["state"]) => void;
       onDrag?: (state: D["state"]) => void;
@@ -30,10 +30,12 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       onDragCancel?: (state: D["state"]) => void;
       disabled?: Boolean;
       throttleMs?: number;
-    } = {},
+    },
   ) {
     const { observer, container } = React.useContext(context);
-    const [isDragged, change] = React.useState(false);
+    const [isDragged, change] = React.useState(
+      observer.dragProps != null && observer.dragProps === dragProps,
+    );
     const [isDelayed, changeDelayed] = React.useState(false);
     const [forceUpdate] = useForceUpdate();
 
@@ -90,6 +92,17 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
       [isDragged, change, isDelayed, changeDelayed, onDragStart],
     );
 
+    const dragPropsChangeListener = React.useCallback(
+      (state: D["state"]) => {
+        if (dragProps != null) {
+          if (isDragged !== (state.dragProps === dragProps)) {
+            change(!isDragged);
+          }
+        }
+      },
+      [dragProps, isDragged, change],
+    );
+
     React.useEffect(() => {
       if (disabled === true || observer == null) return;
 
@@ -104,6 +117,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
             onDrop: dropListener,
             onDrag: dragListener,
             onDragCancel: cancelListener,
+            onDragPropsChange: dragPropsChangeListener,
           })
         : undefined;
 

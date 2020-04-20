@@ -5,7 +5,8 @@ export type DnDPhases =
   | "drag"
   | "cancel"
   | "drop"
-  | "delayedDrag";
+  | "delayedDrag"
+  | "dragPropsChange";
 
 export interface ISharedState<T, E, N> {
   readonly initial?: { x: number; y: number; event: E };
@@ -24,17 +25,19 @@ export interface IDndObserver<T, E, N> {
     node: N,
     config?: {
       delay?: number;
-      dragProps?: T;
+      dragProps: T;
       onDragStart?: (state: ISharedState<T, E, N>) => void;
       onDelayedDrag?: (state: ISharedState<T, E, N>) => void;
       onDrop?: (state: ISharedState<T, E, N>) => void;
       onDrag?: (state: ISharedState<T, E, N>) => void;
+      onDragPropsChange?: (state: ISharedState<T, E, N>) => void;
       onDragCancel?: (...args: any) => void;
     },
   ): () => void;
   init(): void;
   destroy(): void;
   cancel(): void;
+  cleanup(): void;
 
   dragProps?: T;
   dragged?: N;
@@ -48,9 +51,7 @@ export interface IDndObserver<T, E, N> {
 }
 
 // Typescript ABC sucks section
-export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {
-  cleanup(): void;
-}
+export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {}
 
 export abstract class DndObserver<T, E, N> {
   // protected
@@ -65,11 +66,6 @@ export abstract class DndObserver<T, E, N> {
   public wasDetached: Boolean = false;
   public history: ISharedState<T, E, N>["history"] = [];
 
-  public cleanup() {
-    this.dragged = undefined;
-    this.dragProps = undefined;
-    this.wasDetached = false;
-  }
   public on = this.subs.on;
   public off = this.subs.off;
 
@@ -103,15 +99,6 @@ export abstract class DndObserver<T, E, N> {
       get dragProps() {
         return self.dragProps;
       },
-      // set wasDetached(value) {
-      //   self.wasDetached = value;
-      // },
-      // set node(value) {
-      //   self.dragged = value;
-      // },
-      // set dragProps(value) {
-      //   self.dragProps = value;
-      // },
       cancel: self.cancel,
     };
   }

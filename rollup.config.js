@@ -25,8 +25,8 @@ const plugins = [
 
 export default fs
   .readdirSync("./src")
-  .filter(file => exclude.indexOf(file) < 0 && /\.ts[x]$/.test(file))
-  .map(file => {
+  .filter((file) => exclude.indexOf(file) < 0 && /\.ts[x]$/.test(file))
+  .map((file) => {
     const extInitial = path.extname(file);
     const basename = path.basename(file, extInitial);
     const ext = extInitial.replace("t", "j");

@@ -21,7 +21,7 @@ function useDragPropsFactory<T, D extends IDndObserver<any, any, any>>(
       },
       [dragProps, changeDragProps, disabled],
     );
-    useDndObserverListener(listener, "dragStart");
+    useDndObserverListener(listener, "dragStart", "dragPropsChange");
 
     const cleanup = React.useCallback(() => {
       if (!disabled && dragProps != null) {

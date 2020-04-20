@@ -36,19 +36,19 @@ import { Draggable } from "react-draggable-hoc";
 
 Additionally `Draggable` component supports the following properties:
 
-| property name                      | type                        | description                                                                                                                                         |
-| ---------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| dragProps                          | any                         | options that will be passed to droppable in onDrop method                                                                                           |
-| className = "draggable"            | string                      | class name                                                                                                                                          |
-| children                           | JSX or functional component | Rendered twice: as a node inplace and as a detached element. In case of a functional component `handleRef` will be passed only for the node inplace |
-| postProcess = defaultPostProcessor | (drag props, ref)           | Used to inject custom properties into drag props. Useful for changes in positioning                                                                 |
-| detachDelta = 20                   | number                      | A delta that is used to detach (influences isDetached for functional children)                                                                      |
-| delay = 30                         | number                      | A delay in ms. If a move event is fired within a delay, from the moment the drag is started, the drag will be canceled.                             |
-| detachedParent = document.body     | HTMLNode                    | HTML node, where the detached element will be rendered                                                                                              |
-| onDragStart                        | () => any                   | A function fired when the drag is started (after delay)                                                                                             |
-| onDragEnd                          | () => any                   | A function fired when the drag is finished                                                                                                          |
-| throttleMs = 20                    | number                      | Throttling in ms. If equal to 0, throttling is disabled                                                                                             |
-| disabled = false                   | Boolean                     | Flag for disabling draggability                                                                                                                     |
+| property name                      | type                        | description                                                                                                                                                    |
+| ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| dragProps `[required]`             | any                         | Used as a key of the draggable component. Used to attach/re-attach listeners and other manipulations. i.e. it can be used to handle drop by droppable targets. |
+| className = "draggable"            | string                      | class name                                                                                                                                                     |
+| children                           | JSX or functional component | Rendered twice: as a node inplace and as a detached element. In case of a functional component `handleRef` will be passed only for the node inplace            |
+| postProcess = defaultPostProcessor | (drag props, ref)           | Used to inject custom properties into drag props. Useful for changes in positioning                                                                            |
+| detachDelta = 20                   | number                      | A delta that is used to detach (influences isDetached for functional children)                                                                                 |
+| delay = 30                         | number                      | A delay in ms. If a move event is fired within a delay, from the moment the drag is started, the drag will be canceled.                                        |
+| detachedParent = document.body     | HTMLNode                    | HTML node, where the detached element will be rendered                                                                                                         |
+| onDragStart                        | () => any                   | A function fired when the drag is started (after delay)                                                                                                        |
+| onDragEnd                          | () => any                   | A function fired when the drag is finished                                                                                                                     |
+| throttleMs = 20                    | number                      | Throttling in ms. If equal to 0, throttling is disabled                                                                                                        |
+| disabled = false                   | Boolean                     | Flag for disabling draggability                                                                                                                                |
 
 If you want the node to be dragged only inside a container, use `DragDropContainer`
 
@@ -233,6 +233,12 @@ interface ISharedState<T, E, N> {
 
 ---
 
+## Experimental features
+
+Currently, context observer supports changing `dragProps` on the fly. It can be used in cases when a pointerdown produces DOM modifications and a new element, that should be considered dragged, is created. But due to component lifecycle with hooks, swapping `dragProps` should be done in useEffect hook or before the DOM is rendered/created.
+
+---
+
 ## Ninja usage
 
 The whole idea behind the library was to create a single realization to quickly handle both touch and mouse devices in cases when a developer needs full controll of the Dnd elements. Therefore an implementation of the Browser Dnd Observer was written. Hooks are only a synthetic sugar around this implementation.
@@ -241,7 +247,13 @@ Hooks utilize `DragContext` (React context API) behind the curtains, which injec
 
 ```ts
 // drag phases
-type DnDPhases = "dragStart" | "drag" | "cancel" | "drop" | "delayedDrag";
+type DnDPhases =
+  | "dragStart"
+  | "drag"
+  | "cancel"
+  | "drop"
+  | "delayedDrag"
+  | "dragPropsChange";
 
 interface IDndObserver<T, E, N> {
   makeDraggable(
@@ -273,19 +285,9 @@ interface IDndObserver<T, E, N> {
 }
 ```
 
+`NOTE`: `dragPropsChange` is currently an experimental feature.
+
 The interface does not depend on the browser API and can be implemented for other platform usage.
-
-Browser realization, which is currently the default, additionally provides the `stopPropagation` method
-
-```ts
-class HtmlDndObserver<T> extends IDndObserver<
-  T,
-  MouseEvent | TouchEvent,
-  HTMLElement
-> {
-  stopPropagation: (node: HTMLElement, ...phases: DragPhase[]) => () => void;
-}
-```
 
 Thus, a vanila js implementation of a draggable Node might look like:
 
