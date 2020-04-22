@@ -6,7 +6,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {
-    ".": "./lib/index.jsx",
+    ".": "./lib/index.js",
     "./": "./lib/"
   },
   "files": [

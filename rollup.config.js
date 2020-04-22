@@ -13,6 +13,7 @@ const exclude = [
   "utils.ts",
   "IDragContext.ts",
   "throttle.ts",
+  "index.ts",
 ];
 
 const plugins = [
@@ -25,7 +26,7 @@ const plugins = [
 
 export default fs
   .readdirSync("./src")
-  .filter((file) => exclude.indexOf(file) < 0 && /\.ts[x]$/.test(file))
+  .filter((file) => exclude.indexOf(file) < 0 && /\.ts[x]?$/.test(file))
   .map((file) => {
     const extInitial = path.extname(file);
     const basename = path.basename(file, extInitial);
