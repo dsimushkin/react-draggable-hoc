@@ -23,7 +23,7 @@ export interface ISharedState<T, E, N> {
 export interface IDndObserver<T, E, N> {
   makeDraggable(
     node: N,
-    config?: {
+    config: {
       delay?: number;
       dragProps: T;
       onDragStart?: (state: ISharedState<T, E, N>) => void;
@@ -50,10 +50,13 @@ export interface IDndObserver<T, E, N> {
   readonly state: ISharedState<T, E, N>;
 }
 
-// Typescript ABC sucks section
-export interface DndObserver<T, E, N> extends IDndObserver<T, E, N> {}
+export abstract class DndObserver<T, E, N> implements IDndObserver<T, E, N> {
+  public abstract init: IDndObserver<T, E, N>["init"];
+  public abstract destroy: IDndObserver<T, E, N>["destroy"];
+  public abstract makeDraggable: IDndObserver<T, E, N>["makeDraggable"];
+  public abstract cancel: IDndObserver<T, E, N>["cancel"];
+  public abstract cleanup: IDndObserver<T, E, N>["cleanup"];
 
-export abstract class DndObserver<T, E, N> {
   // protected
   protected subs = new PubSub<
     DnDPhases,
