@@ -3,9 +3,10 @@ import * as React from "react";
 import DragContext from "./IDragContext";
 import { DnDPhases, IDndObserver } from "./IDndObserver";
 
-function useDndObserverListenerFactory<T, D extends IDndObserver<T, any, any>>(
-  context: React.Context<DragContext<T, D>>,
-) {
+function useDndObserverListenerFactory<
+  T,
+  D extends IDndObserver<T, any, any, any>
+>(context: React.Context<DragContext<T, D>>) {
   return function useDndObserverListener(
     listener?: (state: D["state"]) => void,
     ...phases: DnDPhases[]
@@ -14,12 +15,12 @@ function useDndObserverListenerFactory<T, D extends IDndObserver<T, any, any>>(
     React.useEffect(() => {
       if (typeof listener !== "function" || observer == null) return;
 
-      phases.forEach(phase => {
+      phases.forEach((phase) => {
         observer.on(phase, listener);
       });
 
       return () => {
-        phases.forEach(phase => {
+        phases.forEach((phase) => {
           observer.off(phase, listener);
         });
       };

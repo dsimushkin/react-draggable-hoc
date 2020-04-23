@@ -5,7 +5,7 @@ import DragContext from "./IDragContext";
 import { IDndObserver } from "./IDndObserver";
 import throttle from "./throttle";
 
-function useDraggableFactory<T, D extends IDndObserver<T, any, any>>(
+function useDraggableFactory<T, D extends IDndObserver<T, any, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   return function useDraggable(

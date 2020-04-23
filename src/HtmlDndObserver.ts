@@ -1,4 +1,4 @@
-import { DndObserver } from "./IDndObserver";
+import { IDndObserver, ISharedState, DnDPhases } from "./IDndObserver";
 import {
   isTouchEvent,
   getPointer,
@@ -12,6 +12,7 @@ import {
   clearSelection,
   isMouseEvent,
 } from "./HtmlHelpers";
+import PubSub from "./PubSub";
 
 export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   const { pageX, pageY } = isTouchEvent(event)
@@ -24,9 +25,14 @@ export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   };
 }
 
-class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
+export interface HtmlDndObserverState<T>
+  extends ISharedState<T, DndEvent, HTMLElement> {
+  readonly elementsFromPoint: Element[];
+}
+
+class HtmlDndObserver<T>
+  implements IDndObserver<T, DndEvent, HTMLElement, HtmlDndObserverState<T>> {
   constructor({ historyLength = 2 } = {}) {
-    super();
     this.historyLength = historyLength;
   }
   private historyLength: number;
@@ -38,6 +44,20 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
   private st: number | undefined = undefined;
   private selection: string = "";
   private __dragProps?: T;
+
+  // protected
+  protected subs = new PubSub<
+    DnDPhases,
+    (state: HtmlDndObserverState<T>) => void
+  >();
+
+  // additionals
+  public dragged?: HTMLElement = undefined;
+  public wasDetached: Boolean = false;
+  public history: HtmlDndObserverState<T>["history"] = [];
+
+  public on = this.subs.on;
+  public off = this.subs.off;
 
   get dragProps() {
     return this.__dragProps;
@@ -146,10 +166,12 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
     }
   };
 
-  makeDraggable: DndObserver<T, DndEvent, HTMLElement>["makeDraggable"] = (
-    node,
-    config,
-  ) => {
+  makeDraggable: IDndObserver<
+    T,
+    DndEvent,
+    HTMLElement,
+    HtmlDndObserverState<T>
+  >["makeDraggable"] = (node, config) => {
     this.init();
     if (config == null || config.dragProps == null) {
       if (process.env.NODE_ENV === "development") {
@@ -319,6 +341,63 @@ class HtmlDndObserver<T> extends DndObserver<T, DndEvent, HTMLElement> {
       this.initialized = false;
     }
   };
+
+  // calculated
+  public get state() {
+    const self = this;
+    let elementsFromPoint: Element[] | undefined = undefined;
+    const { dragProps, dragged: node, wasDetached } = this;
+    const history = this.history.slice();
+    const initial = history.length ? history[0] : undefined;
+    const current = history.length ? history[history.length - 1] : undefined;
+    const deltaX = history.length < 2 ? 0 : current!.x - initial!.x;
+    const deltaY = history.length < 2 ? 0 : current!.y - initial!.y;
+
+    return {
+      get history() {
+        return history;
+      },
+      get initial() {
+        return initial;
+      },
+      get current() {
+        return current;
+      },
+      get deltaX() {
+        return deltaX;
+      },
+      get deltaY() {
+        return deltaY;
+      },
+      get node() {
+        return node;
+      },
+      get wasDetached() {
+        return wasDetached;
+      },
+      get dragProps() {
+        return dragProps;
+      },
+      set dragProps(v) {
+        self.dragProps = v;
+      },
+      get elementsFromPoint() {
+        if (elementsFromPoint == null) {
+          if (current != null) {
+            const { x, y } = current;
+            elementsFromPoint = [].slice.apply(
+              document.elementsFromPoint(x, y),
+            );
+          } else {
+            elementsFromPoint = [];
+          }
+        }
+
+        return elementsFromPoint;
+      },
+      cancel: self.cancel,
+    };
+  }
 }
 
 export default HtmlDndObserver;

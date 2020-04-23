@@ -5,7 +5,7 @@ import useDroppableFactory from "./useDroppableFactory";
 import { IDndObserver } from "./IDndObserver";
 import useDragPropsFactory from "./useDragPropsFactory";
 
-function droppableFactory<T, D extends IDndObserver<T, any, any>>(
+function droppableFactory<T, D extends IDndObserver<T, any, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   const useDroppable = useDroppableFactory(context);

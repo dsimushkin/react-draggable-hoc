@@ -4,7 +4,7 @@ import DragContext from "./IDragContext";
 import useDragPropsFactory from "./useDragPropsFactory";
 import { IDndObserver } from "./IDndObserver";
 
-function withDragPropsFactory<T, D extends IDndObserver<any, any, any>>(
+function withDragPropsFactory<T, D extends IDndObserver<any, any, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   const useDragProps = useDragPropsFactory(context);

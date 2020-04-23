@@ -4,7 +4,7 @@ import DragContext from "./IDragContext";
 import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import { IDndObserver } from "./IDndObserver";
 
-function useDragPropsFactory<T, D extends IDndObserver<any, any, any>>(
+function useDragPropsFactory<T, D extends IDndObserver<any, any, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   const useDndObserverListener = useDndObserverListenerFactory(context);

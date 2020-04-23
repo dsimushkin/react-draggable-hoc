@@ -5,7 +5,7 @@ import useDndObserverListenerFactory from "./useDndObserverListenerFactory";
 import { IDndObserver } from "./IDndObserver";
 import throttle from "./throttle";
 
-function useDroppableFactory<T, D extends IDndObserver<any, any, any>>(
+function useDroppableFactory<T, D extends IDndObserver<any, any, any, any>>(
   context: React.Context<DragContext<T, D>>,
 ) {
   const useDndObserverListener = useDndObserverListenerFactory(context);
