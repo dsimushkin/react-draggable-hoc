@@ -47,7 +47,7 @@ Additionally `Draggable` component supports the following properties:
 | detachedParent = document.body     | HTMLNode                    | HTML node, where the detached element will be rendered                                                                                                         |
 | onDragStart                        | () => any                   | A function fired when the drag is started (after delay)                                                                                                        |
 | onDragEnd                          | () => any                   | A function fired when the drag is finished                                                                                                                     |
-| throttleMs = 20                    | number                      | Throttling in ms. If equal to 0, throttling is disabled                                                                                                        |
+| throttleMs = 10                    | number                      | Throttling in ms. If equal to 0, throttling is disabled                                                                                                        |
 | disabled = false                   | Boolean                     | Flag for disabling draggability                                                                                                                                |
 
 If you want the node to be dragged only inside a container, use `DragDropContainer`
@@ -122,6 +122,10 @@ import { Draggable, DragDropContainer, Droppable, WithDragProps } from "react-dr
   </div>
 </DragDropContainer>;
 ```
+
+Nested (with respect to HTML DOM) droppables are supported from the box.
+
+`NOTE:` when droppables are not nested from DOM perspective but nodes overlap should be handled, one can utilize `priority` prop/setting.
 
 ---
 
