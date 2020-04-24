@@ -38,13 +38,23 @@ export const SimpleExample = () => {
   const [value, changeValue] = React.useState(0);
   const changeValueFactory = (v: number) => () => changeValue(value + v);
 
-  return (
-    <DragDropContainer style={{ width: 500, margin: "auto" }}>
-      {value < 1000 ? (
+  return value < 300 ? (
+    <>
+      <div>Your current score: {value}</div>
+      <DragDropContainer style={{ width: 400, margin: "auto" }}>
         <>
-          <div>Your current score: {value}</div>
           <br />
-          <Draggable dragProps="missile" className="Missile-Wrapper">
+          <Draggable
+            dragProps="missile"
+            className="Missile-Wrapper"
+            detachDelta={0}
+            onDragStart={() => {
+              document.body.style.cursor = "grabbing";
+            }}
+            onDragEnd={() => {
+              document.body.style.cursor = "initial";
+            }}
+          >
             {({ handleRef, isDetached }) => (
               <div
                 ref={handleRef}
@@ -63,30 +73,36 @@ export const SimpleExample = () => {
             color="#f7d916"
             changeValue={changeValueFactory(10)}
           >
+            <div className="Target-Value">10</div>
             <Target
               value={25}
               color="#f72116"
               changeValue={changeValueFactory(25)}
             >
+              <div className="Target-Value">25</div>
               <Target
                 value={50}
                 color="#f7d916"
                 changeValue={changeValueFactory(50)}
-              />
+              >
+                <div className="Target-Value">50</div>
+              </Target>
+              <div className="Target-Value">25</div>
             </Target>
+            <div className="Target-Value">10</div>
           </Target>
         </>
-      ) : (
-        <div className="Simple-bin">Congratulations, You Win!</div>
-      )}
-    </DragDropContainer>
+      </DragDropContainer>
+    </>
+  ) : (
+    <div className="Congrats-page-container">Congratulations, You Win!</div>
   );
 };
 
 export default () => (
   <React.Fragment>
     <p>
-      Simple `Draggable` and And nested `Droppable` bins
+      `Draggable` with hidden host and And nested `Droppable` bins.
       <br />
     </p>
     <SimpleExample />

@@ -89,25 +89,26 @@
 }
 
 .Target {
-  padding-bottom: 100%;
+  width: 400px;
+  height: 400px;
   position: relative;
   border-radius: 50%;
-  --padding: 80px;
 }
 
 .Target .Target {
-  position: absolute;
-  width: calc(100% - 2 * var(--padding));
-  padding-bottom: calc(100% - 2 * var(--padding));
-  left: var(--padding);
-  top: var(--padding);
+  width: calc(100% - 160px);
+  height: calc(100% - 160px);
+  margin: auto;
+  margin-top: 28px;
 }
 
-.Target:empty {
-  width: 160px;
-  padding-bottom: 160px;
-  left: calc(50% - 80px);
-  top: calc(50% - 80px);
+.Target-Value {
+  padding-top: 32px;
+}
+
+.Congrats-page-container {
+  padding: 40px;
+  border-radius: 8px;
 }
 
 .Cell-simple {
