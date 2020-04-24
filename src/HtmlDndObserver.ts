@@ -13,7 +13,6 @@ import {
   isMouseEvent,
 } from "./HtmlHelpers";
 import PubSub from "./PubSub";
-import { remove } from "./utils";
 
 export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   const { clientX, clientY } = isTouchEvent(event)
@@ -56,7 +55,7 @@ class HtmlDndObserver<T>
   public dragged?: HTMLElement = undefined;
   public wasDetached: Boolean = false;
   public history: HtmlDndObserverState<T>["history"] = [];
-  public droppables: HTMLElement[] = [];
+  public droppables = new Map<HTMLElement, { priority?: number }>();
 
   public on = this.subs.on;
   public off = this.subs.off;
@@ -316,15 +315,19 @@ class HtmlDndObserver<T>
     };
   };
 
-  makeDroppable = (node?: HTMLElement) => {
+  makeDroppable: IDndObserver<
+    T,
+    DndEvent,
+    HTMLElement,
+    HtmlDndObserverState<T>
+  >["makeDroppable"] = (node, config = {}) => {
     if (node != null) {
-      remove(this.droppables, node);
-      this.droppables.push(node);
+      this.droppables.set(node, config);
     }
 
     return () => {
       if (node != null) {
-        remove(this.droppables, node);
+        this.droppables.delete(node);
       }
     };
   };
@@ -367,7 +370,13 @@ class HtmlDndObserver<T>
     const current = history.length ? history[history.length - 1] : undefined;
     const deltaX = history.length < 2 ? 0 : current!.x - initial!.x;
     const deltaY = history.length < 2 ? 0 : current!.y - initial!.y;
-    const droppables = this.droppables.slice();
+    const droppables: {
+      node: HTMLElement;
+      config: { priority?: number };
+    }[] = [];
+    this.droppables.forEach((config, node) => {
+      droppables.push({ node, config });
+    });
 
     return {
       get history() {

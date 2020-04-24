@@ -17,6 +17,7 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any, any>>(
       onDrop,
       disabled = false,
       throttleMs = 10,
+      priority,
     }: {
       method?: (
         state: D["state"],
@@ -29,6 +30,7 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any, any>>(
       onDrop?: (state: D["state"]) => void;
       disabled?: boolean;
       throttleMs?: number;
+      priority?: number;
     } = {},
   ) {
     const { observer, defaultDroppableMethod } = React.useContext(context);
@@ -89,9 +91,11 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any, any>>(
     }, [disabled, isHovered, change, onDrop]);
     useDndObserverListener(dropListener, "drop");
 
-    React.useEffect(() => {
-      return observer.makeDroppable(ref != null ? ref.current : undefined);
-    });
+    React.useEffect(() =>
+      observer.makeDroppable(ref != null ? ref.current : undefined, {
+        priority,
+      }),
+    );
 
     return { isHovered };
   };
