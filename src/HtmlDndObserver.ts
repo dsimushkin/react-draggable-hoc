@@ -25,13 +25,13 @@ export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
   };
 }
 
-export interface HtmlDndObserverState<T>
+export interface IHtmlDndObserverState<T>
   extends ISharedState<T, DndEvent, HTMLElement> {
   readonly elementsFromPoint: Element[];
 }
 
 class HtmlDndObserver<T>
-  implements IDndObserver<T, DndEvent, HTMLElement, HtmlDndObserverState<T>> {
+  implements IDndObserver<T, DndEvent, HTMLElement, IHtmlDndObserverState<T>> {
   constructor({ historyLength = 2 } = {}) {
     this.historyLength = historyLength;
   }
@@ -48,13 +48,13 @@ class HtmlDndObserver<T>
   // protected
   protected subs = new PubSub<
     DnDPhases,
-    (state: HtmlDndObserverState<T>) => void
+    (state: IHtmlDndObserverState<T>) => void
   >();
 
   // additionals
   public dragged?: HTMLElement = undefined;
   public wasDetached: Boolean = false;
-  public history: HtmlDndObserverState<T>["history"] = [];
+  public history: IHtmlDndObserverState<T>["history"] = [];
   public droppables = new Map<HTMLElement, { priority?: number }>();
 
   public on = this.subs.on;
@@ -171,7 +171,7 @@ class HtmlDndObserver<T>
     T,
     DndEvent,
     HTMLElement,
-    HtmlDndObserverState<T>
+    IHtmlDndObserverState<T>
   >["makeDraggable"] = (node, config) => {
     this.init();
     if (config == null || config.dragProps == null) {
@@ -319,7 +319,7 @@ class HtmlDndObserver<T>
     T,
     DndEvent,
     HTMLElement,
-    HtmlDndObserverState<T>
+    IHtmlDndObserverState<T>
   >["makeDroppable"] = (node, config = {}) => {
     if (node != null) {
       this.droppables.set(node, config);

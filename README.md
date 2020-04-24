@@ -235,6 +235,15 @@ interface ISharedState<T, E, N> {
 }
 ```
 
+Browser's `HtmlDndObserver` additionally provides a getter for elementsFromPoint, which can be useful in `droppable`'s hover `method` implementation.
+
+```ts
+export interface IHtmlDndObserverState<T>
+  extends ISharedState<T, DndEvent, HTMLElement> {
+  readonly elementsFromPoint: Element[];
+}
+```
+
 ---
 
 ## Experimental features
