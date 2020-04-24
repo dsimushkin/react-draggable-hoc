@@ -4,6 +4,7 @@ import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 import Ghost from "./Ghost";
 import SingleBin from "./SingleBin";
 import MultiBin from "./MultiBin";
+import NestedBins from "./NestedBins";
 
 import "./App.css";
 
@@ -16,6 +17,7 @@ class App extends React.Component {
           <menu>
             <NavLink to="/demo/singleBin">Single bin</NavLink>
             <NavLink to="/demo/multiBin">Multi bin</NavLink>
+            <NavLink to="/demo/nestedBins">Nested bins</NavLink>
             <NavLink to="/demo/ghost">Complex</NavLink>
           </menu>
         </header>
@@ -23,6 +25,7 @@ class App extends React.Component {
           <Switch>
             <Route path="/demo/singleBin" component={SingleBin} />
             <Route path="/demo/multiBin" component={MultiBin} />
+            <Route path="/demo/nestedBins" component={NestedBins} />
             <Route path="/demo/ghost" component={Ghost} />
             <Redirect to="/demo/singleBin" />
           </Switch>

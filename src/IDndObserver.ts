@@ -18,6 +18,7 @@ export interface ISharedState<T, E, N> {
   dragProps?: T;
   readonly node?: N;
   readonly wasDetached: Boolean;
+  readonly droppables: N[];
 }
 
 export interface IDndObserver<T, E, N, S extends ISharedState<T, E, N>> {
@@ -34,6 +35,7 @@ export interface IDndObserver<T, E, N, S extends ISharedState<T, E, N>> {
       onDragCancel?: (...args: any) => void;
     },
   ): () => void;
+  makeDroppable(node?: N): () => void;
   init(): void;
   destroy(): void;
   cancel(): void;

@@ -13,14 +13,15 @@ import {
   isMouseEvent,
 } from "./HtmlHelpers";
 import PubSub from "./PubSub";
+import { remove } from "./utils";
 
 export function dragPayloadFactory(event: MouseEvent | TouchEvent) {
-  const { pageX, pageY } = isTouchEvent(event)
+  const { clientX, clientY } = isTouchEvent(event)
     ? getPointer(event as TouchEvent)
     : (event as MouseEvent);
   return {
-    x: pageX,
-    y: pageY,
+    x: clientX,
+    y: clientY,
     event,
   };
 }
@@ -55,6 +56,7 @@ class HtmlDndObserver<T>
   public dragged?: HTMLElement = undefined;
   public wasDetached: Boolean = false;
   public history: HtmlDndObserverState<T>["history"] = [];
+  public droppables: HTMLElement[] = [];
 
   public on = this.subs.on;
   public off = this.subs.off;
@@ -314,6 +316,19 @@ class HtmlDndObserver<T>
     };
   };
 
+  makeDroppable = (node?: HTMLElement) => {
+    if (node != null) {
+      remove(this.droppables, node);
+      this.droppables.push(node);
+    }
+
+    return () => {
+      if (node != null) {
+        remove(this.droppables, node);
+      }
+    };
+  };
+
   init = () => {
     if (!this.initialized) {
       attach("drag", this.onDragListener, window, { passive: false });
@@ -352,6 +367,7 @@ class HtmlDndObserver<T>
     const current = history.length ? history[history.length - 1] : undefined;
     const deltaX = history.length < 2 ? 0 : current!.x - initial!.x;
     const deltaY = history.length < 2 ? 0 : current!.y - initial!.y;
+    const droppables = this.droppables.slice();
 
     return {
       get history() {
@@ -374,6 +390,9 @@ class HtmlDndObserver<T>
       },
       get wasDetached() {
         return wasDetached;
+      },
+      get droppables() {
+        return droppables;
       },
       get dragProps() {
         return dragProps;

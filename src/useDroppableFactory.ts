@@ -89,6 +89,10 @@ function useDroppableFactory<T, D extends IDndObserver<any, any, any, any>>(
     }, [disabled, isHovered, change, onDrop]);
     useDndObserverListener(dropListener, "drop");
 
+    React.useEffect(() => {
+      return observer.makeDroppable(ref != null ? ref.current : undefined);
+    });
+
     return { isHovered };
   };
 }

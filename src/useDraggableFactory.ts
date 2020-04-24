@@ -108,7 +108,7 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any, any>>(
 
       const node = ref && ref.current;
 
-      const destroy = node
+      return node
         ? observer.makeDraggable(node, {
             delay,
             dragProps,
@@ -120,12 +120,6 @@ function useDraggableFactory<T, D extends IDndObserver<T, any, any, any>>(
             onDragPropsChange: dragPropsChangeListener,
           })
         : undefined;
-
-      return () => {
-        if (typeof destroy === "function") {
-          destroy();
-        }
-      };
     });
 
     const { state } = observer;
