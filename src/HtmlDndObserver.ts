@@ -55,6 +55,7 @@ class HtmlDndObserver<T>
   public dragged?: HTMLElement = undefined;
   public wasDetached: Boolean = false;
   public history: IHtmlDndObserverState<T>["history"] = [];
+  private _prevHistory: IHtmlDndObserverState<T>["history"] = [];
   public droppables = new Map<HTMLElement, { priority?: number }>();
 
   public on = this.subs.on;
@@ -160,10 +161,23 @@ class HtmlDndObserver<T>
     }
 
     if (this.dragged != null) {
+      // sanity check
       if (typeof this.dropListener === "function") {
         await this.dropListener(e);
       }
+      // store dragHistory for touch event
+      if (isTouchEvent(e)) {
+        this._prevHistory = this.history;
+
+        // ensure cleanup
+        // if it's not done via mouseup
+        window.setTimeout(() => {
+          this._prevHistory = [];
+        }, 200);
+      }
       this.cleanup();
+    } else {
+      this._prevHistory = [];
     }
   };
 
@@ -214,68 +228,72 @@ class HtmlDndObserver<T>
     };
 
     const defaultDragStartListener = async (e: DndEvent) => {
-      if (this.dragged == null) {
-        this.delayed = undefined;
+      if (this.dragged != null) return;
+      if (this._prevHistory.length > 0) return;
 
-        if (!config.delay) {
-          clearSelection();
-          this.selection = getSelection();
+      this.delayed = undefined;
+
+      if (!config.delay) {
+        clearSelection();
+        this.selection = getSelection();
+      }
+
+      if (isDragStart(e) && !this.checkSelection()) {
+        if (isMouseEvent(e)) {
+          // prevent Safari/ desktop from scrolling during mousemove
+          // if touchstart is prevented, click won't be fired
+          e.preventDefault();
+        }
+        this.cleanup();
+        this.dragListener = defaultDragListener;
+        this.dropListener = defaultDropListener;
+
+        this.history = [dragPayloadFactory(e)];
+        this.__dragProps = config.dragProps;
+        this.dragged = node;
+
+        if (typeof config.onDragStart === "function") {
+          config.onDragStart(this.state);
         }
 
-        if (isDragStart(e) && !this.checkSelection()) {
-          if (isMouseEvent(e)) {
-            // prevent Safari/ desktop from scrolling during mousemove
-            // if touchstart is prevented, click won't be fired
-            e.preventDefault();
-          }
-          this.cleanup();
-          this.dragListener = defaultDragListener;
-          this.dropListener = defaultDropListener;
+        this.monitorSelection();
 
-          this.history = [dragPayloadFactory(e)];
-          this.__dragProps = config.dragProps;
-          this.dragged = node;
-
-          if (typeof config.onDragStart === "function") {
-            config.onDragStart(this.state);
-          }
-
-          this.subs.notifySync("dragStart", this.state);
-          this.monitorSelection();
-        }
+        await this.subs.notify("dragStart", this.state);
       }
     };
 
     const delayedDragListener = async (e: DndEvent) => {
-      if (this.delayed == null && this.dragged == null) {
-        if (isDragStart(e)) {
-          if (isMouseEvent(e)) {
-            // prevent Safari/ desktop from scrolling during mousemove
-            // if touchstart is prevented, click won't be fired
-            e.preventDefault();
-          }
+      if (this.delayed != null) return;
+      if (this.dragged != null) return;
+      if (this._prevHistory.length > 0) return;
 
-          // deal with text selection
-          clearSelection();
-          this.selection = getSelection();
-
-          this.delayed = e;
-
-          this.t = window.setTimeout(() => {
-            this.t = undefined;
-            if (this.checkSelection()) {
-              this.cancel(e);
-            } else {
-              defaultDragStartListener(e);
-            }
-          }, config.delay);
-
-          if (typeof config.onDelayedDrag === "function") {
-            config.onDelayedDrag(this.state);
-          }
-
-          await this.subs.notify("delayedDrag", this.state);
+      if (isDragStart(e)) {
+        if (isMouseEvent(e)) {
+          // prevent Safari/ desktop from scrolling during mousemove
+          // if touchstart is prevented, click won't be fired
+          e.preventDefault();
         }
+
+        // deal with text selection
+        clearSelection();
+        this.selection = getSelection();
+
+        this.delayed = e;
+
+        this.t = window.setTimeout(() => {
+          this.t = undefined;
+          if (this.checkSelection()) {
+            this.cancel(e);
+          } else {
+            defaultDragStartListener(e);
+          }
+        }, config.delay);
+
+        if (typeof config.onDelayedDrag === "function") {
+          config.onDelayedDrag(this.state);
+        }
+
+        await this.subs.notify("delayedDrag", this.state);
       }
     };
 
@@ -334,7 +352,10 @@ class HtmlDndObserver<T>
 
   init = () => {
     if (!this.initialized) {
-      attach("drag", this.onDragListener, window, { passive: false });
+      attach("drag", this.onDragListener, window, {
+        passive: false,
+        capture: false,
+      });
       attach("drop", this.onDropListener, window, { passive: false });
       window.addEventListener("scroll", this.cancel as any, {
         passive: true,
@@ -349,8 +370,8 @@ class HtmlDndObserver<T>
   destroy = () => {
     this.cleanup();
     if (this.initialized) {
-      detach("drag", this.onDragListener);
-      detach("drop", this.onDropListener);
+      detach("drag", this.onDragListener, window);
+      detach("drop", this.onDropListener, window, { capture: false });
       window.removeEventListener("scroll", this.cancel as any, {
         capture: true,
       });
