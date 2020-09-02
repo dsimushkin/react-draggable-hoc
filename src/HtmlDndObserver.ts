@@ -189,17 +189,16 @@ class HtmlDndObserver<T>
   >["makeDraggable"] = (node, config) => {
     this.init();
     if (config == null || config.dragProps == null) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("dragProps are required from v2.2.0");
-      }
+      console.error("dragProps are required from v2.2.0");
       return () => {};
     }
     // prevent from text selection on drag
     try {
-      node.style.userSelect = "none";
-      node.style.webkitUserSelect = "none";
-      node.style.msUserSelect = "none";
-      (node.style as any).MozUserSelect = "none";
+      const style = node.style as any;
+      style.userSelect = "none";
+      style.webkitUserSelect = "none";
+      style.msUserSelect = "none";
+      style.MozUserSelect = "none";
     } catch (e) {}
 
     const defaultDragListener = async (e: DndEvent) => {
