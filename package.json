@@ -20,8 +20,8 @@
     "postpublish": "(cd demo && yarn deploy) && (git push && git push --tags)"
   },
   "peerDependencies": {
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
