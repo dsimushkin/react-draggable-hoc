@@ -9,7 +9,7 @@ import {
 } from "react-draggable-hoc";
 
 const sleep = (ms?: number) => {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve();
     }, ms);
@@ -103,8 +103,8 @@ const Content = ({ backgroundColor, value, draggedProps }: IContentProps) => {
                           ? "Not here"
                           : "I'm dragged"
                         : isHovered
-                        ? "Drop here"
-                        : "Hover me"
+                          ? "Drop here"
+                          : "Hover me"
                       : value
                   }
                   style={{
@@ -137,7 +137,7 @@ const Content = ({ backgroundColor, value, draggedProps }: IContentProps) => {
   );
 };
 
-const randomColors = Array(30)
+const randomColors = Array(3000)
   .fill(0)
   .map(() => randomColor());
 
